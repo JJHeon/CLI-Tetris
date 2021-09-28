@@ -7,8 +7,12 @@
             "args": [
                 "-g",
                 "${file}",
+                "-Isrc",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/../CLI-Tetris",
+                "-lncurses",
+                "-lmenu",
+                "-lform"
             ],
             "options": {
                 "cwd": "${fileDirname}"
