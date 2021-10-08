@@ -25,12 +25,11 @@ class GameState {
    private:
    protected:
     UserData* user_player_;    //게임을 실행한 User
-    GameManager* supervisor_;  //GameState를 실행한(관리하는) Manager
+    GameManager& supervisor_;  //GameState를 실행한(관리하는) Manager
     Ui* ui_;
 
    protected:
-    GameState();
-    GameState(GameManager* supervisor, UserData* user_player = nullptr, Ui* ui = nullptr);
+    GameState(GameManager& supervisor, UserData* user_player = nullptr, Ui* ui = nullptr);
 
     bool CheckUserPlayer() const;
     bool CheckSupervisor() const;
@@ -40,7 +39,7 @@ class GameState {
 
    public:
     virtual ~GameState();
-    virtual void Initialize(GameManager* supervisor) = 0;
+    virtual void Initialize() = 0;
     virtual InputProcessResult InputProcess() = 0;
     virtual void UpdateProcess() = 0;
     virtual void RenderProcess() = 0;
@@ -63,14 +62,15 @@ using StateCode = enum StateCode {
 class StartState : public GameState {
    private:
     void LoadPreviousUserData();  //TODO: File system 관련 예외처리 필요.
+    void UpdateSupervisorToOthers();
 
    protected:
     void MoveStateHandler(StateCode where) override;
 
    public:
-    StartState(GameManager* supervisor);
+    StartState(GameManager& supervisor);
 
-    void Initialize(GameManager* supervisor) override;
+    void Initialize() override;
     InputProcessResult InputProcess() override;
     void UpdateProcess() override;
     void RenderProcess() override;
@@ -98,6 +98,7 @@ class CreditState : public GameState {
  *  빠른 State 전환을 위해서 사전에 생성된 state들을 select_state_가 가르키는 형식으로 구성되있습니다.
  *  main()에서 단 하나의 객체만 생성되며 CheckGameState() 이후 Run() 됩니다.
  *  Run() 시작 단계에서 game_state_에 nullptr가 존재하면 안됩니다. 
+ *  Initialize는 반드시 의도적으로 최초 한번은 실행되어야 합니다. (virtual method라서 생성자에서 호출할 수 없었습니다.)
  */
 class GameManager final {
    private:
@@ -118,7 +119,7 @@ class GameManager final {
     ~GameManager();
 
     void ChangeSelcet(StateCode where);
-    void UpdateAll(UserData& user_data);
+    void UpdateAllUserdata(UserData& user_data);
     bool CheckGameState() const;
     void Run();
 };

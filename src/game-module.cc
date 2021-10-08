@@ -6,15 +6,12 @@
 
 namespace cli_tetris {
 /* GameState Class ===================================================================================== */
-GameState::GameState()
-    : user_player_(nullptr), supervisor_(nullptr), ui_(nullptr) {}
 
-GameState::GameState(GameManager* supervisor, UserData* user_player = nullptr, Ui* ui = nullptr)
+GameState::GameState(GameManager& supervisor, UserData* user_player = nullptr, Ui* ui = nullptr)
     : supervisor_(supervisor) {}
 
 GameState::~GameState() {
     if (user_player_ != nullptr) delete user_player_;
-    if (supervisor_ != nullptr) delete supervisor_;
     if (ui_ != nullptr) delete ui_;
 }
 
@@ -23,34 +20,26 @@ bool GameState::CheckUserPlayer() const {
     return false;
 }
 
-bool GameState::CheckSupervisor() const {
-    if (supervisor_ != nullptr) return true;
-    return false;
-}
-
-
 /* GameState - StartState Class ===================================================================================== */
 
-StartState::StartState(GameManager* supervisor)
+StartState::StartState(GameManager& supervisor)
     : GameState(supervisor) {}
 
-void StartState::MoveStateHandler(StateCode where){
-    supervisor_->ChangeSelcet(where);
+void StartState::MoveStateHandler(StateCode where) {
+    supervisor_.ChangeSelcet(where);
 }
 
-void StartState::Initialize(GameManager* supervisor) {
+//TODO: 예외처리 필요합니다. 프로그램 정지를 위한.
+void StartState::Initialize() {
 }
 
-InputProcessResult StartState::InputProcess(){
-
+InputProcessResult StartState::InputProcess() {
 }
 
-void StartState::UpdateProcess(){
-
+void StartState::UpdateProcess() {
 }
 
-void StartState::RenderProcess(){
-
+void StartState::RenderProcess() {
 }
 
 /* GameManager Class ===================================================================================== */
@@ -74,7 +63,7 @@ GameManager::~GameManager() {
     }
 }
 
-void GameManager::ChangeSelcet(StateCode where){
+void GameManager::ChangeSelcet(StateCode where) {
     select_state_ = static_cast<int>(where);
 }
 
@@ -89,7 +78,7 @@ bool GameManager::CheckGameState() const {
 void GameManager::Run() {
     //시작전 Data 초기화
     for (int i = 0; i != (sizeof(game_state_) / sizeof(GameState*)); ++i) {
-        game_state_[i]->Initialize(this);
+        game_state_[i]->Initialize();
     }
 
     while (true) {
@@ -100,7 +89,7 @@ void GameManager::Run() {
         } else {
             switch (n) {
                 case kChangeState:
-                    game_state_[select_state_]->Initialize(this);
+                    game_state_[select_state_]->Initialize();
                     break;
                 case kExit:
                     break;
