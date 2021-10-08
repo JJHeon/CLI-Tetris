@@ -15,6 +15,7 @@ GameState::GameState(GameManager* supervisor, UserData* user_player = nullptr, U
 GameState::~GameState() {
     if (user_player_ != nullptr) delete user_player_;
     if (supervisor_ != nullptr) delete supervisor_;
+    if (ui_ != nullptr) delete ui_;
 }
 
 bool GameState::CheckUserPlayer() const {
@@ -26,6 +27,8 @@ bool GameState::CheckSupervisor() const {
     if (supervisor_ != nullptr) return true;
     return false;
 }
+
+/* GameState - StartState Class ===================================================================================== */
 
 StartState::StartState(GameManager* supervisor)
     : GameState(supervisor) {}
