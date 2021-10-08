@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "game-module.h"
+#include "service-manager.h"
 
 int main(void) {
     using cli_tetris::CreditState;
@@ -15,6 +16,15 @@ int main(void) {
     using cli_tetris::StateCode;
     using cli_tetris::TemperaryStopState;
 
+    using cli_tetris::Locator;
+    using cli_tetris::Ui;
+
+
+    /** Ui의 생성에 ConsoleDevice가 필요하도록 의도적으로 배치.
+     *  ConsoleDevice 생성자 내부에 ncurse 화면 초기화와 관련된 함수가 있으며 
+     *  한번만 초기화되어야 하기 떄문이다.
+     * */ 
+    Locator::provideUi(new Ui(new cli_tetris::ConsoleDevice));
 
     /* 목표로한 완전한 Tetris Manager 선언 */
     // GameManager tetris(
