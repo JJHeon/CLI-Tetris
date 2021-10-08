@@ -29,8 +29,16 @@ void StartState::MoveStateHandler(StateCode where) {
     supervisor_.ChangeSelcet(where);
 }
 
+void StartState::LoadPreviousUserData() {
+}
+
 //TODO: 예외처리 필요합니다. 프로그램 정지를 위한.
 void StartState::Initialize() {
+    /** TODO:linux의 file을 읽어 userdata를 읽어와야 합니다.
+     *  이후에 다음줄을 실행해 모든 State에 Update합니다.
+     * */
+    //LoadPreviousUserData();
+    //supervisor_.UpdateAllUserdata()
 }
 
 InputProcessResult StartState::InputProcess() {

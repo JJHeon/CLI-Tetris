@@ -15,17 +15,23 @@ int main(void) {
     using cli_tetris::StateCode;
     using cli_tetris::TemperaryStopState;
 
-    GameManager tetris(
-        StateCode::kStart,
-        new StartState(&tetris),
-        new EndState,
-        new MenuState,
-        new TemperaryStopState,
-        new SoloPlayState,
-        new DuoPlayState,
-        new MultiPlayState,
-        new SettingState,
-        new CreditState);
+
+    /* 목표로한 완전한 Tetris Manager 선언 */
+    // GameManager tetris(
+    //     StateCode::kStart,
+    //     new StartState(&tetris),
+    //     new EndState,
+    //     new MenuState,
+    //     new TemperaryStopState,
+    //     new SoloPlayState,
+    //     new DuoPlayState,
+    //     new MultiPlayState,
+    //     new SettingState,
+    //     new CreditState);
+
+    /* 개발 단계 Tetris Manager */
+    GameManager tetris(StateCode::kStart,
+                       new StartState(tetris));
 
     if (!tetris.CheckGameState()) return -1;
     tetris.Run();
