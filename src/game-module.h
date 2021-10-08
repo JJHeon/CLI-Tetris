@@ -36,7 +36,7 @@ class GameState {
     bool CheckSupervisor() const;
 
    protected:
-    virtual void MoveStateHandler() = 0;
+    virtual void MoveStateHandler(StateCode where) = 0;
 
    public:
     virtual ~GameState();
@@ -65,7 +65,7 @@ class StartState : public GameState {
     void LoadPreviousUserData();  //TODO: File system 관련 예외처리 필요.
 
    protected:
-    void MoveStateHandler() override;
+    void MoveStateHandler(StateCode where) override;
 
    public:
     StartState(GameManager* supervisor);
@@ -117,7 +117,7 @@ class GameManager final {
                 CreditState* credit = nullptr);
     ~GameManager();
 
-    void ChangeSelcet();
+    void ChangeSelcet(StateCode where);
     void UpdateAll(UserData& user_data);
     bool CheckGameState() const;
     void Run();

@@ -28,13 +28,14 @@ bool GameState::CheckSupervisor() const {
     return false;
 }
 
+
 /* GameState - StartState Class ===================================================================================== */
 
 StartState::StartState(GameManager* supervisor)
     : GameState(supervisor) {}
 
-void StartState::MoveStateHandler(){
-
+void StartState::MoveStateHandler(StateCode where){
+    supervisor_->ChangeSelcet(where);
 }
 
 void StartState::Initialize(GameManager* supervisor) {
@@ -71,6 +72,10 @@ GameManager::~GameManager() {
     for (int i = 0; i != (sizeof(game_state_) / sizeof(GameState*)); ++i) {
         if (game_state_[i] != nullptr) delete game_state_[i];
     }
+}
+
+void GameManager::ChangeSelcet(StateCode where){
+    select_state_ = static_cast<int>(where);
 }
 
 bool GameManager::CheckGameState() const {
