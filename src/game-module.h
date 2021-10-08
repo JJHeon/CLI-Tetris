@@ -94,7 +94,7 @@ class CreditState : public GameState {
 /** GameManager는 GameState를 초기화하고 실행할 형태를 제공하는 Class입니다. 
  *  Derviced된 GameState를 관리합니다.
  *  빠른 State 전환을 위해서 사전에 생성된 state들을 select_state_가 가르키는 형식으로 구성되있습니다.
- *  main()에서 단 하나만 선언되며 CheckGameState() 이후 Run() 됩니다.
+ *  main()에서 단 하나의 객체만 생성되며 CheckGameState() 이후 Run() 됩니다.
  *  Run() 시작 단계에서 game_state_에 nullptr가 존재하면 안됩니다. 
  */
 class GameManager final {
