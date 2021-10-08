@@ -3,6 +3,9 @@
 #include "game-module.h"
 #include "ui.h"
 #include "user-data.h"
+#include "service-manager.h"
+
+#include <ncurses.h>
 
 namespace cli_tetris {
 /* GameState Class ===================================================================================== */
@@ -32,6 +35,22 @@ void StartState::MoveStateHandler(StateCode where) {
 void StartState::LoadPreviousUserData() {
 }
 
+void StartState::UpdateUi() {
+    //서비스 중개자로부터 Ui를 가져옵니다.
+    Ui* n = Locator::getUi();
+
+    //ui를 상속한 개선된 ui class가 있다면 이곳에서 사용할 수 있습니다.
+    supervisor_.getGameState(StateCode::kStart)->ui_ = n;
+    supervisor_.getGameState(StateCode::kEnd)->ui_ = n;
+    supervisor_.getGameState(StateCode::kMenu)->ui_ = n;
+    supervisor_.getGameState(StateCode::kTemperaryStop)->ui_ = n;
+    supervisor_.getGameState(StateCode::kSoloPlay)->ui_ = n;
+    supervisor_.getGameState(StateCode::kDuoPlay)->ui_ = n;
+    supervisor_.getGameState(StateCode::kMultiPlay)->ui_ = n;
+    supervisor_.getGameState(StateCode::kSetting)->ui_ = n;
+    supervisor_.getGameState(StateCode::kCredit)->ui_ = n;
+}
+
 //TODO: 예외처리 필요합니다. 프로그램 정지를 위한.
 void StartState::Initialize() {
     /** TODO:linux의 file을 읽어 userdata를 읽어와야 합니다.
@@ -39,9 +58,13 @@ void StartState::Initialize() {
      * */
     //LoadPreviousUserData();
     //supervisor_.UpdateAllUserdata()
+
+    /* Ui 등록 */
+    UpdateUi();
 }
 
 InputProcessResult StartState::InputProcess() {
+    //아무것도 입력받지 않습니다.
 }
 
 void StartState::UpdateProcess() {
@@ -81,6 +104,10 @@ bool GameManager::CheckGameState() const {
     }
 
     return true;
+}
+
+GameState* GameManager::getGameState(StateCode where) const {
+    return game_state_[static_cast<int>(where)];
 }
 
 void GameManager::Run() {

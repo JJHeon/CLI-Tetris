@@ -6,7 +6,22 @@
 
 namespace cli_tetris {
 
+class GameManager;
+
 /* GameState Class ===================================================================================== */
+
+/* GameState의 식별자입니다. */
+using StateCode = enum StateCode {
+    kStart = 0,
+    kEnd,
+    kMenu,
+    kTemperaryStop,
+    kSoloPlay,
+    kDuoPlay,
+    kMultiPlay,
+    kSetting,
+    kCredit
+};
 
 /** GameState::InputProcess() 의 return 값을 식별하기 위한 enum입니다. */
 using InputProcessResult = enum InputProcessResult {
@@ -22,10 +37,14 @@ using InputProcessResult = enum InputProcessResult {
  *  MoveStateHandler는 GameState 내부에서만 동작해야합니다.
 */
 class GameState {
-   private:
+    /** CAUTION: (Only) StartState에게 Privilege 부여
+     *  GameManager class 설명을 참고
+     */
+    friend class StartState;
+
    protected:
+    GameManager& supervisor_;  //GameState를 실행한(관리하는) Manager, 일반적으로 MoveState를 위해 사용합니다.
     UserData* user_player_;    //게임을 실행한 User
-    GameManager& supervisor_;  //GameState를 실행한(관리하는) Manager
     Ui* ui_;
 
    protected:
@@ -45,24 +64,16 @@ class GameState {
     virtual void RenderProcess() = 0;
 };
 
-/* GameState의 식별자입니다. */
-using StateCode = enum StateCode {
-    kStart = 0,
-    kEnd,
-    kMenu,
-    kTemperaryStop,
-    kSoloPlay,
-    kDuoPlay,
-    kMultiPlay,
-    kSetting,
-    kCredit
-};
-
-/* 게임의 시작단계에서 화면 불러오기 및 UserData loading을 담당합니다. */
+/** 게임의 시작단계에서 Device component 등록 및 UserData loading을 담당합니다. 
+ *  StartState는 base class인 GameState에 대해 friend 권한을 가지고 있습니다.
+ *  GameManager에 등록된 다른 State에 대해 ptr 또는 참조, 값을 변경할 수 있습니다. (Value Change Privilege)
+*/
 class StartState : public GameState {
    private:
     void LoadPreviousUserData();  //TODO: File system 관련 예외처리 필요.
-    void UpdateSupervisorToOthers();
+
+    //GameManager에게 요청한 주소를 통해 Ui를 등록합니다.
+    void UpdateUi();
 
    protected:
     void MoveStateHandler(StateCode where) override;
@@ -99,6 +110,13 @@ class CreditState : public GameState {
  *  main()에서 단 하나의 객체만 생성되며 CheckGameState() 이후 Run() 됩니다.
  *  Run() 시작 단계에서 game_state_에 nullptr가 존재하면 안됩니다. 
  *  Initialize는 반드시 의도적으로 최초 한번은 실행되어야 합니다. (virtual method라서 생성자에서 호출할 수 없었습니다.)
+ *  등록된 GameState들은 오직 GameManager의 허락된(public 된) 기능만을 사용할 수 있습니다.
+ *  
+ *  NOTE:
+ *  등록된 game_state_ 간의 데이터 이동 및 ptr 변경은 불가능합니다. (생성자를 통해 참조된 ptr를 제외하고)
+ *  getGameState Method만이 다른 game_state_ instance에 access 가능합니다. 따라서 매우 주의해서 사용하세요.
+ *  현재 getGameState는 초기화를 담당하는 (ONLY) StartState이 사용합니다.
+ *  StartState는 base class인 GameState에 대해 friend 권한을 가지고 있습니다.
  */
 class GameManager final {
    private:
@@ -119,7 +137,9 @@ class GameManager final {
     ~GameManager();
 
     void ChangeSelcet(StateCode where);
-    void UpdateAllUserdata(UserData& user_data);
+
+    //CAUTION: (Ony StartState can use) 해당 method는 game_state_ 간 데이터 이동 및 등록을 가능하도록 합니다. 의도되지 않은 기능이므로 주의해서 사용하세요
+    GameState* getGameState(StateCode where) const;
     bool CheckGameState() const;
     void Run();
 };
