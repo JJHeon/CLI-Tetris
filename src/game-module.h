@@ -2,6 +2,7 @@
 #define CLI_TETRIS_GAME_MODULE_H_
 
 #include "user-data.h"
+#include "ui.h"
 
 namespace cli_tetris {
 
@@ -25,10 +26,11 @@ class GameState {
    protected:
     UserData* user_player_;    //게임을 실행한 User
     GameManager* supervisor_;  //GameState를 실행한(관리하는) Manager
+    Ui* ui_;
 
    protected:
     GameState();
-    GameState(GameManager* supervisor, UserData* user_player = nullptr);
+    GameState(GameManager* supervisor, UserData* user_player = nullptr, Ui* ui = nullptr);
 
     bool CheckUserPlayer() const;
     bool CheckSupervisor() const;

@@ -1,13 +1,15 @@
 #include <cstddef>
 
 #include "game-module.h"
+#include "ui.h"
+#include "user-data.h"
 
 namespace cli_tetris {
 /* GameState Class ===================================================================================== */
 GameState::GameState()
-    : user_player_(nullptr), supervisor_(nullptr) {}
+    : user_player_(nullptr), supervisor_(nullptr), ui_(nullptr) {}
 
-GameState::GameState(GameManager* supervisor, UserData* user_player = nullptr)
+GameState::GameState(GameManager* supervisor, UserData* user_player = nullptr, Ui* ui = nullptr)
     : supervisor_(supervisor) {}
 
 GameState::~GameState() {
@@ -44,7 +46,7 @@ void StartState::UpdateProcess(){
 }
 
 void StartState::RenderProcess(){
-    
+
 }
 
 /* GameManager Class ===================================================================================== */
