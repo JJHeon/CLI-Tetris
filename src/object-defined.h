@@ -8,41 +8,22 @@ using Pos = struct {
     int x;
 };
 
-using BlockType = enum BlockType {
-    I = 0,
-    O,
-    T,
-    L,
-    J,
-    S,
-    Z
-};
-
 class Object {
    private:
     Pos pos_yx_;
+    bool is_changed;
 
    protected:
-    UiComponent* ui_;
-    PhysicsComponent* physics_;
-
     virtual ~Object(){};
     Object(int pos_y = 0, int pos_x = 0);
-    Object(const Object& object) = default;
+    Object(const Object& object) = delete;
 
     Pos getObjectPos() const;
     void setObjectPos(int y, int x);
 
-    virtual void setPhysicsComponent(PhysicsComponent* physics) = 0;
-    virtual void setUiComponent(UiComponent* ui) = 0;
-
    public:
     virtual void UpdatePhysics() = 0;
     virtual void UpdateRendering() = 0;
-};
-
-class BlockI :public Object {
-
 };
 
 }  // namespace cli_tetris

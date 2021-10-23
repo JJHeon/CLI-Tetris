@@ -3,7 +3,7 @@
 namespace cli_tetris {
 
 Object::Object(int pos_y = 0, int pos_x = 0)
-    : ui_(nullptr), physics_(nullptr) {
+    : is_changed(false) {
     pos_yx_.y = pos_y;
     pos_yx_.x = pos_x;
 }
