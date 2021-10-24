@@ -1,14 +1,35 @@
 #include "ui.h"
 
-#include "device-controller.h"
+#include <ncurses.h>
 
 namespace cli_tetris {
 
-Ui::Ui(ConsoleDevice* device)
-    : device_(device) {}
-
-Ui::~Ui() {
-    delete device_;
+Ui::Ui()
+    : is_initialized(false) {
+    this->Initialize();
 }
 
-}  //namespace cli_tetris
+Ui::~Ui() {
+    if (is_initialized) this->End();
+}
+
+void Ui::Initialize() {
+    is_initialized = true;
+    initscr();
+    refresh();
+    noecho();
+}
+
+void Ui::End() {
+    is_initialized = false;
+    endwin();
+}
+
+LineColumn Ui::getScreenMaxSize() {
+    LineColumn n = {0, 0};
+    getmaxyx(stdscr, n.line, n.column);
+
+    return n;
+}
+
+}  // namespace cli_tetris
