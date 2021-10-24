@@ -211,3 +211,4 @@ class GameManager final {
 }  // namespace cli_tetris
 
 #endif  // CLI_TETRIS_GAME_MODULE_H_
+
