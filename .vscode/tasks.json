@@ -6,7 +6,7 @@
             "command": "/usr/bin/g++-9",
             "args": [
                 "-g",
-                "${file}",
+                "${workspaceFolder}/src/*.cc",
                 "-Isrc",
                 "-o",
                 "${fileDirname}/../CLI-Tetris",
