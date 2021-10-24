@@ -2,6 +2,7 @@
 #define CLI_TETRIS_GAME_MODULE_H_
 
 #include <memory>
+#include <chrono>
 
 #include "user-data.h"
 #include "ui.h"
@@ -54,13 +55,15 @@ class GameState {
     virtual ~GameState();
     virtual void Initialize() = 0;
     virtual InputProcessResult InputProcess() = 0;
-    virtual void UpdateProcess() = 0;
+    virtual void UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) = 0;
     virtual void RenderProcess() = 0;
 };
 
 /** 게임의 시작단계에서 Device component 등록 및 UserData loading을 담당합니다. */
 class StartState : public GameState {
    private:
+    int ready_milliseconds;  // StartState 대기 시간
+
    protected:
     void MoveStateHandler(StateCode where) override;
 
@@ -69,7 +72,7 @@ class StartState : public GameState {
 
     void Initialize() override;
     InputProcessResult InputProcess() override;
-    void UpdateProcess() override;
+    void UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
     void RenderProcess() override;
 };
 /* TODO: 미구현, 추후 구현 예정

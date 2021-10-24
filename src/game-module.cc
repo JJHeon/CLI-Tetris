@@ -1,11 +1,12 @@
 #include <cstddef>
 
 #include "game-module.h"
+
+#include <chrono>
+
 #include "ui.h"
 #include "user-data.h"
 #include "service-manager.h"
-
-#include <ncurses.h>
 
 namespace cli_tetris {
 /* GameState Class ===================================================================================== */
@@ -25,6 +26,7 @@ void StartState::MoveStateHandler(StateCode where) {
 }
 
 void StartState::Initialize() {
+    ready_milliseconds = 10000;
 }
 
 InputProcessResult StartState::InputProcess() {
@@ -32,7 +34,13 @@ InputProcessResult StartState::InputProcess() {
     return InputProcessResult::kNothing;
 }
 
-void StartState::UpdateProcess() {
+void StartState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+    auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
+    if (n < 0) return;
+    ready_milliseconds -= n;
+
+    // ready_miliseconds 만큼 대기 후, MenuState로 이동.
+    if (ready_milliseconds < 0) MoveStateHandler(StateCode::kMenu);
 }
 
 void StartState::RenderProcess() {
@@ -107,10 +115,15 @@ void GameManager::Initialize() {
 }
 
 void GameManager::Run() {
+    std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
     while (true) {
         InputProcessResult n = kNothing;
+
+        std::chrono::time_point<std::chrono::high_resolution_clock> present = std::chrono::high_resolution_clock::now();
+
         if ((n = game_state_[select_state_]->InputProcess()) == InputProcessResult::kNothing) {
-            game_state_[select_state_]->UpdateProcess();
+            auto diff = present - past;
+            game_state_[select_state_]->UpdateProcess(diff);
             game_state_[select_state_]->RenderProcess();
         } else {
             switch (n) {
@@ -126,6 +139,7 @@ void GameManager::Run() {
                     break;
             }
         }
+        past = present;
     }
 }
 

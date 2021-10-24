@@ -1,6 +1,8 @@
 #ifndef CLI_TETRIS_OBJECT_DEFINED_H_
 #define CLI_TETRIS_OBJECT_DEFINED_H_
 
+#include <ncurses.h>
+
 namespace cli_tetris {
 
 using Pos = struct Pos {
@@ -8,9 +10,10 @@ using Pos = struct Pos {
     int x;
 };
 
+/* Object Class ===================================================================================== */
 class Object {
    private:
-    Pos pos_yx_;
+    Pos start_yx_;
     bool is_changed;
 
    protected:
@@ -24,6 +27,19 @@ class Object {
    public:
     virtual void UpdatePhysics() = 0;
     virtual void UpdateRendering() = 0;
+};
+
+/* StandbyUI Class ===================================================================================== */
+class StandbyUI : public Object {
+    private:
+     WINDOW* win_;
+     Pos end_yx_;
+
+    public:
+     StandbyUI();
+     ~StandbyUI();
+     void UpdatePhysics() override;
+     void UpdateRendering() override;
 };
 
 }  // namespace cli_tetris
