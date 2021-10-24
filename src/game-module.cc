@@ -10,61 +10,26 @@
 namespace cli_tetris {
 /* GameState Class ===================================================================================== */
 
-GameState::GameState(GameManager& supervisor, UserData* user_player = nullptr, Ui* ui = nullptr)
-    : supervisor_(supervisor) {}
+GameState::GameState(GameManager& supervisor, UserData& user_player, Ui& ui)
+    : supervisor_(supervisor), player_(user_player), ui_(ui) {}
 
-GameState::~GameState() {
-    if (user_player_ != nullptr) delete user_player_;
-    if (ui_ != nullptr) delete ui_;
-}
-
-bool GameState::CheckUserPlayer() const {
-    if (user_player_ != nullptr) return true;
-    return false;
-}
+GameState::~GameState() {}
 
 /* GameState - StartState Class ===================================================================================== */
 
-StartState::StartState(GameManager& supervisor)
-    : GameState(supervisor) {}
+StartState::StartState(GameManager& supervisor, UserData& user_player, Ui& ui)
+    : GameState(supervisor, user_player, ui) {}
 
 void StartState::MoveStateHandler(StateCode where) {
     supervisor_.ChangeSelcet(where);
 }
 
-void StartState::LoadPreviousUserData() {
-}
-
-void StartState::UpdateUi() {
-    //서비스 중개자로부터 Ui를 가져옵니다.
-    Ui* n = Locator::getUi();
-
-    //ui를 상속한 개선된 ui class가 있다면 이곳에서 사용할 수 있습니다.
-    supervisor_.getGameState(StateCode::kStart)->ui_ = n;
-    supervisor_.getGameState(StateCode::kEnd)->ui_ = n;
-    supervisor_.getGameState(StateCode::kMenu)->ui_ = n;
-    supervisor_.getGameState(StateCode::kTemperaryStop)->ui_ = n;
-    supervisor_.getGameState(StateCode::kSoloPlay)->ui_ = n;
-    supervisor_.getGameState(StateCode::kDuoPlay)->ui_ = n;
-    supervisor_.getGameState(StateCode::kMultiPlay)->ui_ = n;
-    supervisor_.getGameState(StateCode::kSetting)->ui_ = n;
-    supervisor_.getGameState(StateCode::kCredit)->ui_ = n;
-}
-
-//TODO: 예외처리 필요합니다. 프로그램 정지를 위한.
 void StartState::Initialize() {
-    /** TODO:linux의 file을 읽어 userdata를 읽어와야 합니다.
-     *  이후에 다음줄을 실행해 모든 State에 Update합니다.
-     * */
-    //LoadPreviousUserData();
-    //supervisor_.UpdateAllUserdata()
-
-    /* Ui 등록 */
-    UpdateUi();
 }
 
 InputProcessResult StartState::InputProcess() {
     //아무것도 입력받지 않습니다.
+    return InputProcessResult::kNothing;
 }
 
 void StartState::UpdateProcess() {
@@ -74,24 +39,13 @@ void StartState::RenderProcess() {
 }
 
 /* GameManager Class ===================================================================================== */
-GameManager::GameManager(
-    int select_state = StateCode::kStart,
-    StartState* start = nullptr,
-    EndState* end = nullptr,
-    MenuState* menu = nullptr,
-    TemperaryStopState* temperary_stop = nullptr,
-    SoloPlayState* solo_play = nullptr,
-    DuoPlayState* duo_play = nullptr,
-    MultiPlayState* multi_play = nullptr,
-    SettingState* setting = nullptr,
-    CreditState* credit = nullptr)
-    : select_state_(select_state), game_state_{start, end, menu, temperary_stop, solo_play, duo_play, multi_play, setting, credit} {}
+GameManager::GameManager(Ui* ui_driver, int select_state)
+    : ui_(ui_driver), select_state_(select_state) {
+}
 
-//TODO: exception condtion's needed
+// TODO: exception condtion's needed
 GameManager::~GameManager() {
-    for (int i = 0; i != (sizeof(game_state_) / sizeof(GameState*)); ++i) {
-        if (game_state_[i] != nullptr) delete game_state_[i];
-    }
+    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) game_state_->release();
 }
 
 void GameManager::ChangeSelcet(StateCode where) {
@@ -99,23 +53,60 @@ void GameManager::ChangeSelcet(StateCode where) {
 }
 
 bool GameManager::CheckGameState() const {
-    for (int i = 0; i != (sizeof(game_state_) / sizeof(GameState*)); ++i) {
+    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) {
         if (game_state_[i] == nullptr) return false;
     }
 
     return true;
 }
 
-GameState* GameManager::getGameState(StateCode where) const {
-    return game_state_[static_cast<int>(where)];
+bool GameManager::CheckScreenSize(LineColumn& screen_size) {
+    if (screen_size.line < game_size_.line || screen_size.column < game_size_.column)
+        return false;
+    else
+        return true;
+}
+
+void GameManager::LoadPreviousUserData() {
+}
+
+void GameManager::Initialize() {
+    // Ui driver는 생성자 단계에서 받습니다.
+    if (ui_ == nullptr) throw std::runtime_error(std::string("E001 : UI Driver 없음"));
+
+    // GameState Initalizing
+    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) game_state_[i] = nullptr;  // std::move(nullptr);
+    // GameState는 GameManager가 소유합니다.
+    game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()), *(ui_));
+    // game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_));
+    // game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()), *(ui_));
+    // game_state_[3] = std::make_unique<TemperaryStopState>(*this, *(player_.get()), *(ui_));
+    // game_state_[4] = std::make_unique<SoloPlayState>(*this, *(player_.get()), *(ui_));
+    // game_state_[5] = std::make_unique<DuoPlayState>(*this, *(player_.get()), *(ui_));
+    // game_state_[6] = std::make_unique<MultiPlayState>(*this, *(player_.get()), *(ui_));
+    // game_state_[7] = std::make_unique<SettingState>(*this, *(player_.get()), *(ui_));
+    // game_state_[8] = std::make_unique<CreditState>(*this, *(player_.get()), *(ui_));
+
+    // 생성 Check
+    if (CheckGameState()) throw std::runtime_error(std::string("E002 : GameState isn't Loaded"));
+
+    // 각 GameState Initializing
+    // for (auto n : game_state_)
+    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i)
+        game_state_[i]->Initialize();
+
+    /** 화면 크기 Check, 게임 실행에 필요한 크기는 다음과 같습니다.
+     *  Line   : 46
+     *  Column : 160
+     */
+    LineColumn screen_size;
+    screen_size = ui_->getScreenMaxSize();
+    if (!CheckScreenSize(screen_size)) throw std::runtime_error(std::string("E003 : Terminal 크기 부족"));
+
+    /*TODO: Sound 등록 필요 */
 }
 
 void GameManager::Run() {
-    //시작전 Data 초기화
-    for (int i = 0; i != (sizeof(game_state_) / sizeof(GameState*)); ++i) {
-        game_state_[i]->Initialize();
-    }
-
     while (true) {
         InputProcessResult n = kNothing;
         if ((n = game_state_[select_state_]->InputProcess()) == InputProcessResult::kNothing) {
@@ -127,13 +118,15 @@ void GameManager::Run() {
                     game_state_[select_state_]->Initialize();
                     break;
                 case kExit:
+                    return;
                     break;
 
                 default:
+                    throw std::runtime_error(std::string("E004 : 알 수 없는 입력"));
                     break;
             }
         }
     }
 }
 
-}  //namespace cli_tetris
+}  // namespace cli_tetris
