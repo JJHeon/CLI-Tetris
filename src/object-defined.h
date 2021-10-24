@@ -3,7 +3,7 @@
 
 namespace cli_tetris {
 
-using Pos = struct {
+using Pos = struct Pos {
     int y;
     int x;
 };
