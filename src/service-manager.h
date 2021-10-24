@@ -16,7 +16,8 @@ class Locator final {
    public:
     static Ui* getUi();
     static void provideUi(Ui* ui_service);
+    static void releaseUi();
 };
 }  // namespace cli_tetris
 
-#endif  //CLI_TETRIS_SERVICE_MANAGER_H_
+#endif  // CLI_TETRIS_SERVICE_MANAGER_H_
