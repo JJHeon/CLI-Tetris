@@ -2,6 +2,7 @@
 #define CLI_TETRIS_USER_DATA_H_
 
 #include <vector>
+#include <string>
 
 #include "object-defined.h"
 
@@ -15,12 +16,12 @@ using GameLevel = enum GameLevel {
 
 class UserData {
    private:
-    char* name_;
+    std::string name_;
     GameLevel game_level_;
-    std::vector<Object> object_list_;
+    std::vector<Object> block_list_;
 
    public:
-    UserData(char* name, GameLevel level);
+    UserData(std::string&& name, GameLevel level = GameLevel::kEasy);
     ~UserData();
 
     void AddObject(std::vector<Object>* object);

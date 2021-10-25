@@ -5,23 +5,26 @@
 
 namespace cli_tetris {
 
-using Pos = struct Pos {
-    int y;
-    int x;
+using LineColumn = struct LineColumn {
+    int line;
+    int column;
 };
 
 /* Object Class ===================================================================================== */
 class Object {
    private:
-    Pos start_yx_;
     bool is_changed;
+
+   protected:
+    LineColumn start_pos_;
 
    protected:
     virtual ~Object(){};
     Object(int pos_y = 0, int pos_x = 0);
+    Object(LineColumn start_pos);
     Object(const Object& object) = delete;
 
-    Pos getObjectPos() const;
+    LineColumn getObjectPos() const;
     void setObjectPos(int y, int x);
 
    public:
@@ -31,15 +34,19 @@ class Object {
 
 /* StandbyUI Class ===================================================================================== */
 class StandbyUI : public Object {
-    private:
-     WINDOW* win_;
-     Pos end_yx_;
+   private:
+    WINDOW* win_;
+    LineColumn length_;
 
-    public:
-     StandbyUI();
-     ~StandbyUI();
-     void UpdatePhysics() override;
-     void UpdateRendering() override;
+   protected:
+    constexpr static LineColumn size_ = {.line = 46, .column = 160};
+
+   public:
+    StandbyUI(LineColumn start_pos);
+    StandbyUI(int start_y, int start_x);
+    ~StandbyUI();
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
 };
 
 }  // namespace cli_tetris

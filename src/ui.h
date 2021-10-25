@@ -3,11 +3,6 @@
 
 namespace cli_tetris {
 
-using LineColumn = struct LineColumn {
-    int line;
-    int column;
-};
-
 /** UI 가 stand In,Output을 모두 관리합니다.
  *  ConsoleDevice를 반드시 정의를 유도 (ncurse initialize)
  *  Menu, 각 Part drawing등 다양한 drawing method 집합
@@ -26,6 +21,7 @@ class Ui {
 
    public:
     LineColumn getScreenMaxSize();
+    LineColumn getGameScreenSize();
 };
 
 }  // namespace cli_tetris

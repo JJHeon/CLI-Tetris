@@ -2,6 +2,8 @@
 
 #include <ncurses.h>
 
+#include "object-defined.h"
+
 namespace cli_tetris {
 
 Ui::Ui()
@@ -18,6 +20,8 @@ void Ui::Initialize() {
     initscr();
     refresh();
     noecho();
+    curs_set(FALSE);
+    keypad(stdscr, TRUE);
 }
 
 void Ui::End() {

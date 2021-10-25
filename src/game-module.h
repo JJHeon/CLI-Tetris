@@ -187,7 +187,7 @@ class GameManager final {
     std::unique_ptr<UserData> player_;
 
     /* 게임 실행에 필요한 console screen의 size입니다. */
-    static constexpr LineColumn game_size_ = {.line = 46, .column = 160};
+    constexpr static LineColumn game_size_ = {.line = 46, .column = 160};
 
    public:
     GameManager(Ui* ui_driver, int select_state = StateCode::kStart);
