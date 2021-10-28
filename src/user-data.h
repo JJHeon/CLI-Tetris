@@ -17,13 +17,23 @@ using GameLevel = enum GameLevel {
 class UserData {
    private:
     std::string name_;
-    GameLevel game_level_;
-    std::vector<Object> block_list_;
+    GameLevel saved_game_level_;
 
    public:
     UserData(std::string&& name, GameLevel level = GameLevel::kEasy);
     ~UserData();
 
+    void SetName(const std::string& name);
+    void SaveGameLevel(const GameLevel level);
+};
+
+class GameData {
+   private:
+    GameLevel current_game_level_;
+    int block_speed_;
+    std::vector<Object> blocks;
+
+   public:
     void AddObject(std::vector<Object>* object);
 };
 
