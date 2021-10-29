@@ -13,7 +13,7 @@
 
 namespace cli_tetris {
 
-// ThreadPool 처럼 만들 계획.
+// Thread 관리자
 class CustomThreadManager {
    private:
     std::vector<std::thread> workers_;
@@ -22,9 +22,11 @@ class CustomThreadManager {
     std::condition_variable cv_;
     unsigned int request_count_;
 
-   public:
+   protected:
     CustomThreadManager(int num_works);
     virtual ~CustomThreadManager();
+
+    void AddJob(std::function<void()>&& func);
 };
 
 }  // namespace cli_tetris

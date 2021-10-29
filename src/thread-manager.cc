@@ -12,14 +12,20 @@ namespace cli_tetris {
 
 static void worker(std::mutex& mutex, std::condition_variable& cv, std::queue<std::function<void()>>& job, unsigned int& request_count) {
     while (true) {
-        if (!job->empty()) {
-            auto exc = job->front();
+        std::unique_lock<std::mutex> lock(mutex);
 
-            job->pop();
+        cv.wait(lock,
+                [&job] {
+                    return !job.empty();
+                });
 
-            // Drawing UI
-            exc();
-        }
+        auto exc = job.front();
+        job.pop();
+
+        lock.unlock();
+
+        // Drawing UI
+        exc();
     }
 }
 
@@ -32,6 +38,17 @@ CustomThreadManager::CustomThreadManager(int num_works)
                 std::ref(cv_),
                 std::ref(jobs_),
                 std::ref(request_count_)));
+
+    // Detach
+    for (auto& n : workers_) n.detach();
+}
+
+CustomThreadManager::~CustomThreadManager() {}
+
+void CustomThreadManager::AddJob(std::function<void()>&& func) {
+    jobs_.push(func);
+
+    cv_.notify_one();
 }
 
 }  // namespace cli_tetris
