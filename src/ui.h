@@ -19,16 +19,15 @@ class Ui : public CustomThreadManager<Object> {
     ~Ui();
 
    private:
+    bool IsInitialized() const;
     void Initialize();
     void End();
 
    public:
-    LineColumn getScreenMaxSize() const;
-    LineColumn getGameScreenSize() const;
-    void Draw(Object& object) {
-        // TODO: 여기에 object 객체를 판별해, Object 상속개체가 아니면 throw해주면 좋겠다.
-        AddJob(&Object::UpdateRendering);
-    }
+    LineColumn getScreenMaxSize();
+    // LineColumn getGameScreenSize() const;
+    void Draw(Object* object);
+    void ClearScreen();
 };
 
 }  // namespace cli_tetris

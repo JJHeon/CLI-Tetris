@@ -1,7 +1,9 @@
 #ifndef CLI_TETRIS_OBJECT_DEFINED_H_
 #define CLI_TETRIS_OBJECT_DEFINED_H_
 
+extern "C" {
 #include <ncurses.h>
+}
 
 namespace cli_tetris {
 
@@ -19,7 +21,6 @@ class Object {
     LineColumn start_pos_;
 
    protected:
-    virtual ~Object(){};
     Object(int pos_y = 0, int pos_x = 0);
     Object(LineColumn start_pos);
     Object(const Object& object) = delete;
@@ -27,14 +28,23 @@ class Object {
     LineColumn getObjectPos() const;
     void setObjectPos(int y, int x);
 
+    /**
+     * 내부 상태가 변했는지를 설정하는 method
+     * UpdatePyhiscs 와 UpdateRendering 내부에서 사용합니다.
+     */
+    void setIsChanged(bool changed);
+
    public:
+    virtual ~Object(){};
+
+    bool IsChanged() const;
     virtual void UpdatePhysics() = 0;
     virtual void UpdateRendering() = 0;
 };
 
 /* StandbyUI Class ===================================================================================== */
 class StandbyUI : public Object {
-   private:
+   protected:
     WINDOW* win_;
     LineColumn length_;
 
@@ -45,6 +55,16 @@ class StandbyUI : public Object {
     StandbyUI(LineColumn start_pos);
     StandbyUI(int start_y, int start_x);
     ~StandbyUI();
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+
+/* ExitUI Class ===================================================================================== */
+class ExitUI : public StandbyUI {
+   public:
+    ExitUI(LineColumn start_pos);
+    ExitUI(int start_y, int start_x);
+    ~ExitUI();
     void UpdatePhysics() override;
     void UpdateRendering() override;
 };

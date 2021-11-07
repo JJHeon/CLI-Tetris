@@ -24,7 +24,7 @@ int main(void) {
      *  ncurse 화면 초기화와 관련된 함수
      *  한번만 초기화 되어야 함.
      * */
-    Locator::provideUi(new Ui);
+    Locator::provideUi(new Ui{1});
 
     /* Tetris Manager */
     GameManager tetris(Locator::getUi(), StateCode::kStart);

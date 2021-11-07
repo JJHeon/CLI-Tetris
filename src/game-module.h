@@ -26,11 +26,12 @@ using StateCode = enum StateCode {
     kCredit
 };
 
-/** GameState::InputProcess() 의 return 값을 식별하기 위한 enum입니다. */
-using InputProcessResult = enum InputProcessResult {
+/** GameState::Process() 의 return 값을 식별하기 위한 enum입니다. */
+using ProcessResult = enum ProcessResult {
     kNothing = -3,
     kChangeState = -2,
-    kExit
+    kOut = -1,
+    kExit = 0
 };
 
 /** GameState Class는 게임의 전체 Logic을 책임집니다.
@@ -53,10 +54,19 @@ class GameState {
 
    public:
     virtual ~GameState();
+
+    /**
+     *  최초 한번만 실행되는 State Value 설정 method
+     *  생성자와 분리해서 정의한 이유는, 게임 설정에 따라 변수값이 가변적으로 적용될 수 있도록
+     *  코드 부분에서 필수적인 요소들과 게임에 영향을 끼치는 value를 분리하기 위함입니다.
+     */
     virtual void Initialize() = 0;
-    virtual InputProcessResult InputProcess() = 0;
-    virtual void UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) = 0;
+
+    virtual ProcessResult InputProcess() = 0;
+    virtual ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) = 0;
     virtual void RenderProcess() = 0;
+    virtual void EnterProcess() = 0;
+    virtual void FinishProcess() = 0;
 };
 
 /** 게임의 시작단계에서 Device component 등록 및 UserData loading을 담당합니다. */
@@ -65,28 +75,42 @@ class StartState : public GameState {
     int ready_milliseconds;  // StartState 대기 시간
 
    protected:
+    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
+
+   protected:
     void MoveStateHandler(StateCode where) override;
 
    public:
     StartState(GameManager& supervisor, UserData& user_player, Ui& ui);
 
     void Initialize() override;
-    InputProcessResult InputProcess() override;
-    void UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
+    ProcessResult InputProcess() override;
+    ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
     void RenderProcess() override;
+    void EnterProcess() override;
+    void FinishProcess() override;
+};
+
+class EndState : public GameState {
+   private:
+    int ready_milliseconds;  // EndState 대기 시간
+   protected:
+    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
+
+   protected:
+    void MoveStateHandler(StateCode where) override;
+
+   public:
+    EndState(GameManager& supervisor, UserData& user_player, Ui& ui);
+
+    void Initialize() override;
+    ProcessResult InputProcess() override;
+    ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
+    void RenderProcess() override;
+    void EnterProcess() override;
+    void FinishProcess() override;
 };
 /* TODO: 미구현, 추후 구현 예정
-// class EndState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
-
-//    public:
-//     EndState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
 // class MenuState : public GameState {
 //    protected:
 //     void MoveStateHandler(StateCode where) override;
@@ -177,7 +201,7 @@ class StartState : public GameState {
  */
 class GameManager final {
    private:
-    std::unique_ptr<GameState> game_state_[9];
+    std::array<std::unique_ptr<GameState>, 9> game_state_;
     int select_state_;
 
    private:
@@ -208,6 +232,10 @@ class GameManager final {
     void LoadPreviousUserData();  // TODO: File system 관련 예외처리 필요.
 };
 
+//TestCode
+void GameManagerTestCode(void);
+void GameManagerTestThreadManager(void);
+void GameManagerTestThread(int* start_t);
 }  // namespace cli_tetris
 
 #endif  // CLI_TETRIS_GAME_MODULE_H_

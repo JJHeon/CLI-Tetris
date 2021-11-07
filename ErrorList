@@ -1,0 +1,5 @@
+E001 : UI Driver 없음
+E002 : GameState isn't Loaded
+E003 : Terminal 크기 부족
+E004 : 알 수 없는 입력
+E005 : UI 초기화 안됨

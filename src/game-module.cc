@@ -1,12 +1,17 @@
-#include <cstddef>
-
 #include "game-module.h"
 
+#include <cstddef>
 #include <chrono>
+#include <thread>
 
 #include "ui.h"
 #include "user-data.h"
 #include "service-manager.h"
+
+extern "C" {
+#include <ncurses.h>
+#include <unistd.h>
+}
 
 namespace cli_tetris {
 /* GameState Class ===================================================================================== */
@@ -22,28 +27,103 @@ StartState::StartState(GameManager& supervisor, UserData& user_player, Ui& ui)
     : GameState(supervisor, user_player, ui) {}
 
 void StartState::MoveStateHandler(StateCode where) {
+    this->FinishProcess();
     supervisor_.ChangeSelcet(where);
 }
 
 void StartState::Initialize() {
+    //대기시간 설정
     ready_milliseconds = 10000;
 }
 
-InputProcessResult StartState::InputProcess() {
+ProcessResult StartState::InputProcess() {
     //아무것도 입력받지 않습니다.
-    return InputProcessResult::kNothing;
+    return ProcessResult::kNothing;
 }
 
-void StartState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+ProcessResult StartState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
     auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
-    if (n < 0) return;
+    if (n < 0) return ProcessResult::kOut;
     ready_milliseconds -= n;
 
     // ready_miliseconds 만큼 대기 후, MenuState로 이동.
-    if (ready_milliseconds < 0) MoveStateHandler(StateCode::kMenu);
+    if (ready_milliseconds < 0) {
+        MoveStateHandler(StateCode::kEnd);
+        return ProcessResult::kChangeState;
+    }
+
+    return ProcessResult::kNothing;
 }
 
 void StartState::RenderProcess() {
+    for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
+        if (!(*itr)->IsChanged()) continue;
+
+        ui_.Draw((*itr).get());
+    }
+}
+void StartState::EnterProcess() {
+    // Drawing할 Ui object 등록
+    ui_object_list_.push_back(std::make_unique<StandbyUI>(0, 0));
+
+    // 최초에 한번 Draw 합니다.
+    this->RenderProcess();
+}
+void StartState::FinishProcess() {
+    // 할당한 Object를 모두 해제합니다.
+    ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
+}
+
+/* GameState - EndState Class ===================================================================================== */
+
+EndState::EndState(GameManager& supervisor, UserData& user_player, Ui& ui)
+    : GameState(supervisor, user_player, ui) {}
+
+void EndState::MoveStateHandler(StateCode where) {
+    this->FinishProcess();
+    supervisor_.ChangeSelcet(where);
+}
+
+void EndState::Initialize() {
+    //대기시간 설정
+    ready_milliseconds = 10000;
+}
+
+ProcessResult EndState::InputProcess() {
+    //아무것도 입력받지 않습니다.
+    return ProcessResult::kNothing;
+}
+
+ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+    auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
+    if (n < 0) return ProcessResult::kOut;
+    ready_milliseconds -= n;
+
+    // ready_miliseconds 만큼 대기 후, Exit. Game 종료.
+    if (ready_milliseconds < 0) {
+        return ProcessResult::kExit;
+    }
+
+    return ProcessResult::kNothing;
+}
+
+void EndState::RenderProcess() {
+    for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
+        if (!(*itr)->IsChanged()) continue;
+
+        ui_.Draw((*itr).get());
+    }
+}
+void EndState::EnterProcess() {
+    // Drawing할 Ui object 등록
+    ui_object_list_.push_back(std::make_unique<ExitUI>(0, 0));
+
+    // 최초에 한번 Draw 합니다.
+    this->RenderProcess();
+}
+void EndState::FinishProcess() {
+    // 할당한 Object를 모두 해제합니다.
+    ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
 }
 
 /* GameManager Class ===================================================================================== */
@@ -53,7 +133,7 @@ GameManager::GameManager(Ui* ui_driver, int select_state)
 
 // TODO: exception condtion's needed
 GameManager::~GameManager() {
-    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) game_state_->release();
+    for (auto i = game_state_.begin(); i != game_state_.end(); ++i) i->release();
 }
 
 void GameManager::ChangeSelcet(StateCode where) {
@@ -61,7 +141,8 @@ void GameManager::ChangeSelcet(StateCode where) {
 }
 
 bool GameManager::CheckGameState() const {
-    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) {
+    // for (int i = 0; i < game_state_.size(); ++i) { //TODO: Original
+    for (int i = 0; i < 2; ++i) {  // TODO: 개발용 임시, EndState까지
         if (game_state_[i] == nullptr) return false;
     }
 
@@ -83,10 +164,10 @@ void GameManager::Initialize() {
     if (ui_ == nullptr) throw std::runtime_error(std::string("E001 : UI Driver 없음"));
 
     // GameState Initalizing
-    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) game_state_[i] = nullptr;  // std::move(nullptr);
+    for (auto i = game_state_.begin(); i != game_state_.end(); ++i) (*i) = nullptr;  // std::move(nullptr);
     // GameState는 GameManager가 소유합니다.
     game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()), *(ui_));
-    // game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_));
+    game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_));
     // game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()), *(ui_));
     // game_state_[3] = std::make_unique<TemperaryStopState>(*this, *(player_.get()), *(ui_));
     // game_state_[4] = std::make_unique<SoloPlayState>(*this, *(player_.get()), *(ui_));
@@ -96,11 +177,11 @@ void GameManager::Initialize() {
     // game_state_[8] = std::make_unique<CreditState>(*this, *(player_.get()), *(ui_));
 
     // 생성 Check
-    if (CheckGameState()) throw std::runtime_error(std::string("E002 : GameState isn't Loaded"));
+    if (!CheckGameState()) throw std::runtime_error(std::string("E002 : GameState isn't Loaded"));
 
     // 각 GameState Initializing
-    // for (auto n : game_state_)
-    for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i)
+    // for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) //Original
+    for (int i = 0; i != 2; ++i)  // TODO: 임시.
         game_state_[i]->Initialize();
 
     /** 화면 크기 Check, 게임 실행에 필요한 크기는 다음과 같습니다.
@@ -115,31 +196,77 @@ void GameManager::Initialize() {
 }
 
 void GameManager::Run() {
+    // TestCode //TODO: 나중에 지울것
+    /*
+    GameManagerTestCode();
+    GameManagerTestThreadManager();
+    int test = 0;
+    while (true) {
+        test++;
+    }
+    */
+
+    game_state_.at(select_state_)->EnterProcess();
+
     std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
     while (true) {
-        InputProcessResult n = kNothing;
+        ProcessResult n = kNothing;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> present = std::chrono::high_resolution_clock::now();
 
-        if ((n = game_state_[select_state_]->InputProcess()) == InputProcessResult::kNothing) {
+        if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
             auto diff = present - past;
-            game_state_[select_state_]->UpdateProcess(diff);
-            game_state_[select_state_]->RenderProcess();
-        } else {
-            switch (n) {
-                case kChangeState:
-                    game_state_[select_state_]->Initialize();
-                    break;
-                case kExit:
-                    return;
-                    break;
-
-                default:
-                    throw std::runtime_error(std::string("E004 : 알 수 없는 입력"));
-                    break;
+            if ((n = game_state_.at(select_state_)->UpdateProcess(diff)) == ProcessResult::kNothing) {
+                game_state_.at(select_state_)->RenderProcess();
             }
         }
+
+        switch (n) {
+            case kNothing:
+                // Normal Excution
+                break;
+            case kChangeState:
+                game_state_.at(select_state_)->EnterProcess();
+                break;
+            case kOut:
+                // Not error, but just away
+                break;
+            case kExit:
+                return;  // finish(정상 종료)
+                break;
+
+            default:
+                throw std::runtime_error(std::string("E004 : 알 수 없는 입력"));
+                break;
+        }
+
         past = present;
+    }
+}
+
+void GameManagerTestCode(void) {
+    attrset(A_ITALIC);
+    mvprintw(5, 0, "attrset ITALIC");
+    refresh();
+    sleep(5);
+    attrset(A_NORMAL);
+}
+
+void GameManagerTestThreadManager(void) {
+    int start_t1 = 6;
+    int start_t2 = 14;
+    std::thread t(GameManagerTestThread, &start_t1);
+    std::thread t2(GameManagerTestThread, &start_t2);
+
+    t.detach();
+    t2.detach();
+}
+
+void GameManagerTestThread(int* start_t) {
+    for (int i = *start_t; i != (*start_t) + 4; ++i) {
+        mvprintw(i, 0, "%d gogo", i);
+        refresh();
+        sleep(3);
     }
 }
 

@@ -10,6 +10,7 @@
                 "-Isrc",
                 "-o",
                 "${fileDirname}/../CLI-Tetris",
+                "-pthread",
                 "-lncurses",
                 "-lmenu",
                 "-lform"

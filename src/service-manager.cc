@@ -1,5 +1,7 @@
 #include "service-manager.h"
 
+#include "ui.h"
+
 namespace cli_tetris {
 
 Ui* Locator::ui_service_ = nullptr;
