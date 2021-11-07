@@ -24,12 +24,13 @@ static void worker(std::mutex& mutex, std::condition_variable& cv, std::queue<st
 
         lock.unlock();
 
-        // Drawing UI
+        // excute
         exc();
     }
 }
 
-CustomThreadManager::CustomThreadManager(int num_works)
+template <typename T>
+CustomThreadManager<T>::CustomThreadManager(int num_works)
     : request_count_(0) {
     for (int i = 0; i < num_works; ++i)
         workers_.push_back(
@@ -43,9 +44,11 @@ CustomThreadManager::CustomThreadManager(int num_works)
     for (auto& n : workers_) n.detach();
 }
 
-CustomThreadManager::~CustomThreadManager() {}
+template <typename T>
+CustomThreadManager<T>::~CustomThreadManager() {}
 
-void CustomThreadManager::AddJob(std::function<void()>&& func) {
+template <typename T>
+void CustomThreadManager<T>::AddJob(std::function<void(T&)> func) {
     jobs_.push(func);
 
     cv_.notify_one();

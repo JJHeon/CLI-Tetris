@@ -10,7 +10,7 @@ namespace cli_tetris {
  *  ConsoleDevice를 반드시 정의를 유도 (ncurse initialize)
  *  Menu, 각 Part drawing등 다양한 drawing method 집합
  */
-class Ui : public CustomThreadManager {
+class Ui : public CustomThreadManager<Object> {
    private:
     bool is_initialized;
 
@@ -27,7 +27,6 @@ class Ui : public CustomThreadManager {
     LineColumn getGameScreenSize() const;
     void Draw(Object& object) {
         // TODO: 여기에 object 객체를 판별해, Object 상속개체가 아니면 throw해주면 좋겠다.
-
         AddJob(&Object::UpdateRendering);
     }
 };

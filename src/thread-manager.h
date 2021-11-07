@@ -14,10 +14,11 @@
 namespace cli_tetris {
 
 // Thread 관리자
+template <typename T>
 class CustomThreadManager {
    private:
     std::vector<std::thread> workers_;
-    std::queue<std::function<void()>> jobs_;
+    std::queue<std::function<void(T&)>> jobs_;
     std::mutex mutex_;
     std::condition_variable cv_;
     unsigned int request_count_;
@@ -26,7 +27,8 @@ class CustomThreadManager {
     CustomThreadManager(int num_works);
     virtual ~CustomThreadManager();
 
-    void AddJob(std::function<void()>&& func);
+
+    void AddJob(std::function<void(T&)> func);
 };
 
 }  // namespace cli_tetris
