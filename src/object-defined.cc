@@ -1,5 +1,11 @@
 #include "object-defined.h"
 
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+#include <string>
+
 extern "C" {
 #include <ncurses.h>
 }
@@ -32,6 +38,47 @@ void Object::setIsChanged(bool changed) {
     is_changed = changed;
 }
 
+/* FramePerSecond Class ===================================================================================== */
+FramePerSecondUI::FramePerSecondUI(LineColumn start_pos)
+    : Object(start_pos) {
+    // win_ = newwin(size_.line - 1, size_.column - 1, start_pos_.line, start_pos_.column);
+    win_ = newwin(size_.line, size_.column, start_pos_.line, start_pos_.column);
+}
+FramePerSecondUI::FramePerSecondUI(int start_y, int start_x)
+    : Object(start_y, start_x) {
+    // win_ = newwin(size_.line -1, size_.column - 1, start_y, start_x);
+    win_ = newwin(size_.line, size_.column, start_y, start_x);
+}
+
+FramePerSecondUI::~FramePerSecondUI() {
+    delwin(win_);
+}
+
+void FramePerSecondUI::UpdatePhysics() {
+    // nothing
+}
+void FramePerSecondUI::UpdateRendering() {
+    std::time_t t = std::chrono::high_resolution_clock::to_time_t(present_);
+
+    // Draw
+    mvwprintw(win_, 0, 0, "Sec : %lld", static_cast<int64_t>(t));
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary
+    this->setIsChanged(false);
+}
+void FramePerSecondUI::UpdateCurrentTime(std::chrono::time_point<std::chrono::high_resolution_clock>* present) {
+    present_ = *present;
+    this->setIsChanged(true);
+}
+
+void FramePerSecondUI::UpdateDifferTime(std::chrono::duration<int64_t, std::nano>* diff) {
+    diff_ = *diff;
+    this->setIsChanged(true);
+}
+
 /* StandbyUI Class ===================================================================================== */
 StandbyUI::StandbyUI(LineColumn start_pos)
     : Object(start_pos) {
@@ -51,7 +98,7 @@ StandbyUI::~StandbyUI() {
 void StandbyUI::UpdatePhysics() {
     // nothing
 
-    // 필수
+    // necessary
     this->setIsChanged(true);
 }
 void StandbyUI::UpdateRendering() {
@@ -75,7 +122,7 @@ void StandbyUI::UpdateRendering() {
     // Last excution
     wrefresh(win_);
 
-    // 필수.
+    // necessary.
     this->setIsChanged(false);
 }
 /* ExitUI Class ===================================================================================== */

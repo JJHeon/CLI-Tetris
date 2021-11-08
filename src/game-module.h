@@ -213,29 +213,36 @@ class GameManager final {
     /* 게임 실행에 필요한 console screen의 size입니다. */
     constexpr static LineColumn game_size_ = {.line = 46, .column = 160};
 
+    /* UI Object for frame time */
+   public:  // TODO: Test
+    // private: //Origianl
+    std::unique_ptr<FramePerSecondUI> frame_time_object_;
+
    public:
     GameManager(Ui* ui_driver, int select_state = StateCode::kStart);
     ~GameManager();
 
     // Game Run
+    void ChangeSelcet(StateCode where);
     void Initialize();
     void Run();
 
     // State
-    void ChangeSelcet(StateCode where);
     bool CheckGameState() const;
-
     // Check
     bool CheckScreenSize(LineColumn& screen_size);
-
     // Load
     void LoadPreviousUserData();  // TODO: File system 관련 예외처리 필요.
+
+    // TestCode
+    friend void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::nano> diff, std::chrono::time_point<std::chrono::high_resolution_clock> present, std::chrono::time_point<std::chrono::high_resolution_clock> past);
 };
 
-//TestCode
+// TestCode
 void GameManagerTestCode(void);
 void GameManagerTestThreadManager(void);
 void GameManagerTestThread(int* start_t);
+void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::nano> diff, std::chrono::time_point<std::chrono::high_resolution_clock> present, std::chrono::time_point<std::chrono::high_resolution_clock> past);
 }  // namespace cli_tetris
 
 #endif  // CLI_TETRIS_GAME_MODULE_H_

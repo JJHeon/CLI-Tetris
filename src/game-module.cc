@@ -10,7 +10,7 @@
 
 extern "C" {
 #include <ncurses.h>
-#include <unistd.h>
+#include <unistd.h>  // for development
 }
 
 namespace cli_tetris {
@@ -33,7 +33,7 @@ void StartState::MoveStateHandler(StateCode where) {
 
 void StartState::Initialize() {
     //대기시간 설정
-    ready_milliseconds = 10000;
+    ready_milliseconds = 5000;
 }
 
 ProcessResult StartState::InputProcess() {
@@ -63,6 +63,8 @@ void StartState::RenderProcess() {
     }
 }
 void StartState::EnterProcess() {
+    ui_.ClearScreen();
+
     // Drawing할 Ui object 등록
     ui_object_list_.push_back(std::make_unique<StandbyUI>(0, 0));
 
@@ -115,6 +117,8 @@ void EndState::RenderProcess() {
     }
 }
 void EndState::EnterProcess() {
+    ui_.ClearScreen();
+
     // Drawing할 Ui object 등록
     ui_object_list_.push_back(std::make_unique<ExitUI>(0, 0));
 
@@ -193,6 +197,9 @@ void GameManager::Initialize() {
     if (!CheckScreenSize(screen_size)) throw std::runtime_error(std::string("E003 : Terminal 크기 부족"));
 
     /*TODO: Sound 등록 필요 */
+
+    /* FrameTime Object 등록 */
+    frame_time_object_ = std::make_unique<FramePerSecondUI>(game_size_.line - 2, 1);
 }
 
 void GameManager::Run() {
@@ -206,19 +213,23 @@ void GameManager::Run() {
     }
     */
 
-    game_state_.at(select_state_)->EnterProcess();
+    // game_state_.at(select_state_)->EnterProcess();
 
     std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
+
     while (true) {
         ProcessResult n = kNothing;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> present = std::chrono::high_resolution_clock::now();
+        auto diff = present - past;
+        past = present;
+
+        GameManagerTestTimer(*this, diff, present, past);  // TestCode
 
         if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
-            auto diff = present - past;
-            if ((n = game_state_.at(select_state_)->UpdateProcess(diff)) == ProcessResult::kNothing) {
-                game_state_.at(select_state_)->RenderProcess();
-            }
+            // if ((n = game_state_.at(select_state_)->UpdateProcess(diff)) == ProcessResult::kNothing) {
+            //      game_state_.at(select_state_)->RenderProcess();
+            // }
         }
 
         switch (n) {
@@ -239,8 +250,6 @@ void GameManager::Run() {
                 throw std::runtime_error(std::string("E004 : 알 수 없는 입력"));
                 break;
         }
-
-        past = present;
     }
 }
 
@@ -268,6 +277,49 @@ void GameManagerTestThread(int* start_t) {
         refresh();
         sleep(3);
     }
+}
+void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::nano> diff, std::chrono::time_point<std::chrono::high_resolution_clock> present, std::chrono::time_point<std::chrono::high_resolution_clock> past) {
+    static int64_t t = 5000;
+    static WINDOW* win_ = newwin(10, 50, 30, 2);
+
+    int64_t k1 = std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count();
+    int64_t k2 = std::chrono::duration_cast<std::chrono::microseconds>(diff).count();
+    int64_t k3 = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
+    int64_t k4 = std::chrono::duration_cast<std::chrono::seconds>(diff).count();
+    std::time_t time1 = std::chrono::high_resolution_clock::to_time_t(present);
+    std::time_t time2 = std::chrono::high_resolution_clock::to_time_t(past);
+    char* date1 = ctime(&time1);
+    char* date2 = ctime(&time2);
+    clear();
+    mvwprintw(win_, 0, 0, "%lld", k1);
+    mvwprintw(win_, 1, 0, "%lld", k2);
+    mvwprintw(win_, 2, 0, "%lld", k3);
+    mvwprintw(win_, 3, 0, "%lld", k4);
+    mvwprintw(win_, 4, 0, "%s", date1);
+    mvwprintw(win_, 5, 0, "%s", date2);
+    mvwprintw(win_, 6, 0, "%lld", static_cast<int64_t>(time1));
+    mvwprintw(win_, 7, 0, "%lld", static_cast<int64_t>(time2));
+
+    wrefresh(win_);
+    usleep(100);
+    bool flag = false;
+    if (!flag) {
+        mvwprintw(win_, 9, 0, "%lld", k4);
+        wrefresh(win_);
+        flag = true;
+    }
+    // if (k < 0) return;
+    // t -= k;
+    // if (t < 0) {
+    //     //   시간경과 표시 for develop
+    //     // G.frame_time_object_->UpdateCurrentTime(&present);
+    //     // if (G.frame_time_object_->IsChanged()) G.ui_->Draw(G.frame_time_object_.get());
+    //     t = 5000;
+    // }
+
+    // mvwprintw(win_, 0, 0, "%ld %5ld", k, t);
+    // wrefresh(win_);
+    // usleep(1);
 }
 
 }  // namespace cli_tetris

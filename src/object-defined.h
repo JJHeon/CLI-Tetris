@@ -1,6 +1,8 @@
 #ifndef CLI_TETRIS_OBJECT_DEFINED_H_
 #define CLI_TETRIS_OBJECT_DEFINED_H_
 
+#include <chrono>
+
 extern "C" {
 #include <ncurses.h>
 }
@@ -41,15 +43,33 @@ class Object {
     virtual void UpdatePhysics() = 0;
     virtual void UpdateRendering() = 0;
 };
+/* FramePerSecond Class ===================================================================================== */
+class FramePerSecondUI : public Object {
+   protected:
+    constexpr static LineColumn size_ = {.line = 0, .column = 26};
+    WINDOW* win_;
+
+   private:
+    std::chrono::time_point<std::chrono::high_resolution_clock> present_;
+    std::chrono::duration<int64_t, std::nano> diff_;
+
+   public:
+    FramePerSecondUI(LineColumn start_pos);
+    FramePerSecondUI(int start_y, int start_x);
+    ~FramePerSecondUI();
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+
+    void UpdateCurrentTime(std::chrono::time_point<std::chrono::high_resolution_clock>* present);
+    void UpdateDifferTime(std::chrono::duration<int64_t, std::nano>* diff);
+};
 
 /* StandbyUI Class ===================================================================================== */
 class StandbyUI : public Object {
    protected:
+    constexpr static LineColumn size_ = {.line = 46, .column = 160};
     WINDOW* win_;
     LineColumn length_;
-
-   protected:
-    constexpr static LineColumn size_ = {.line = 46, .column = 160};
 
    public:
     StandbyUI(LineColumn start_pos);
