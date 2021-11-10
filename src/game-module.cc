@@ -213,8 +213,7 @@ void GameManager::Run() {
     }
     */
 
-    // game_state_.at(select_state_)->EnterProcess();
-
+    game_state_.at(select_state_)->EnterProcess();
     std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
 
     while (true) {
@@ -224,12 +223,12 @@ void GameManager::Run() {
         auto diff = present - past;
         past = present;
 
-        GameManagerTestTimer(*this, diff, present, past);  // TestCode
+        // GameManagerTestTimer(*this, diff, present, past);  // TestCode
 
         if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
-            // if ((n = game_state_.at(select_state_)->UpdateProcess(diff)) == ProcessResult::kNothing) {
-            //      game_state_.at(select_state_)->RenderProcess();
-            // }
+            if ((n = game_state_.at(select_state_)->UpdateProcess(diff)) == ProcessResult::kNothing) {
+                game_state_.at(select_state_)->RenderProcess();
+            }
         }
 
         switch (n) {
@@ -291,10 +290,10 @@ void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::na
     char* date1 = ctime(&time1);
     char* date2 = ctime(&time2);
     clear();
-    mvwprintw(win_, 0, 0, "%lld", k1);
-    mvwprintw(win_, 1, 0, "%lld", k2);
-    mvwprintw(win_, 2, 0, "%lld", k3);
-    mvwprintw(win_, 3, 0, "%lld", k4);
+    mvwprintw(win_, 0, 0, "%d", k1);
+    mvwprintw(win_, 1, 0, "%d", k2);
+    mvwprintw(win_, 2, 0, "%d", k3);
+    mvwprintw(win_, 3, 0, "%d", k4);
     mvwprintw(win_, 4, 0, "%s", date1);
     mvwprintw(win_, 5, 0, "%s", date2);
     mvwprintw(win_, 6, 0, "%lld", static_cast<int64_t>(time1));
