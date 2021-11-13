@@ -128,12 +128,23 @@ TimerAccessor::TimerAccessor(int id, bool* is_running_address) : id_(id), is_run
 }
 TimerAccessor::~TimerAccessor() {}
 TimerAccessor::TimerAccessor(const TimerAccessor& obj) : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {}  //복사 생성자
-TimerAccessor::TimerAccessor(TimerAccessor&& obj) : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {}
+TimerAccessor::TimerAccessor(TimerAccessor&& obj) noexcept : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {}
+
+bool TimerAccessor::IsRunning() const {
+    return *is_running_;
+}
+bool TimerAccessor::IsAlive() const {
+    std::shared_ptr<bool> p = is_allive_.lock();
+    if (p) {
+        return *p;
+    } else
+        return false;
+}
 
 /* class TimerData  ===================================================================================== */
 TimerData::TimerData(std::shared_ptr<bool> accessor_allive) : accessor_allive_(std::move(accessor_allive)) {}
 TimerData::TimerData(const TimerData& obj) : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
-TimerData::TimerData(TimerData&& obj) : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
+TimerData::TimerData(TimerData&& obj) noexcept : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
 TimerData& TimerData::operator=(const TimerData& obj) {
     this->accessor_allive_ = obj.accessor_allive_;
     this->timer_ = obj.timer_;

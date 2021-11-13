@@ -3,6 +3,7 @@
 
 #include <map>
 #include <ctime>
+#include <memory>
 
 namespace cli_tetris::timer {
 /**
@@ -19,9 +20,9 @@ class TimerAccessor {
 
    private:
     TimerAccessor(int id, bool* is_running_address);
-    ~TimerAccessor();
 
    public:
+    ~TimerAccessor();
     TimerAccessor(const TimerAccessor& obj);  //복사 생성자
     TimerAccessor(TimerAccessor&& obj) noexcept;
     TimerAccessor& operator=(const TimerAccessor& obj) = delete;  //일반 대입 생성자는 존재할 수 없다, 이 객체는 유일해야 하므로, 키를 복제할 수 있지만, 양도하거나 변경할 수 없다.
@@ -47,7 +48,6 @@ class TimerHandler {
     static bool is_initialize_;            // 생성은 단 한개만 허용
     std::map<int, TimerData> timer_list_;  // TimderData의 id, 그에 해당하는 timer id
 
-   private:
    public:
     TimerHandler();
     ~TimerHandler();
