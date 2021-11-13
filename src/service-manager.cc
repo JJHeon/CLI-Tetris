@@ -18,7 +18,7 @@ void Locator::releaseUi() {
     delete ui_service_;
 }
 
-timer::TimerHandler* timer_handler_ = nullptr;
+timer::TimerHandler* Locator::timer_handler_ = nullptr;
 
 timer::TimerHandler* Locator::getTimerHandler() {
     return timer_handler_;
