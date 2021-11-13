@@ -52,6 +52,9 @@ class TimerHandler {
     TimerHandler();
     ~TimerHandler();
     TimerAccessor&& CreateTimer();
+    void DeleteTimer(TimerAccessor& accessor);
+    void SetTimer(TimerAccessor& accessor, const int& sec, const int& nanosec);
+    void StopTimer(TimerAccessor& accessor);
 };
 
 }  // namespace cli_tetris::timer
