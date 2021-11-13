@@ -13,9 +13,9 @@ class TimerAccessor {
     friend class TimerHandler;
 
    private:
-    const unsigned int id_;   // Handler로부터 할당받은 id
-    bool* const is_running_;  // Timer 동작 여부
-    bool* is_allive_;         // Accessor의 수명 확인
+    const unsigned int id_;          // Handler로부터 할당받은 id
+    bool* const is_running_;         // Timer 동작 여부
+    std::weak_ptr<bool> is_allive_;  // Accessor의 수명 확인
 
    private:
     TimerAccessor(int id, bool* is_running_address);
@@ -33,13 +33,13 @@ class TimerAccessor {
 
 class TimerData {
    public:
-    std::unique_ptr<bool> accessor_allive_;
+    std::shared_ptr<bool> accessor_allive_;
     timer_t timer_;
 
-    TimerData(std::unique_ptr<bool> accessor_allive);
-    TimerData(TimerData& obj);
+    TimerData(std::shared_ptr<bool> accessor_allive);
+    TimerData(const TimerData& obj);
     TimerData(TimerData&& obj) noexcept;
-    TimerData& operator=(const TimerData& obj) = delete;
+    TimerData& operator=(const TimerData& obj);
 };
 
 class TimerHandler {
@@ -48,14 +48,10 @@ class TimerHandler {
     std::map<int, TimerData> timer_list_;  // TimderData의 id, 그에 해당하는 timer id
 
    private:
-    TimerData& FindTimerData(TimerAccessor& accessor);
-
    public:
     TimerHandler();
     ~TimerHandler();
     TimerAccessor&& CreateTimer();
-    void DeleteTimer(TimerAccessor& accessor);
-    void SetTimer(int sec, int nanosec);
 };
 
 }  // namespace cli_tetris::timer
