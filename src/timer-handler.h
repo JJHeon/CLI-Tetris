@@ -29,7 +29,7 @@ class TimerAccessor {
     TimerAccessor& operator=(TimerAccessor&& obj) = delete;       //대입 생성자는 존재할 수 없다.
 
     bool IsRunning() const;
-    bool IsAlive() const;
+    int IsAlive() const;
 };
 
 class TimerData {
@@ -51,7 +51,7 @@ class TimerHandler {
    public:
     TimerHandler();
     ~TimerHandler();
-    TimerAccessor&& CreateTimer();
+    TimerAccessor CreateTimer();
     void DeleteTimer(TimerAccessor& accessor);
     void SetTimer(TimerAccessor& accessor, const int& sec, const int& nanosec);
     void StopTimer(TimerAccessor& accessor);

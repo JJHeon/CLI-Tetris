@@ -5,6 +5,7 @@
 #include <string>
 #include <cassert>
 #include <utility>
+#include <iostream>
 
 #define _POSIX_C_SOURCE 199309L
 #include <signal.h>
@@ -14,9 +15,10 @@ extern "C" {
 
 namespace cli_tetris::timer {
 
+static constexpr unsigned int kNIF = -1;  // Nerver In Field
+
 namespace linux_call {
 // enum name
-static constexpr unsigned int kNIF = -1;  // Nerver In Field
 
 /* inside setting variable & method ===================================================================================== */
 
@@ -74,6 +76,7 @@ static int GetTimerID() {
             return i;
         }
     }
+    return -1;
 }
 static void DeleteTimer(const int& id, timer_t& timer) {
     if (id < 0 || id >= kTIMER_NUM) throw std::out_of_range(std::string("ReturnTimerID out of bound"));
@@ -128,17 +131,19 @@ TimerAccessor::TimerAccessor(int id, bool* is_running_address) : id_(id), is_run
 }
 TimerAccessor::~TimerAccessor() {}
 TimerAccessor::TimerAccessor(const TimerAccessor& obj) : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {}  //복사 생성자
-TimerAccessor::TimerAccessor(TimerAccessor&& obj) noexcept : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {}
+TimerAccessor::TimerAccessor(TimerAccessor&& obj) noexcept : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {
+    std::cout << "Test" << std::endl;
+}
 
 bool TimerAccessor::IsRunning() const {
     return *is_running_;
 }
-bool TimerAccessor::IsAlive() const {
+int TimerAccessor::IsAlive() const {
     std::shared_ptr<bool> p = is_allive_.lock();
     if (p) {
-        return *p;
+        return static_cast<int>(*p);
     } else
-        return false;
+        return kNIF;
 }
 
 /* class TimerData  ===================================================================================== */
@@ -157,7 +162,7 @@ bool TimerHandler::is_initialize_ = false;
 
 TimerHandler::TimerHandler() {
     // Constructor only have one
-    assert(is_initialize_);
+    assert(!is_initialize_);
     is_initialize_ = true;
 
     // Signal System call
@@ -170,7 +175,7 @@ TimerHandler::~TimerHandler() {
     is_initialize_ = false;
 }
 
-TimerAccessor&& TimerHandler::CreateTimer() {
+TimerAccessor TimerHandler::CreateTimer() {
     if (linux_call::IsFullTimerQueue()) throw std::runtime_error(std::string("E006 : Timer Full"));
 
     // key 생성
@@ -185,7 +190,7 @@ TimerAccessor&& TimerHandler::CreateTimer() {
     // key 등록
     timer_list_.insert(std::make_pair(id, data));
 
-    return std::move(key);
+    return key;
 }
 
 void TimerHandler::DeleteTimer(TimerAccessor& accessor) {
