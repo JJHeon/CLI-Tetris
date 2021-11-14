@@ -221,13 +221,12 @@ class GameManager final {
     std::unique_ptr<UserData> player_;
 
     /* 게임 실행에 필요한 console screen의 size입니다. */
-    constexpr static LineColumn game_size_ = {.line = 46, .column = 160};
-
+    // constexpr static YX game_size_ = {.y = 46, .column = 160};
+    constexpr static YX game_size_ = YX(46, 160);
     /* UI Object for frame time */
    public:  // TODO: Test
-    // private: //Origianl
-    std::unique_ptr<FramePerSecondUI> frame_time_object_;
-
+            // private: //Origianl
+            // std::unique_ptr<FramePerSecondUI> frame_time_object_;
    public:
     GameManager(UiHandler* ui_driver, timer::TimerHandler* timer_handler, int select_state = StateCode::kStart);
     ~GameManager();
@@ -240,9 +239,11 @@ class GameManager final {
     // State
     bool CheckGameState() const;
     // Check
-    bool CheckScreenSize(LineColumn& screen_size);
+    bool CheckScreenSize(YX& screen_size);
     // Load
     void LoadPreviousUserData();  // TODO: File system 관련 예외처리 필요.
+
+    static YX getNeededScreenSize();
 
     // TestCode
     friend void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::nano> diff, std::chrono::time_point<std::chrono::high_resolution_clock> present, std::chrono::time_point<std::chrono::high_resolution_clock> past);

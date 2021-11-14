@@ -40,6 +40,7 @@ UiHandler::UiHandler(int thread_workers)
     : CustomThreadManager<Object>(thread_workers, user_thread_worker::UiWorker), is_initialized_(false) {
     assert(!is_initialized_);
     is_initialized_ = true;
+
     this->Initialize();
 }
 
@@ -49,7 +50,6 @@ UiHandler::~UiHandler() {
 }
 
 void UiHandler::Initialize() {
-    is_initialized_ = true;
     initscr();
     noecho();
     cbreak();
@@ -69,11 +69,11 @@ bool UiHandler::IsInitialized() const {
     return is_initialized_;
 }
 
-LineColumn UiHandler::getScreenMaxSize() {
+YX UiHandler::getCurrentScreenSize() {
     if (!this->IsInitialized()) throw std::runtime_error(std::string("E005 : UI 초기화 안됨"));
 
-    LineColumn n = {0, 0};
-    getmaxyx(stdscr, n.line, n.column);
+    YX n = {0, 0};
+    getmaxyx(stdscr, n.y, n.x);
 
     return n;
 }

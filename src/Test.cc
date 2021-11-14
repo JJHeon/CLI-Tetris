@@ -21,13 +21,17 @@ int main(void) {
     /**
      *  Ui -
      *  ncurse 화면 초기화와 관련된 함수
-     *  한번만 초기화 되어야 함.
+     *  단 한개의 객체만 허용됨
      *
      *  TimerHandler - linux system call 포함
-     *  한번만 초기화 되어야 함.
+     *  단 한개의 객체만 허용됨
      * */
-    Locator::provideUiHandler(new UiHandler{1});
-    Locator::provideTimerHandler(new TimerHandler);
+    try {
+        Locator::provideUiHandler(new UiHandler(1));
+        Locator::provideTimerHandler(new TimerHandler);
+    } catch (std::runtime_error& e) {
+        std::cout << e.what() << std::endl;
+    }
 
     //* TestCode for Timer */
     // TimerTestcode();

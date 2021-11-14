@@ -5,13 +5,23 @@
 
 extern "C" {
 #include <ncurses.h>
+#include <menu.h>
 }
 
 namespace cli_tetris {
 
-using LineColumn = struct LineColumn {
-    int line;
-    int column;
+using YX = struct YX {
+    int y;
+    int x;
+    constexpr YX(const int& y, const int& x) : y(y), x(x) {}
+    constexpr YX(const YX& obj) : y(obj.y), x(obj.x) {}
+    constexpr YX() : y(0), x(0) {}
+    /*
+    YX(std::initializer_list<int> l){
+        this->y = *(l.begin());
+        this->x = *(l.begin() + 1);
+    }
+    */
 };
 
 /* Object Class ===================================================================================== */
@@ -20,14 +30,14 @@ class Object {
     bool is_changed;
 
    protected:
-    LineColumn start_pos_;
+    YX start_pos_;
 
    protected:
-    Object(int pos_y = 0, int pos_x = 0);
-    Object(LineColumn start_pos);
+    Object(const YX& start_pos);
+    Object();
     Object(const Object& object) = delete;
 
-    LineColumn getObjectPos() const;
+    YX getObjectPos() const;
     void setObjectPos(int y, int x);
 
     /**
@@ -43,48 +53,77 @@ class Object {
     virtual void UpdatePhysics() = 0;
     virtual void UpdateRendering() = 0;
 };
-/* FramePerSecond Class ===================================================================================== */
-class FramePerSecondUI : public Object {
+/* UI Class ===================================================================================== */
+/**
+ *  ncurse newwin() 을 통해 window 생성 및 Variable 소유 class
+ */
+class UI : public Object {
    protected:
-    constexpr static LineColumn size_ = {.line = 0, .column = 26};
     WINDOW* win_;
+    YX win_size_;
+    const YX currnet_screen_size_;
 
-   private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> present_;
-    std::chrono::duration<int64_t, std::nano> diff_;
+   protected:
+    UI(const YX& currnet_screen_size, const YX& start_pos, const YX& win_size);
+    // Start position이 상속한 class의 생성자에서 사전에 계산함을 됨을 위함
+    UI(const YX& currnet_screen_size);
 
    public:
-    FramePerSecondUI(LineColumn start_pos);
-    FramePerSecondUI(int start_y, int start_x);
-    ~FramePerSecondUI();
-    void UpdatePhysics() override;
-    void UpdateRendering() override;
+    virtual ~UI();
 
-    void UpdateCurrentTime(std::chrono::time_point<std::chrono::high_resolution_clock>* present);
-    void UpdateDifferTime(std::chrono::duration<int64_t, std::nano>* diff);
+    // Object Class Abstract
+    virtual void UpdatePhysics() = 0;
+    virtual void UpdateRendering() = 0;
 };
 
-/* StandbyUI Class ===================================================================================== */
-class StandbyUI : public Object {
-   protected:
-    constexpr static LineColumn size_ = {.line = 46, .column = 160};
-    WINDOW* win_;
-    LineColumn length_;
+/* FramePerSecond Class ===================================================================================== */
+// class FramePerSecondUI : public UI {
+//    protected:
+//    private:
+//     std::chrono::time_point<std::chrono::high_resolution_clock> present_;
+//     std::chrono::duration<int64_t, std::nano> diff_;
 
+//    public:
+//     FramePerSecondUI(YX start_pos);
+//     FramePerSecondUI(int start_y, int start_x);
+//     ~FramePerSecondUI();
+//     void UpdatePhysics() override;
+//     void UpdateRendering() override;
+
+//     void UpdateCurrentTime(std::chrono::time_point<std::chrono::high_resolution_clock>* present);
+//     void UpdateDifferTime(std::chrono::duration<int64_t, std::nano>* diff);
+// };
+
+/* StandbyUI Class ===================================================================================== */
+class StandbyUI : public UI {
    public:
-    StandbyUI(LineColumn start_pos);
-    StandbyUI(int start_y, int start_x);
-    ~StandbyUI();
+    //사전에 계산된 생성자
+    StandbyUI(const YX& currnet_screen_size);
+    ~StandbyUI() = default;
+
+    // Object Abstract
     void UpdatePhysics() override;
     void UpdateRendering() override;
 };
 
 /* ExitUI Class ===================================================================================== */
-class ExitUI : public StandbyUI {
+class ExitUI : public UI {
    public:
-    ExitUI(LineColumn start_pos);
-    ExitUI(int start_y, int start_x);
-    ~ExitUI();
+    ExitUI(const YX& currnet_screen_size);
+    ~ExitUI() = default;
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+
+/* MenuUI Class ===================================================================================== */
+class MenuUI : public UI {
+   public:
+    MenuUI(const YX& currnet_screen_size);
+    ~MenuUI() = default;
+
+    // Object Abstract
     void UpdatePhysics() override;
     void UpdateRendering() override;
 };

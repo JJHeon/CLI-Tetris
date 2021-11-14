@@ -24,8 +24,8 @@ class UiHandler : public CustomThreadManager<Object> {
     void End();
 
    public:
-    LineColumn getScreenMaxSize();
-    // LineColumn getGameScreenSize() const;
+    YX getCurrentScreenSize();
+    // YX getGameScreenSize() const;
     void Draw(Object* object);
     void ClearScreen();
 };

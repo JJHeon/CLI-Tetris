@@ -52,7 +52,7 @@ void StartState::EnterProcess() {
     timer_.SetTimer(accessor_list_.at(0), 10, 0);
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<StandbyUI>(0, 0));
+    ui_object_list_.push_back(std::make_unique<StandbyUI>(ui_.getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
@@ -110,7 +110,7 @@ void EndState::EnterProcess() {
     timer_.SetTimer(accessor_list_.at(0), 5, 0);
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<ExitUI>(0, 0));
+    ui_object_list_.push_back(std::make_unique<ExitUI>(ui_.getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
@@ -142,6 +142,7 @@ void EndState::FinishProcess() {
 }
 
 /* GameManager Class ===================================================================================== */
+constexpr YX GameManager::game_size_;
 GameManager::GameManager(UiHandler* ui_handler, timer::TimerHandler* timer_handler, int select_state)
     : ui_handler_(ui_handler), timer_handler_(timer_handler), select_state_(select_state) {
 }
@@ -164,11 +165,15 @@ bool GameManager::CheckGameState() const {
     return true;
 }
 
-bool GameManager::CheckScreenSize(LineColumn& screen_size) {
-    if (screen_size.line < game_size_.line || screen_size.column < game_size_.column)
+bool GameManager::CheckScreenSize(YX& screen_size) {
+    if (screen_size.y < game_size_.y || screen_size.x < game_size_.x)
         return false;
     else
         return true;
+}
+
+YX GameManager::getNeededScreenSize() {
+    return GameManager::game_size_;
 }
 
 void GameManager::LoadPreviousUserData() {
@@ -201,17 +206,17 @@ void GameManager::Initialize() {
         game_state_[i]->Initialize();
 
     /** 화면 크기 Check, 게임 실행에 필요한 크기는 다음과 같습니다.
-     *  Line   : 46
-     *  Column : 160
+     *  y   : 46
+     *  x : 160
      */
-    LineColumn screen_size;
-    screen_size = ui_handler_->getScreenMaxSize();
+    YX screen_size;
+    screen_size = ui_handler_->getCurrentScreenSize();
     if (!CheckScreenSize(screen_size)) throw std::runtime_error(std::string("E003 : Terminal 크기 부족"));
 
     /*TODO: Sound 등록 필요 */
 
     /* FrameTime Object 등록 */
-    frame_time_object_ = std::make_unique<FramePerSecondUI>(game_size_.line - 2, 1);
+    // frame_time_object_ = std::make_unique<FramePerSecondUI>(game_size_.y - 2, 1);
 }
 
 void GameManager::Run() {
