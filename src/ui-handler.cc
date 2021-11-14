@@ -52,6 +52,7 @@ void UiHandler::Initialize() {
     is_initialized_ = true;
     initscr();
     noecho();
+    cbreak();
     curs_set(FALSE);
     keypad(stdscr, TRUE);
 
