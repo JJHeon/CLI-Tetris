@@ -1,6 +1,7 @@
 #include "ui-handler.h"
 
 #include <exception>
+#include <cassert>
 
 #include "object-defined.h"
 
@@ -36,16 +37,19 @@ static void UiWorker(std::mutex& mutex, std::condition_variable& cv, std::queue<
 };  // namespace user_thread_worker
 
 UiHandler::UiHandler(int thread_workers)
-    : CustomThreadManager<Object>(thread_workers, user_thread_worker::UiWorker), is_initialized(false) {
+    : CustomThreadManager<Object>(thread_workers, user_thread_worker::UiWorker), is_initialized_(false) {
+    assert(!is_initialized_);
+    is_initialized_ = true;
     this->Initialize();
 }
 
 UiHandler::~UiHandler() {
-    if (is_initialized) this->End();
+    if (is_initialized_) this->End();
+    is_initialized_ = false;
 }
 
 void UiHandler::Initialize() {
-    is_initialized = true;
+    is_initialized_ = true;
     initscr();
     noecho();
     curs_set(FALSE);
@@ -56,12 +60,12 @@ void UiHandler::Initialize() {
 }
 
 void UiHandler::End() {
-    is_initialized = false;
+    is_initialized_ = false;
     endwin();
 }
 
 bool UiHandler::IsInitialized() const {
-    return is_initialized;
+    return is_initialized_;
 }
 
 LineColumn UiHandler::getScreenMaxSize() {

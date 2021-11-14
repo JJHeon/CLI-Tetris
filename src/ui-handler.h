@@ -12,7 +12,7 @@ namespace cli_tetris {
  */
 class UiHandler : public CustomThreadManager<Object> {
    private:
-    bool is_initialized;
+    bool is_initialized_;
 
    public:
     UiHandler(int thread_workers = 2);
