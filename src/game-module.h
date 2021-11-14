@@ -7,6 +7,7 @@
 #include "user-data.h"
 #include "ui-handler.h"
 #include "timer-handler.h"
+// #include "input-layer.h"
 
 namespace cli_tetris {
 using namespace timer;
@@ -66,14 +67,14 @@ class GameState {
      */
     virtual void Initialize() = 0;
 
-    virtual ProcessResult InputProcess() = 0;
+    // virtual ProcessResult InputProcess() = 0;
     // virtual ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) = 0;
     virtual ProcessResult UpdateProcess() = 0;
     virtual void RenderProcess() = 0;
     virtual void EnterProcess() = 0;
     virtual void FinishProcess() = 0;
 };
-
+/* GameState - StartState Class ===================================================================================== */
 /** 게임의 시작단계에서 Device component 등록 및 UserData loading을 담당합니다. */
 class StartState : public GameState {
    private:
@@ -90,14 +91,14 @@ class StartState : public GameState {
     StartState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
 
     void Initialize() override;
-    ProcessResult InputProcess() override;
+    // ProcessResult InputProcess() override;
     // ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
     ProcessResult UpdateProcess() override;
     void RenderProcess() override;
     void EnterProcess() override;
     void FinishProcess() override;
 };
-
+/* GameState - EndState Class ===================================================================================== */
 class EndState : public GameState {
    private:
     int ready_milliseconds_;                    // EndState 대기 시간
@@ -112,25 +113,34 @@ class EndState : public GameState {
     EndState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
 
     void Initialize() override;
-    ProcessResult InputProcess() override;
+    // ProcessResult InputProcess() override;
     // ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
     ProcessResult UpdateProcess() override;
     void RenderProcess() override;
     void EnterProcess() override;
     void FinishProcess() override;
 };
-/* TODO: 미구현, 추후 구현 예정
-// class MenuState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
+/* GameState - MenuState Class ===================================================================================== */
+class MenuState : public GameState {
+   protected:
+    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
+                                                          // CommandQueue input_buffers_;
+    MenuUI* menu_accessor_;
 
-//    public:
-//     MenuState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
+   protected:
+    void MoveStateHandler(StateCode where) override;
+
+   public:
+    MenuState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
+
+    void Initialize() override;
+    // ProcessResult InputProcess() override;
+    ProcessResult UpdateProcess() override;
+    void RenderProcess() override;
+    void EnterProcess() override;
+    void FinishProcess() override;
+};
+/* TODO: 미구현, 추후 구현 예정
 // class TemperaryStopState : public GameState {
 //    protected:
 //     void MoveStateHandler(StateCode where) override;

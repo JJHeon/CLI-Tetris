@@ -119,13 +119,21 @@ class ExitUI : public UI {
 
 /* MenuUI Class ===================================================================================== */
 class MenuUI : public UI {
+   protected:
+    MENU* menu_;
+    WINDOW* menu_win_;
+    ITEM** menu_items_;
+    char* item_names[10];
+
    public:
     MenuUI(const YX& currnet_screen_size);
-    ~MenuUI() = default;
+    ~MenuUI();
 
     // Object Abstract
     void UpdatePhysics() override;
     void UpdateRendering() override;
+
+    MENU* GetMenuAccessor() const;
 };
 
 }  // namespace cli_tetris

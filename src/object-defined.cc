@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 #include <exception>
-#include <iostream>
+#include <cstdlib>
 
 extern "C" {
 #include <ncurses.h>
@@ -174,5 +174,74 @@ void ExitUI::UpdateRendering() {
     // necessary.
     this->setIsChanged(false);
 }
+/* MenuUI Class ===================================================================================== */
+MenuUI::MenuUI(const YX& currnet_screen_size)
+    : UI(currnet_screen_size) {
+    win_size_.y = 46;
+    win_size_.x = 160;
+
+    // Start pos, center로
+    start_pos_.y = (currnet_screen_size.y - win_size_.y) / 2;
+    start_pos_.x = (currnet_screen_size.x - win_size_.x) / 2;
+    //외곽 WIndow
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+
+    // menu item 등록
+    item_names[0] = "계속 하기";
+    item_names[1] = "새로 하기";
+    item_names[2] = "불러 오기";
+    item_names[3] = "같이 하기";
+    item_names[4] = "전당 보기";
+    item_names[5] = " 끝  내기";
+    item_names[6] = (char*)NULL;
+
+    int item_names_num = 7;
+    menu_items_ = (ITEM**)calloc(item_names_num, sizeof(ITEM*));
+    for (int i = 0; i < item_names_num; ++i) {
+        menu_items_[i] = new_item(item_names[i], item_names[i]);
+    }
+    // Create Menu
+    menu_ = new_menu((ITEM**)menu_items);
+
+    // Create menu win
+    int menu_win_size_y = 16;
+    int menu_win_size_x = 60;
+    int menu_start_pos_y = (currnet_screen_size.y - menu_win_size_y) / 2;
+    int menu_start_pos_x = (currnet_screen_size.x - menu_win_size_x) / 2;
+    menu_win_ = newwin(menu_win_size_y, menu_win_size_x, menu_start_pos_y, menu_start_pos_x);
+
+    // Setting menu, menu_win
+    set_menu_win(menu_, menu_win_);
+    set_menu_sub(menu_, derwin(menu_win_, 6, 8, 3, 20));
+    set_menu_mark(menu_, " * ");
+}
+
+void MenuUI::UpdatePhysics() {
+    // nothing
+
+    // necessary
+    this->setIsChanged(true);
+}
+
+void MenuUI::UpdateRendering() {
+    // Draw
+    attron(A_BOLD);
+    box(win_, 0, 0);
+    attroff(A_BOLD);
+
+    post_menu(menu_);
+
+    // mvwprintw(win_, goodbye_message_y, goodbye_message_x, goodbye_message);
+
+    // Last excution
+    wrefresh(menu_win_);
+    wrefresh(win_);
+
+    // necessary.
+    this->setIsChanged(false);
+}
+MENU* MenuUI::GetMenuAccessor() const {
+    return menu_;
+};
 
 }  // namespace cli_tetris

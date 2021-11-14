@@ -41,10 +41,10 @@ void StartState::Initialize() {
     accessor_list_.push_back(timer_.CreateTimer());
 }
 
-ProcessResult StartState::InputProcess() {
-    //아무것도 입력받지 않습니다.
-    return ProcessResult::kNothing;
-}
+// ProcessResult StartState::InputProcess() {
+//     //아무것도 입력받지 않습니다.
+//     return ProcessResult::kNothing;
+// }
 void StartState::EnterProcess() {
     ui_.ClearScreen();
 
@@ -99,10 +99,10 @@ void EndState::Initialize() {
     accessor_list_.push_back(timer_.CreateTimer());
 }
 
-ProcessResult EndState::InputProcess() {
-    //아무것도 입력받지 않습니다.
-    return ProcessResult::kNothing;
-}
+// ProcessResult EndState::InputProcess() {
+//     //아무것도 입력받지 않습니다.
+//     return ProcessResult::kNothing;
+// }
 void EndState::EnterProcess() {
     ui_.ClearScreen();
 
@@ -137,6 +137,82 @@ void EndState::RenderProcess() {
 }
 
 void EndState::FinishProcess() {
+    // 할당한 Object를 모두 해제합니다.
+    ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
+}
+
+/* GameState - MenuState Class ===================================================================================== */
+
+MenuState::MenuState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
+    : GameState(supervisor, user_player, ui, timer) {}
+
+void MenuState::MoveStateHandler(StateCode where) {
+    this->FinishProcess();
+    supervisor_.ChangeSelcet(where);
+}
+
+void MenuState::Initialize() {
+}
+
+// ProcessResult MenuState::InputProcess() {
+//     return ProcessResult::kNothing;
+// }
+
+void MenuState::EnterProcess() {
+    ui_.ClearScreen();
+
+    // Drawing할 Ui object 등록
+    ui_object_list_.push_back(std::make_unique<MenuUI>(ui_.getCurrentScreenSize()));
+
+    // 최초에 한번 Draw 합니다.
+    this->RenderProcess();
+
+    auto object_ptr = ui_object_list_.at(0).get();
+    menu_accessor_ = dynamic_cast<MenuUI*>(object_ptr);
+}
+// ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+ProcessResult MenuState::UpdateProcess() {
+    // ncurse Input
+    int input = getch();
+    auto menu_ptr = menu_accessor_->GetMenuAccessor();
+    switch (input) {
+        case KEY_DOWN:
+            menu_driver(menu_ptr, REQ_DOWN_ITEM);
+
+            menu_accessor_->UpdatePhysics();
+            break;
+        case KEY_UP:
+            menu_driver(menu_ptr, REQ_UP_ITEM);
+            menu_accessor_->UpdatePhysics();
+            break;
+        case 10:  // Enter
+            menu_driver(menu_ptr, REQ_TOGGLE_ITEM);
+            ITEM** items;
+            items = menu_items(menu_ptr);
+            for (int i = 0; i < item_count(menu_ptr); ++i)
+                if (item_value(items[i]) == TRUE) {
+                }
+
+            break;
+        default:
+            break;
+    }
+    // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
+    if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
+        return ProcessResult::kExit;
+    }
+
+    return ProcessResult::kNothing;
+}
+void MenuState::RenderProcess() {
+    for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
+        if (!(*itr)->IsChanged()) continue;
+
+        ui_.Draw((*itr).get());
+    }
+}
+
+void MenuState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
 }
@@ -236,11 +312,12 @@ void GameManager::Run() {
 
         // GameManagerTestTimer(*this, diff, present, past);  // TestCode
 
-        if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
-            if ((n = game_state_.at(select_state_)->UpdateProcess()) == ProcessResult::kNothing) {
-                game_state_.at(select_state_)->RenderProcess();
-            }
+        /* 21.11.14 Command Pattern을 사용하지 않기로 했으므로, 현재 시점에선 InputProccess는 필요가 없다. */
+        // if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
+        if ((n = game_state_.at(select_state_)->UpdateProcess()) == ProcessResult::kNothing) {
+            game_state_.at(select_state_)->RenderProcess();
         }
+        //}
 
         switch (n) {
             case kNothing:
