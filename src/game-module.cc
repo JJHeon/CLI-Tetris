@@ -57,7 +57,8 @@ void StartState::EnterProcess() {
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
-ProcessResult StartState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+// ProcessResult StartState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+ProcessResult StartState::UpdateProcess() {
     // timer 설정값 현재 10초 만큼 대기 후, MenuState로 이동.
     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
         MoveStateHandler(StateCode::kEnd);
@@ -114,9 +115,10 @@ void EndState::EnterProcess() {
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
-ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
-    auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
-    if (n < 0) return ProcessResult::kOut;
+// ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+ProcessResult EndState::UpdateProcess() {
+    // auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
+    // if (n < 0) return ProcessResult::kOut;
     // ready_milliseconds_ -= n;
 
     // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
@@ -218,19 +220,19 @@ void GameManager::Run() {
     // GameManagerTestThreadManager();
 
     game_state_.at(select_state_)->EnterProcess();
-    std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
+    // std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
 
     while (true) {
         ProcessResult n = kNothing;
 
-        std::chrono::time_point<std::chrono::high_resolution_clock> present = std::chrono::high_resolution_clock::now();
-        auto diff = present - past;
-        past = present;
+        // std::chrono::time_point<std::chrono::high_resolution_clock> present = std::chrono::high_resolution_clock::now();
+        // auto diff = present - past;
+        // past = present;
 
         // GameManagerTestTimer(*this, diff, present, past);  // TestCode
 
         if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
-            if ((n = game_state_.at(select_state_)->UpdateProcess(diff)) == ProcessResult::kNothing) {
+            if ((n = game_state_.at(select_state_)->UpdateProcess()) == ProcessResult::kNothing) {
                 game_state_.at(select_state_)->RenderProcess();
             }
         }

@@ -67,7 +67,8 @@ class GameState {
     virtual void Initialize() = 0;
 
     virtual ProcessResult InputProcess() = 0;
-    virtual ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) = 0;
+    // virtual ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) = 0;
+    virtual ProcessResult UpdateProcess() = 0;
     virtual void RenderProcess() = 0;
     virtual void EnterProcess() = 0;
     virtual void FinishProcess() = 0;
@@ -90,7 +91,8 @@ class StartState : public GameState {
 
     void Initialize() override;
     ProcessResult InputProcess() override;
-    ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
+    // ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
+    ProcessResult UpdateProcess() override;
     void RenderProcess() override;
     void EnterProcess() override;
     void FinishProcess() override;
@@ -111,7 +113,8 @@ class EndState : public GameState {
 
     void Initialize() override;
     ProcessResult InputProcess() override;
-    ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
+    // ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
+    ProcessResult UpdateProcess() override;
     void RenderProcess() override;
     void EnterProcess() override;
     void FinishProcess() override;
