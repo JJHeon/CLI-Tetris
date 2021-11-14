@@ -15,8 +15,6 @@ extern "C" {
 
 namespace cli_tetris::timer {
 
-static constexpr unsigned int kNIF = -1;  // Nerver In Field
-
 namespace linux_call {
 // enum name
 
@@ -84,6 +82,9 @@ static void DeleteTimer(const int& id, timer_t& timer) {
     timer_result_list[id] = false;
     timer_delete(timer);
 }
+static void DeleteTimerWithoutID(timer_t& timer) {
+    timer_delete(timer);
+}
 
 static void CreateTimer(const int& id, timer_t& timer) {
     int ret = 0;
@@ -131,19 +132,17 @@ TimerAccessor::TimerAccessor(int id, bool* is_running_address) : id_(id), is_run
 }
 TimerAccessor::~TimerAccessor() {}
 TimerAccessor::TimerAccessor(const TimerAccessor& obj) : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {}  //복사 생성자
-TimerAccessor::TimerAccessor(TimerAccessor&& obj) noexcept : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {
-    std::cout << "Test" << std::endl;
-}
+TimerAccessor::TimerAccessor(TimerAccessor&& obj) noexcept : id_(obj.id_), is_running_(obj.is_running_), is_allive_(obj.is_allive_) {}
 
 bool TimerAccessor::IsRunning() const {
     return *is_running_;
 }
-int TimerAccessor::IsAlive() const {
+bool TimerAccessor::IsAlive() const {
     std::shared_ptr<bool> p = is_allive_.lock();
     if (p) {
-        return static_cast<int>(*p);
+        return true;
     } else
-        return kNIF;
+        return false;
 }
 
 /* class TimerData  ===================================================================================== */
@@ -173,6 +172,12 @@ TimerHandler::TimerHandler() {
 
 TimerHandler::~TimerHandler() {
     is_initialize_ = false;
+
+    linux_call::InitializeTimerVariable();
+
+    for (auto itr = timer_list_.begin(); itr != timer_list_.end(); ++itr) {
+        linux_call::DeleteTimerWithoutID((*itr).second.timer_);
+    }
 }
 
 TimerAccessor TimerHandler::CreateTimer() {

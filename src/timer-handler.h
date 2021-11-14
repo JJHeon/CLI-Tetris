@@ -6,8 +6,9 @@
 #include <memory>
 
 namespace cli_tetris::timer {
+
 /**
- * TimerHandler를 위한 key value로 사용됩니다.
+ * TimerHandler를 위한 key 로 사용됩니다.
  * TimerHandler의 CreateTimer method를 통해 생성됩니다.
  */
 class TimerAccessor {
@@ -29,7 +30,7 @@ class TimerAccessor {
     TimerAccessor& operator=(TimerAccessor&& obj) = delete;       //대입 생성자는 존재할 수 없다.
 
     bool IsRunning() const;
-    int IsAlive() const;
+    bool IsAlive() const;
 };
 
 class TimerData {
