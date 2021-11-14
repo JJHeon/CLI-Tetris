@@ -2,7 +2,7 @@
 
 #include "game-module.h"
 #include "service-manager.h"
-#include "ui.h"
+#include "ui-handler.h"
 
 extern "C" {
 #include <signal.h>
@@ -15,7 +15,7 @@ int main(void) {
     using cli_tetris::GameManager;
     using cli_tetris::Locator;
     using cli_tetris::StateCode;
-    using cli_tetris::Ui;
+    using cli_tetris::UiHandler;
     using cli_tetris::timer::TimerHandler;
 
     /**
@@ -26,16 +26,15 @@ int main(void) {
      *  TimerHandler - linux system call 포함
      *  한번만 초기화 되어야 함.
      * */
-    // Locator::provideUi(new Ui{1});
+    Locator::provideUiHandler(new UiHandler{1});
     Locator::provideTimerHandler(new TimerHandler);
 
     //* TestCode for Timer */
-    TimerTestcode();
+    // TimerTestcode();
 
     /* Tetris Manager */
-    // GameManager tetris(Locator::getUi(), StateCode::kStart);
+    GameManager tetris(Locator::getUiHandler(), Locator::getTimerHandler(), StateCode::kStart);
 
-    /*
     try {
         tetris.Initialize();
     } catch (std::runtime_error& e) {
@@ -44,9 +43,9 @@ int main(void) {
 
     if (!tetris.CheckGameState()) return -1;
     tetris.Run();
-    */
+
     // Finish ncurse, timer
-    // Locator::releaseUi();
+    Locator::releaseUiHandler();
     Locator::releaseTimerHandler();
 
     return 0;

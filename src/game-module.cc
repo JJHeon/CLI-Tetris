@@ -4,8 +4,9 @@
 #include <chrono>
 #include <thread>
 
-#include "ui.h"
+#include "ui-handler.h"
 #include "user-data.h"
+#include "timer-handler.h"
 #include "service-manager.h"
 
 extern "C" {
@@ -16,15 +17,16 @@ extern "C" {
 namespace cli_tetris {
 /* GameState Class ===================================================================================== */
 
-GameState::GameState(GameManager& supervisor, UserData& user_player, Ui& ui)
-    : supervisor_(supervisor), player_(user_player), ui_(ui) {}
+GameState::GameState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
+    : supervisor_(supervisor), player_(user_player), ui_(ui), timer_(timer) {}
 
 GameState::~GameState() {}
 
 /* GameState - StartState Class ===================================================================================== */
 
-StartState::StartState(GameManager& supervisor, UserData& user_player, Ui& ui)
-    : GameState(supervisor, user_player, ui) {}
+StartState::StartState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
+    : GameState(supervisor, user_player, ui, timer) {
+}
 
 void StartState::MoveStateHandler(StateCode where) {
     this->FinishProcess();
@@ -33,21 +35,31 @@ void StartState::MoveStateHandler(StateCode where) {
 
 void StartState::Initialize() {
     //대기시간 설정
-    ready_milliseconds = 5000;
+    ready_milliseconds_ = 5000;
+
+    // Get Timer accessor
+    accessor_list_.push_back(timer_.CreateTimer());
 }
 
 ProcessResult StartState::InputProcess() {
     //아무것도 입력받지 않습니다.
     return ProcessResult::kNothing;
 }
+void StartState::EnterProcess() {
+    ui_.ClearScreen();
 
+    // Timer 10초 설정.
+    timer_.SetTimer(accessor_list_.at(0), 10, 0);
+
+    // Drawing할 Ui object 등록
+    ui_object_list_.push_back(std::make_unique<StandbyUI>(0, 0));
+
+    // 최초에 한번 Draw 합니다.
+    this->RenderProcess();
+}
 ProcessResult StartState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
-    auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
-    if (n < 0) return ProcessResult::kOut;
-    ready_milliseconds -= n;
-
-    // ready_miliseconds 만큼 대기 후, MenuState로 이동.
-    if (ready_milliseconds < 0) {
+    // timer 설정값 현재 10초 만큼 대기 후, MenuState로 이동.
+    if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
         MoveStateHandler(StateCode::kEnd);
         return ProcessResult::kChangeState;
     }
@@ -62,15 +74,7 @@ void StartState::RenderProcess() {
         ui_.Draw((*itr).get());
     }
 }
-void StartState::EnterProcess() {
-    ui_.ClearScreen();
 
-    // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<StandbyUI>(0, 0));
-
-    // 최초에 한번 Draw 합니다.
-    this->RenderProcess();
-}
 void StartState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
@@ -78,8 +82,8 @@ void StartState::FinishProcess() {
 
 /* GameState - EndState Class ===================================================================================== */
 
-EndState::EndState(GameManager& supervisor, UserData& user_player, Ui& ui)
-    : GameState(supervisor, user_player, ui) {}
+EndState::EndState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
+    : GameState(supervisor, user_player, ui, timer) {}
 
 void EndState::MoveStateHandler(StateCode where) {
     this->FinishProcess();
@@ -88,36 +92,21 @@ void EndState::MoveStateHandler(StateCode where) {
 
 void EndState::Initialize() {
     //대기시간 설정
-    ready_milliseconds = 10000;
+    ready_milliseconds_ = 10000;
+
+    // Get Timer accessor
+    accessor_list_.push_back(timer_.CreateTimer());
 }
 
 ProcessResult EndState::InputProcess() {
     //아무것도 입력받지 않습니다.
     return ProcessResult::kNothing;
 }
-
-ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
-    auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
-    if (n < 0) return ProcessResult::kOut;
-    ready_milliseconds -= n;
-
-    // ready_miliseconds 만큼 대기 후, Exit. Game 종료.
-    if (ready_milliseconds < 0) {
-        return ProcessResult::kExit;
-    }
-
-    return ProcessResult::kNothing;
-}
-
-void EndState::RenderProcess() {
-    for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
-        if (!(*itr)->IsChanged()) continue;
-
-        ui_.Draw((*itr).get());
-    }
-}
 void EndState::EnterProcess() {
     ui_.ClearScreen();
+
+    // Timer 5초 설정.
+    timer_.SetTimer(accessor_list_.at(0), 5, 0);
 
     // Drawing할 Ui object 등록
     ui_object_list_.push_back(std::make_unique<ExitUI>(0, 0));
@@ -125,14 +114,34 @@ void EndState::EnterProcess() {
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
+ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
+    auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
+    if (n < 0) return ProcessResult::kOut;
+    // ready_milliseconds_ -= n;
+
+    // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
+    if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
+        return ProcessResult::kExit;
+    }
+
+    return ProcessResult::kNothing;
+}
+void EndState::RenderProcess() {
+    for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
+        if (!(*itr)->IsChanged()) continue;
+
+        ui_.Draw((*itr).get());
+    }
+}
+
 void EndState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
 }
 
 /* GameManager Class ===================================================================================== */
-GameManager::GameManager(Ui* ui_driver, int select_state)
-    : ui_(ui_driver), select_state_(select_state) {
+GameManager::GameManager(UiHandler* ui_handler, timer::TimerHandler* timer_handler, int select_state)
+    : ui_handler_(ui_handler), timer_handler_(timer_handler), select_state_(select_state) {
 }
 
 // TODO: exception condtion's needed
@@ -165,13 +174,14 @@ void GameManager::LoadPreviousUserData() {
 
 void GameManager::Initialize() {
     // Ui driver는 생성자 단계에서 받습니다.
-    if (ui_ == nullptr) throw std::runtime_error(std::string("E001 : UI Driver 없음"));
+    if (ui_handler_ == nullptr) throw std::runtime_error(std::string("E001 : UI Driver 없음"));
+    if (timer_handler_ == nullptr) throw std::runtime_error(std::string("EE008 : TimerHandler 등록 안됨"));
 
     // GameState Initalizing
     for (auto i = game_state_.begin(); i != game_state_.end(); ++i) (*i) = nullptr;  // std::move(nullptr);
     // GameState는 GameManager가 소유합니다.
-    game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()), *(ui_));
-    game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_));
+    game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
+    game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
     // game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()), *(ui_));
     // game_state_[3] = std::make_unique<TemperaryStopState>(*this, *(player_.get()), *(ui_));
     // game_state_[4] = std::make_unique<SoloPlayState>(*this, *(player_.get()), *(ui_));
@@ -193,7 +203,7 @@ void GameManager::Initialize() {
      *  Column : 160
      */
     LineColumn screen_size;
-    screen_size = ui_->getScreenMaxSize();
+    screen_size = ui_handler_->getScreenMaxSize();
     if (!CheckScreenSize(screen_size)) throw std::runtime_error(std::string("E003 : Terminal 크기 부족"));
 
     /*TODO: Sound 등록 필요 */
@@ -204,14 +214,8 @@ void GameManager::Initialize() {
 
 void GameManager::Run() {
     // TestCode //TODO: 나중에 지울것
-    /*
-    GameManagerTestCode();
-    GameManagerTestThreadManager();
-    int test = 0;
-    while (true) {
-        test++;
-    }
-    */
+    // GameManagerTestCode();
+    // GameManagerTestThreadManager();
 
     game_state_.at(select_state_)->EnterProcess();
     std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
@@ -252,6 +256,7 @@ void GameManager::Run() {
     }
 }
 
+/* TestCode =========================================================================================== */
 void GameManagerTestCode(void) {
     attrset(A_ITALIC);
     mvprintw(5, 0, "attrset ITALIC");

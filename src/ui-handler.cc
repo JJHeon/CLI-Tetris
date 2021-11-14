@@ -1,4 +1,4 @@
-#include "ui.h"
+#include "ui-handler.h"
 
 #include <exception>
 
@@ -35,16 +35,16 @@ static void UiWorker(std::mutex& mutex, std::condition_variable& cv, std::queue<
 }
 };  // namespace user_thread_worker
 
-Ui::Ui(int thread_workers)
+UiHandler::UiHandler(int thread_workers)
     : CustomThreadManager<Object>(thread_workers, user_thread_worker::UiWorker), is_initialized(false) {
     this->Initialize();
 }
 
-Ui::~Ui() {
+UiHandler::~UiHandler() {
     if (is_initialized) this->End();
 }
 
-void Ui::Initialize() {
+void UiHandler::Initialize() {
     is_initialized = true;
     initscr();
     noecho();
@@ -55,16 +55,16 @@ void Ui::Initialize() {
     refresh();
 }
 
-void Ui::End() {
+void UiHandler::End() {
     is_initialized = false;
     endwin();
 }
 
-bool Ui::IsInitialized() const {
+bool UiHandler::IsInitialized() const {
     return is_initialized;
 }
 
-LineColumn Ui::getScreenMaxSize() {
+LineColumn UiHandler::getScreenMaxSize() {
     if (!this->IsInitialized()) throw std::runtime_error(std::string("E005 : UI 초기화 안됨"));
 
     LineColumn n = {0, 0};
@@ -73,14 +73,14 @@ LineColumn Ui::getScreenMaxSize() {
     return n;
 }
 
-void Ui::Draw(Object* object) {
+void UiHandler::Draw(Object* object) {
     if (!this->IsInitialized()) throw std::runtime_error(std::string("E005 : UI 초기화 안됨"));
 
     // TODO: 여기에 object 객체를 판별해, Object 상속개체가 아니면 throw해주면 좋겠다.
     CustomThreadManager<Object>::AddJob(object);
 }
 
-void Ui::ClearScreen() {
+void UiHandler::ClearScreen() {
     if (!this->IsInitialized()) throw std::runtime_error(std::string("E005 : UI 초기화 안됨"));
 
     clear();

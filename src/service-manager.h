@@ -1,7 +1,7 @@
 #ifndef CLI_TETRIS_SERVICE_MANAGER_H_
 #define CLI_TETRIS_SERVICE_MANAGER_H_
 
-#include "ui.h"
+#include "ui-handler.h"
 #include "timer-handler.h"
 
 /** UI, Sound, Log, Random 기능을 위한 Service Mediator Pattern
@@ -13,12 +13,12 @@ namespace cli_tetris {
 class Locator final {
     // ui
    private:
-    static Ui* ui_service_;
+    static UiHandler* ui_handler_;
 
    public:
-    static Ui* getUi();
-    static void provideUi(Ui* ui_service);
-    static void releaseUi();
+    static UiHandler* getUiHandler();
+    static void provideUiHandler(UiHandler* ui_service);
+    static void releaseUiHandler();
 
     // System timer
    private:

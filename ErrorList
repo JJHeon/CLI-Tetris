@@ -5,3 +5,4 @@ E004 : 알 수 없는 입력
 E005 : UI 초기화 안됨
 E006 : Timer Full
 E007 : 지우려는 Timer 없음
+E008 : TimerHandler 등록 안됨

@@ -5,9 +5,11 @@
 #include <chrono>
 
 #include "user-data.h"
-#include "ui.h"
+#include "ui-handler.h"
+#include "timer-handler.h"
 
 namespace cli_tetris {
+using namespace timer;
 
 class GameManager;
 
@@ -39,15 +41,17 @@ using ProcessResult = enum ProcessResult {
  *  InputProcess() 내부에서 MoveStateHandler를 호출합니다. 호출 후, kChangeState를 retrun해 GameManager에게 State를 변경하라고 알립니다.
  *  MoveStateHandler는 GameManager supervisor를 이용해서 GameManager의 select_state_를 변경합니다.
  *  MoveStateHandler는 GameState 내부에서만 동작해야합니다.
+ *  GameManager로 부터 Handler와 UserData를 받습니다.
  */
 class GameState {
    protected:
     GameManager& supervisor_;  // GameState를 실행한(관리하는) Manager, 일반적으로 MoveState를 위해 사용합니다.
     UserData& player_;         //게임을 실행한 User
-    Ui& ui_;
+    UiHandler& ui_;
+    TimerHandler& timer_;
 
    protected:
-    GameState(GameManager& supervisor, UserData& user_player, Ui& ui);
+    GameState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer);
 
    protected:
     virtual void MoveStateHandler(StateCode where) = 0;
@@ -72,7 +76,8 @@ class GameState {
 /** 게임의 시작단계에서 Device component 등록 및 UserData loading을 담당합니다. */
 class StartState : public GameState {
    private:
-    int ready_milliseconds;  // StartState 대기 시간
+    int ready_milliseconds_;                    // StartState 대기 시간
+    std::vector<TimerAccessor> accessor_list_;  // accessor list
 
    protected:
     std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
@@ -81,7 +86,7 @@ class StartState : public GameState {
     void MoveStateHandler(StateCode where) override;
 
    public:
-    StartState(GameManager& supervisor, UserData& user_player, Ui& ui);
+    StartState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
 
     void Initialize() override;
     ProcessResult InputProcess() override;
@@ -93,7 +98,8 @@ class StartState : public GameState {
 
 class EndState : public GameState {
    private:
-    int ready_milliseconds;  // EndState 대기 시간
+    int ready_milliseconds_;                    // EndState 대기 시간
+    std::vector<TimerAccessor> accessor_list_;  // accessor list
    protected:
     std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
 
@@ -101,7 +107,7 @@ class EndState : public GameState {
     void MoveStateHandler(StateCode where) override;
 
    public:
-    EndState(GameManager& supervisor, UserData& user_player, Ui& ui);
+    EndState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
 
     void Initialize() override;
     ProcessResult InputProcess() override;
@@ -206,7 +212,8 @@ class GameManager final {
 
    private:
     // GameManager는 driver 정보를 관리합니다.
-    Ui* const ui_;
+    UiHandler* const ui_handler_;
+    timer::TimerHandler* const timer_handler_;
     // GameManager는 접속한 Player의 정보를 관리합니다.
     std::unique_ptr<UserData> player_;
 
@@ -219,7 +226,7 @@ class GameManager final {
     std::unique_ptr<FramePerSecondUI> frame_time_object_;
 
    public:
-    GameManager(Ui* ui_driver, int select_state = StateCode::kStart);
+    GameManager(UiHandler* ui_driver, timer::TimerHandler* timer_handler, int select_state = StateCode::kStart);
     ~GameManager();
 
     // Game Run

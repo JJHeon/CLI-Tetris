@@ -10,13 +10,13 @@ namespace cli_tetris {
  *  ConsoleDevice를 반드시 정의를 유도 (ncurse initialize)
  *  Menu, 각 Part drawing등 다양한 drawing method 집합
  */
-class Ui : public CustomThreadManager<Object> {
+class UiHandler : public CustomThreadManager<Object> {
    private:
     bool is_initialized;
 
    public:
-    Ui(int thread_workers = 2);
-    ~Ui();
+    UiHandler(int thread_workers = 2);
+    ~UiHandler();
 
    private:
     bool IsInitialized() const;

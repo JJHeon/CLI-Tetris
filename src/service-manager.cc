@@ -1,21 +1,21 @@
 #include "service-manager.h"
 
-#include "ui.h"
+#include "ui-handler.h"
 #include "timer-handler.h"
 
 namespace cli_tetris {
 
-Ui* Locator::ui_service_ = nullptr;
+UiHandler* Locator::ui_handler_ = nullptr;
 
-Ui* Locator::getUi() {
-    return ui_service_;
+UiHandler* Locator::getUiHandler() {
+    return ui_handler_;
 }
-void Locator::provideUi(Ui* ui_service) {
-    ui_service_ = ui_service;
+void Locator::provideUiHandler(UiHandler* ui_handler) {
+    ui_handler_ = ui_handler;
 }
 
-void Locator::releaseUi() {
-    delete ui_service_;
+void Locator::releaseUiHandler() {
+    delete ui_handler_;
 }
 
 timer::TimerHandler* Locator::timer_handler_ = nullptr;
