@@ -1,5 +1,7 @@
 #include "input-layer.h"
 
+#include <queue>
+
 namespace cli_tetris {
 bool CommandQueue::IsFullQueue() const {
     if (limit_queue_num_ == queue_.size())
@@ -43,7 +45,5 @@ MenuItemMoveCommand::MenuItemMoveCommand(Move where)
 }
 MenuItemMoveCommand::~MenuItemMoveCommand() {
 }
-void Excute() {
-    
-}
+void MenuItemMoveCommand::Excute() {}
 }  // namespace cli_tetris

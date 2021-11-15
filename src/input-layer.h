@@ -7,11 +7,18 @@
 #ifndef CLI_TETRIS_INPUT_COMPONENT_H_
 #define CLI_TETRIS_INPUT_COMPONENT_H_
 
-#include "object-defined.h"
-
 #include <queue>
 
+#include "object-defined.h"
 namespace cli_tetris {
+/* Command Class ----------------------------------------------------------------------------------- */
+class Command {
+   public:
+    virtual ~Command() {}
+    virtual void Excute() = 0;
+};
+
+/* CommandQueue Class ----------------------------------------------------------------------------------- */
 class CommandQueue {
    private:
     std::queue<Command*> queue_;
@@ -26,13 +33,6 @@ class CommandQueue {
     void ResetQueue();
     bool Put(Command* command);
     Command* Get();
-};
-
-/* Command Class ----------------------------------------------------------------------------------- */
-class Command {
-   public:
-    virtual ~Command() {}
-    virtual void Excute() = 0;
 };
 
 class MenuItemMoveCommand : public Command {
