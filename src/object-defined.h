@@ -6,6 +6,7 @@
 extern "C" {
 #include <ncurses.h>
 #include <menu.h>
+#include <panel.h>
 }
 
 namespace cli_tetris {
@@ -120,10 +121,18 @@ class ExitUI : public UI {
 /* MenuUI Class ===================================================================================== */
 class MenuUI : public UI {
    protected:
+    // For Menu
     MENU* menu_;
     WINDOW* menu_win_;
-    ITEM** menu_items_;
-    char* item_names[10];
+    ITEM** items_;
+    char item_names[10][30];
+    int item_names_num;
+    // Entire UI
+    using StructureData = struct StructureData {
+        bool hide;
+    };
+    PANEL* ui_panel_[3];
+    StructureData ui_panel_data_[3];
 
    public:
     MenuUI(const YX& currnet_screen_size);
@@ -134,6 +143,7 @@ class MenuUI : public UI {
     void UpdateRendering() override;
 
     MENU* GetMenuAccessor() const;
+    WINDOW* GetMenuWinAccessor() const;
 };
 
 }  // namespace cli_tetris
