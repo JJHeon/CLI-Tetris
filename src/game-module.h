@@ -124,7 +124,16 @@ class EndState : public GameState {
 class MenuState : public GameState {
    protected:
     std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
-                                                          // CommandQueue input_buffers_;
+                                                           // CommandQueue input_buffers_;
+    using MenuItem = enum MenuItem {
+        kKeepPlaying = 0,
+        kCreateNewPlay = 1,
+        kLoadPreviousPlay = 2,
+        kPlayTogether = 3,
+        kSeeBoard = 4,
+        kExitPlay = 5
+    };
+    int current_select_;
     MenuUI* menu_accessor_;
 
    protected:

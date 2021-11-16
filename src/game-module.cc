@@ -8,6 +8,7 @@
 #include "user-data.h"
 #include "timer-handler.h"
 #include "service-manager.h"
+#include "object-defined.h"
 
 extern "C" {
 #include <ncurses.h>
@@ -49,7 +50,7 @@ void StartState::EnterProcess() {
     ui_.ClearScreen();
 
     // Timer 10초 설정.
-    timer_.SetTimer(accessor_list_.at(0), 10, 0);
+    timer_.SetTimer(accessor_list_.at(0), 1, 0);
 
     // Drawing할 Ui object 등록
     ui_object_list_.push_back(std::make_unique<StandbyUI>(ui_.getCurrentScreenSize()));
@@ -61,7 +62,7 @@ void StartState::EnterProcess() {
 ProcessResult StartState::UpdateProcess() {
     // timer 설정값 현재 10초 만큼 대기 후, MenuState로 이동.
     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
-        MoveStateHandler(StateCode::kEnd);
+        MoveStateHandler(StateCode::kMenu);
         return ProcessResult::kChangeState;
     }
 
@@ -144,7 +145,7 @@ void EndState::FinishProcess() {
 /* GameState - MenuState Class ===================================================================================== */
 
 MenuState::MenuState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : GameState(supervisor, user_player, ui, timer) {}
+    : GameState(supervisor, user_player, ui, timer), current_select_(kKeepPlaying) {}
 
 void MenuState::MoveStateHandler(StateCode where) {
     this->FinishProcess();
@@ -167,39 +168,48 @@ void MenuState::EnterProcess() {
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
 
+    current_select_ = 0;
     auto object_ptr = ui_object_list_.at(0).get();
     menu_accessor_ = dynamic_cast<MenuUI*>(object_ptr);
 }
-// ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
 ProcessResult MenuState::UpdateProcess() {
     // ncurse Input
-    int input = getch();
     auto menu_ptr = menu_accessor_->GetMenuAccessor();
+    int input = ui_.getInput();
     switch (input) {
         case KEY_DOWN:
-            menu_driver(menu_ptr, REQ_DOWN_ITEM);
-
+            ui_.ControlMenuDriver(menu_ptr, MenuRequest::DOWN);
+            if (current_select_ != MenuItem::kExitPlay) current_select_++;
             menu_accessor_->UpdatePhysics();
             break;
         case KEY_UP:
-            menu_driver(menu_ptr, REQ_UP_ITEM);
+            ui_.ControlMenuDriver(menu_ptr, MenuRequest::UP);
+            if (current_select_ != MenuItem::kKeepPlaying) current_select_--;
             menu_accessor_->UpdatePhysics();
             break;
         case 10:  // Enter
-            menu_driver(menu_ptr, REQ_TOGGLE_ITEM);
-            ITEM** items;
-            items = menu_items(menu_ptr);
-            for (int i = 0; i < item_count(menu_ptr); ++i)
-                if (item_value(items[i]) == TRUE) {
-                }
-
-            break;
+        {
+            switch (current_select_) {
+                case MenuItem::kKeepPlaying:
+                    break;
+                case MenuItem::kCreateNewPlay:
+                    break;
+                case MenuItem::kLoadPreviousPlay:
+                    break;
+                case MenuItem::kPlayTogether:
+                    break;
+                case MenuItem::kSeeBoard:
+                    break;
+                case MenuItem::kExitPlay:
+                    this->FinishProcess();
+                    return ProcessResult::kExit;
+                    break;
+                default:
+                    break;
+            }
+        } break;
         default:
             break;
-    }
-    // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
-    if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
-        return ProcessResult::kExit;
     }
 
     return ProcessResult::kNothing;
@@ -213,6 +223,7 @@ void MenuState::RenderProcess() {
 }
 
 void MenuState::FinishProcess() {
+    keypad(menu_accessor_->GetMenuWinAccessor(), FALSE);
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
 }
@@ -265,7 +276,7 @@ void GameManager::Initialize() {
     // GameState는 GameManager가 소유합니다.
     game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
     game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
-    // game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()), *(ui_));
+    game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
     // game_state_[3] = std::make_unique<TemperaryStopState>(*this, *(player_.get()), *(ui_));
     // game_state_[4] = std::make_unique<SoloPlayState>(*this, *(player_.get()), *(ui_));
     // game_state_[5] = std::make_unique<DuoPlayState>(*this, *(player_.get()), *(ui_));
