@@ -14,7 +14,8 @@
                 "-pthread",
                 "-lncurses",
                 "-lmenu",
-                "-lform"
+                "-lform",
+                "-lpanel"
             ],
             "options": {
                 "cwd": "${fileDirname}"
