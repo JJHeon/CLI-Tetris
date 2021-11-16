@@ -4,7 +4,17 @@
 #include "thread-manager.h"
 #include "object-defined.h"
 
+extern "C" {
+#include <ncurses.h>
+}
+
 namespace cli_tetris {
+
+/* UiHandler::ControlMenuDriver()의 parm */
+using MenuRequest = enum MenuRequest {
+    UP,
+    DOWN
+};
 
 /** UI 가 stand In,Output을 모두 관리합니다.
  *  ConsoleDevice를 반드시 정의를 유도 (ncurse initialize)
@@ -28,7 +38,29 @@ class UiHandler : public CustomThreadManager<Object> {
     // YX getGameScreenSize() const;
     void Draw(Object* object);
     void ClearScreen();
+    int getInput();
+
+    void ControlMenuDriver(MENU* menu_ptr, MenuRequest request);
 };
+
+inline int UiHandler::getInput() {
+    int input;
+    input = getch();
+    return input;
+}
+
+inline void UiHandler::ControlMenuDriver(MENU* menu_ptr, MenuRequest request) {
+    switch (request) {
+        case MenuRequest::UP:
+            menu_driver(menu_ptr, REQ_UP_ITEM);
+            break;
+        case MenuRequest::DOWN:
+            menu_driver(menu_ptr, REQ_DOWN_ITEM);
+            break;
+        default:
+            break;
+    }
+}
 
 }  // namespace cli_tetris
 

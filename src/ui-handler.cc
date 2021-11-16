@@ -62,6 +62,7 @@ void UiHandler::Initialize() {
 
 void UiHandler::End() {
     is_initialized_ = false;
+    keypad(stdscr, FALSE);
     endwin();
 }
 
