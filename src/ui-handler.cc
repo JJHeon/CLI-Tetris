@@ -42,6 +42,10 @@ UiHandler::UiHandler(int thread_workers)
     is_initialized_ = true;
 
     this->Initialize();
+    if (has_colors())
+        this->SetColors();
+    else
+        throw std::runtime_error(std::string("E011 : You terminal does not support color"));
 }
 
 UiHandler::~UiHandler() {
@@ -64,6 +68,12 @@ void UiHandler::End() {
     is_initialized_ = false;
     keypad(stdscr, FALSE);
     endwin();
+}
+
+void UiHandler::SetColors() {
+    // start_color();  // Start color
+    //  init_pair(1, COLOR_WHITE, COLOR_BLACK);
+    // init_pair(1, COLOR_WHITE, COLOR_RED);
 }
 
 bool UiHandler::IsInitialized() const {

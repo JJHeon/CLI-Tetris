@@ -32,6 +32,7 @@ class UiHandler : public CustomThreadManager<Object> {
     bool IsInitialized() const;
     void Initialize();
     void End();
+    void SetColors();
 
    public:
     YX getCurrentScreenSize();
