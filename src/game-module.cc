@@ -236,7 +236,9 @@ void MenuState::FinishProcess() {
 /* GameState - SoloPlayState Class ===================================================================================== */
 
 SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : GameState(supervisor, user_player, ui, timer) {}
+    : GameState(supervisor, user_player, ui, timer),
+      start_standby_flag_(false) {
+}
 
 void SoloPlayState::MoveStateHandler(StateCode where) {
     this->FinishProcess();
@@ -246,37 +248,58 @@ void SoloPlayState::MoveStateHandler(StateCode where) {
 void SoloPlayState::Initialize() {
     // Get Timer accessor
     accessor_list_.push_back(timer_.CreateTimer());
+    accessor_list_.push_back(timer_.CreateTimer());
 }
 
 void SoloPlayState::EnterProcess() {
     ui_.ClearScreen();
 
+    start_standby_flag_ = false;
+
     // Timer 5초 설정.
-    // timer_.SetTimer(accessor_list_.at(0), 5, 0);
+    timer_.SetTimer(accessor_list_.at(0), 5, 0);
 
     // Drawing할 Ui object 등록
     ui_object_list_.push_back(std::make_unique<FrameUI46X160>(ui_.getCurrentScreenSize()));
-    ui_object_list_.push_back(std::make_unique<TetrisBoardUI>(ui_.getCurrentScreenSize(),YX(1, 1)));
-    
+    ui_object_list_.push_back(std::make_unique<TetrisBoardUI>(ui_.getCurrentScreenSize(), YX(1, 1)));
+    ui_object_list_.push_back(std::make_unique<TopBoardUI>(ui_.getCurrentScreenSize(), YX(1, 47)));
+    ui_object_list_.push_back(std::make_unique<ScoreBoardUI>(ui_.getCurrentScreenSize(), YX(7, 47)));
+    ui_object_list_.push_back(std::make_unique<NextTetrisBoardUI>(ui_.getCurrentScreenSize(), YX(13, 47)));
+    ui_object_list_.push_back(std::make_unique<LevelBoardUI>(ui_.getCurrentScreenSize(), YX(27, 47)));
+    ui_object_list_.push_back(std::make_unique<InformBoardUI>(ui_.getCurrentScreenSize(), YX(33, 47)));
+
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
 ProcessResult SoloPlayState::UpdateProcess() {
-    /*
+    // timer 설정값 현재 5초 만큼 대기, 그 전까지 입력을 받지 않습니다.
+    if (!start_standby_flag_) {
+        if (accessor_list_.at(0).IsAlive() && accessor_list_.at(0).IsRunning()) {
+            return ProcessResult::kNothing;
+        } else
+            start_standby_flag_ = true;  //최초 실행시 5초 대기용 flag
+    }
+
     // ncurse Input
     int input = ui_.getInput();
     switch (input) {
-        case KEY_DOWN:
-            break;
         case KEY_UP:
             break;
-        case 10:  // Enter
-
+        case KEY_DOWN:
+            break;
+        case KEY_LEFT:
+            break;
+        case KEY_RIGHT:
+            break;
+        case KEY_STAB:
+            break;
+        case 32:  // Space
+            break;
+        case 27:  // ESC
             break;
         default:
             break;
     }
-    */
 
     /*
      // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.

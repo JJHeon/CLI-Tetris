@@ -155,6 +155,8 @@ class MenuState : public GameState {
 class SoloPlayState : public GameState {
    private:
     std::vector<TimerAccessor> accessor_list_;  // accessor list
+    bool start_standby_flag_;
+
    protected:
     std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
 

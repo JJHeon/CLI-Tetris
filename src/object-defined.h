@@ -171,6 +171,75 @@ class TetrisBoardUI : public UI {
     void UpdateRendering() override;
 };
 
+/* TopBoardUI Class ===================================================================================== */
+class TopBoardUI : public UI {
+   private:
+    YX relative_start_pos_;
+
+   public:
+    TopBoardUI(const YX& currnet_screen_size, const YX& offset);
+    ~TopBoardUI();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+
+/* ScoreBoardUI Class ===================================================================================== */
+class ScoreBoardUI : public UI {
+   private:
+    YX relative_start_pos_;
+
+   public:
+    ScoreBoardUI(const YX& currnet_screen_size, const YX& offset);
+    ~ScoreBoardUI();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+/* NextTetrisBoardUI Class ===================================================================================== */
+class NextTetrisBoardUI : public UI {
+   private:
+    YX relative_start_pos_;
+
+   public:
+    NextTetrisBoardUI(const YX& currnet_screen_size, const YX& offset);
+    ~NextTetrisBoardUI();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+
+    
+};
+/* LevelBoardUI Class ===================================================================================== */
+class LevelBoardUI : public UI {
+   private:
+    YX relative_start_pos_;
+
+   public:
+    LevelBoardUI(const YX& currnet_screen_size, const YX& offset);
+    ~LevelBoardUI();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+/* InformBoardUI Class ===================================================================================== */
+class InformBoardUI : public UI {
+   private:
+    YX relative_start_pos_;
+
+   public:
+    InformBoardUI(const YX& currnet_screen_size, const YX& offset);
+    ~InformBoardUI();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+
 }  // namespace cli_tetris
 
 #endif  // CLI_TETRIS_GAME_OBJECT_DEFINED_H_

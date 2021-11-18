@@ -323,7 +323,6 @@ TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
     start_pos_.x = relative_start_pos_.x + offset.x;
 
     win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
-    //  win_ = newwin(22, 24,30 ,60);
 }
 TetrisBoardUI::~TetrisBoardUI() {}
 
@@ -336,19 +335,24 @@ void TetrisBoardUI::UpdatePhysics() {
 
 void TetrisBoardUI::UpdateRendering() {
     //  Draw
-    wattron(win_, COLOR_PAIR(3));
-    for (int i = 0; i != win_size_.y; ++i) {
-        wmove(win_, i, 0);
-        if (i == 0 || i == (win_size_.y - 1)) {
-            for (int j = 0; j != win_size_.x; ++j) waddch(win_, ' ');
-        }
+    /*
+        wattron(win_, COLOR_PAIR(3));
+        for (int i = 0; i != win_size_.y; ++i) {
+            wmove(win_, i, 0);
+            if (i == 0 || i == (win_size_.y - 1)) {
+                for (int j = 0; j != win_size_.x; ++j) waddch(win_, ' ');
+            }
 
-        mvwaddch(win_, i, 0, ' ');
-        mvwaddch(win_, i, 1, ' ');
-        mvwaddch(win_, i, win_size_.x - 2, ' ');
-        mvwaddch(win_, i, win_size_.x - 1, ' ');
-    }
-    wattroff(win_, COLOR_PAIR(3));
+            mvwaddch(win_, i, 0, ' ');
+            mvwaddch(win_, i, 1, ' ');
+            mvwaddch(win_, i, win_size_.x - 2, ' ');
+            mvwaddch(win_, i, win_size_.x - 1, ' ');
+        }
+        wattroff(win_, COLOR_PAIR(3));
+    */
+    wattron(win_, A_BOLD);
+    box(win_, 0, 0);
+    wattroff(win_, A_BOLD);
 
     // Last excution
     wrefresh(win_);
@@ -357,4 +361,223 @@ void TetrisBoardUI::UpdateRendering() {
     this->setIsChanged(false);
 }
 
+/* TopBoardUI Class ===================================================================================== */
+TopBoardUI::TopBoardUI(const YX& currnet_screen_size, const YX& offset)
+    : UI(currnet_screen_size) {
+    // Set win Size
+    win_size_.y = 5;
+    win_size_.x = 28;
+
+    // Set relative_start_pos
+    YX game_screen_size = GameManager::getNeededScreenSize();
+    relative_start_pos_.y = ((currnet_screen_size.y - game_screen_size.y) / 2) + 1;
+    relative_start_pos_.x = ((currnet_screen_size.x - game_screen_size.x) / 2) + 1;
+
+    // Start pos
+    start_pos_.y = relative_start_pos_.y + offset.y;
+    start_pos_.x = relative_start_pos_.x + offset.x;
+
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+}
+TopBoardUI::~TopBoardUI() {}
+
+void TopBoardUI::UpdatePhysics() {
+    // nothing
+
+    // necessary
+    this->setIsChanged(true);
+}
+
+void TopBoardUI::UpdateRendering() {
+    //  Draw
+    wattron(win_, A_BOLD);
+    box(win_, 0, 0);
+    wattroff(win_, A_BOLD);
+
+    wattron(win_, A_BOLD);
+    mvwprintw(win_, 1, 8, "TOP");
+    mvwprintw(win_, 3, 8, "000000000000");
+    wattroff(win_, A_BOLD);
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary
+    this->setIsChanged(false);
+}
+
+/* ScoreBoardUI Class ===================================================================================== */
+ScoreBoardUI::ScoreBoardUI(const YX& currnet_screen_size, const YX& offset)
+    : UI(currnet_screen_size) {
+    // Set win Size
+    win_size_.y = 5;
+    win_size_.x = 28;
+
+    // Set relative_start_pos
+    YX game_screen_size = GameManager::getNeededScreenSize();
+    relative_start_pos_.y = ((currnet_screen_size.y - game_screen_size.y) / 2) + 1;
+    relative_start_pos_.x = ((currnet_screen_size.x - game_screen_size.x) / 2) + 1;
+
+    // Start pos
+    start_pos_.y = relative_start_pos_.y + offset.y;
+    start_pos_.x = relative_start_pos_.x + offset.x;
+
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+}
+ScoreBoardUI::~ScoreBoardUI() {}
+
+void ScoreBoardUI::UpdatePhysics() {
+    // nothing
+
+    // necessary
+    this->setIsChanged(true);
+}
+
+void ScoreBoardUI::UpdateRendering() {
+    //  Draw
+    wattron(win_, A_BOLD);
+    box(win_, 0, 0);
+    wattroff(win_, A_BOLD);
+
+    wattron(win_, A_BOLD);
+    mvwprintw(win_, 1, 8, "SCORE");
+    mvwprintw(win_, 3, 8, "000000000000");
+    wattroff(win_, A_BOLD);
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary
+    this->setIsChanged(false);
+}
+/* NextTetrisBoardUI Class ===================================================================================== */
+NextTetrisBoardUI::NextTetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
+    : UI(currnet_screen_size) {
+    // Set win Size
+    win_size_.y = 13;
+    win_size_.x = 28;
+
+    // Set relative_start_pos
+    YX game_screen_size = GameManager::getNeededScreenSize();
+    relative_start_pos_.y = ((currnet_screen_size.y - game_screen_size.y) / 2) + 1;
+    relative_start_pos_.x = ((currnet_screen_size.x - game_screen_size.x) / 2) + 1;
+
+    // Start pos
+    start_pos_.y = relative_start_pos_.y + offset.y;
+    start_pos_.x = relative_start_pos_.x + offset.x;
+
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+}
+NextTetrisBoardUI::~NextTetrisBoardUI() {}
+
+void NextTetrisBoardUI::UpdatePhysics() {
+    // nothing
+
+    // necessary
+    this->setIsChanged(true);
+}
+
+void NextTetrisBoardUI::UpdateRendering() {
+    //  Draw
+    wattron(win_, A_BOLD);
+    box(win_, 0, 0);
+    wattroff(win_, A_BOLD);
+
+    wattron(win_, A_BOLD);
+    mvwprintw(win_, 1, 8, "Next Tetris");
+    wattroff(win_, A_BOLD);
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary
+    this->setIsChanged(false);
+}
+/* LevelBoardUI Class ===================================================================================== */
+LevelBoardUI::LevelBoardUI(const YX& currnet_screen_size, const YX& offset)
+    : UI(currnet_screen_size) {
+    // Set win Size
+    win_size_.y = 5;
+    win_size_.x = 28;
+
+    // Set relative_start_pos
+    YX game_screen_size = GameManager::getNeededScreenSize();
+    relative_start_pos_.y = ((currnet_screen_size.y - game_screen_size.y) / 2) + 1;
+    relative_start_pos_.x = ((currnet_screen_size.x - game_screen_size.x) / 2) + 1;
+
+    // Start pos
+    start_pos_.y = relative_start_pos_.y + offset.y;
+    start_pos_.x = relative_start_pos_.x + offset.x;
+
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+}
+LevelBoardUI::~LevelBoardUI() {}
+
+void LevelBoardUI::UpdatePhysics() {
+    // nothing
+
+    // necessary
+    this->setIsChanged(true);
+}
+
+void LevelBoardUI::UpdateRendering() {
+    //  Draw
+    wattron(win_, A_BOLD);
+    box(win_, 0, 0);
+    wattroff(win_, A_BOLD);
+
+    wattron(win_, A_BOLD);
+    mvwprintw(win_, 1, 8, "LEVEL");
+    mvwprintw(win_, 3, 8, "1");
+    wattroff(win_, A_BOLD);
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary
+    this->setIsChanged(false);
+}
+/* InformBoardUI Class ===================================================================================== */
+InformBoardUI::InformBoardUI(const YX& currnet_screen_size, const YX& offset)
+    : UI(currnet_screen_size) {
+    // Set win Size
+    win_size_.y = 10;
+    win_size_.x = 28;
+
+    // Set relative_start_pos
+    YX game_screen_size = GameManager::getNeededScreenSize();
+    relative_start_pos_.y = ((currnet_screen_size.y - game_screen_size.y) / 2) + 1;
+    relative_start_pos_.x = ((currnet_screen_size.x - game_screen_size.x) / 2) + 1;
+
+    // Start pos
+    start_pos_.y = relative_start_pos_.y + offset.y;
+    start_pos_.x = relative_start_pos_.x + offset.x;
+
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+}
+InformBoardUI::~InformBoardUI() {}
+
+void InformBoardUI::UpdatePhysics() {
+    // nothing
+
+    // necessary
+    this->setIsChanged(true);
+}
+
+void InformBoardUI::UpdateRendering() {
+    //  Draw
+    wattron(win_, A_BOLD);
+    box(win_, 0, 0);
+    wattroff(win_, A_BOLD);
+
+    wattron(win_, A_BOLD);
+    mvwprintw(win_, 1, 8, "INFORM");
+    wattroff(win_, A_BOLD);
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary
+    this->setIsChanged(false);
+}
 }  // namespace cli_tetris
