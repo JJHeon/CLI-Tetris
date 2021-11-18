@@ -10,10 +10,13 @@
 #include <cstring>
 
 extern "C" {
-#include <ncurses.h>
+
 #include <menu.h>
 #include <panel.h>
 }
+#include <ncurses.h>
+
+#include "game-module.h"
 
 namespace cli_tetris {
 /* Object Class ===================================================================================== */
@@ -120,7 +123,7 @@ void StandbyUI::UpdateRendering() {
     so if you want to look at the code. please visit www.github.com/heonjj/CLI-Tetris\n\
     I will grad if you take a look my code and comment(or criticize)\n\n\
     Anyway!, I made this almost two month.\n\
-    So happily play game.";
+    So happily play game. ";
     int hello_message_y = 10;
     int hello_message_x = 4;
 
@@ -269,6 +272,89 @@ MENU* MenuUI::GetMenuAccessor() const {
 }
 WINDOW* MenuUI::GetMenuWinAccessor() const {
     return menu_win_;
+}
+/* FrameUI Class ===================================================================================== */
+FrameUI46X160::FrameUI46X160(const YX& currnet_screen_size)
+    : UI(currnet_screen_size) {
+    win_size_.y = 46;
+    win_size_.x = 160;
+
+    // Start pos, center로
+    start_pos_.y = (currnet_screen_size.y - win_size_.y) / 2;
+    start_pos_.x = (currnet_screen_size.x - win_size_.x) / 2;
+
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+}
+FrameUI46X160::~FrameUI46X160() {}
+
+void FrameUI46X160::UpdatePhysics() {
+    // nothing
+    // necessary
+    this->setIsChanged(true);
+}
+
+void FrameUI46X160::UpdateRendering() {
+    // Draw
+    box(win_, 0, 0);
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary.
+    this->setIsChanged(false);
+}
+
+/* TetrisBoardUI Class ===================================================================================== */
+TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
+    : UI(currnet_screen_size) {
+    // Set win Size
+    // win_size_.y = 22;
+    // win_size_.x = 24;
+    win_size_.y = 42;
+    win_size_.x = 44;
+
+    // Set relative_start_pos
+    YX game_screen_size = GameManager::getNeededScreenSize();
+    relative_start_pos_.y = ((currnet_screen_size.y - game_screen_size.y) / 2) + 1;
+    relative_start_pos_.x = ((currnet_screen_size.x - game_screen_size.x) / 2) + 1;
+
+    // Start pos
+    start_pos_.y = relative_start_pos_.y + offset.y;
+    start_pos_.x = relative_start_pos_.x + offset.x;
+
+    win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+    //  win_ = newwin(22, 24,30 ,60);
+}
+TetrisBoardUI::~TetrisBoardUI() {}
+
+void TetrisBoardUI::UpdatePhysics() {
+    // nothing
+
+    // necessary
+    this->setIsChanged(true);
+}
+
+void TetrisBoardUI::UpdateRendering() {
+    //  Draw
+    wattron(win_, COLOR_PAIR(3));
+    for (int i = 0; i != win_size_.y; ++i) {
+        wmove(win_, i, 0);
+        if (i == 0 || i == (win_size_.y - 1)) {
+            for (int j = 0; j != win_size_.x; ++j) waddch(win_, ' ');
+        }
+
+        mvwaddch(win_, i, 0, ' ');
+        mvwaddch(win_, i, 1, ' ');
+        mvwaddch(win_, i, win_size_.x - 2, ' ');
+        mvwaddch(win_, i, win_size_.x - 1, ' ');
+    }
+    wattroff(win_, COLOR_PAIR(3));
+
+    // Last excution
+    wrefresh(win_);
+
+    // necessary.
+    this->setIsChanged(false);
 }
 
 }  // namespace cli_tetris

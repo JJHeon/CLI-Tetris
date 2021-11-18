@@ -21,8 +21,8 @@ using StateCode = enum StateCode {
     kStart = 0,
     kEnd,
     kMenu,
-    kTemperaryStop,
     kSoloPlay,
+    kTemperaryStop,
     kDuoPlay,
     kMultiPlay,
     kSetting,
@@ -149,6 +149,29 @@ class MenuState : public GameState {
     void EnterProcess() override;
     void FinishProcess() override;
 };
+
+/* GameState - SoloPlayState Class ===================================================================================== */
+
+class SoloPlayState : public GameState {
+   private:
+    std::vector<TimerAccessor> accessor_list_;  // accessor list
+   protected:
+    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
+
+   protected:
+    void MoveStateHandler(StateCode where) override;
+
+   public:
+    SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
+
+    void Initialize() override;
+
+    ProcessResult UpdateProcess() override;
+    void RenderProcess() override;
+    void EnterProcess() override;
+    void FinishProcess() override;
+};
+
 /* TODO: 미구현, 추후 구현 예정
 // class TemperaryStopState : public GameState {
 //    protected:
@@ -156,17 +179,6 @@ class MenuState : public GameState {
 
 //    public:
 //     TemperaryStopState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
-// class SoloPlayState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
-
-//    public:
-//     SoloPlayState(GameManager& supervisor, UserData& user_player, Ui& ui);
 //     void Initialize() override;
 //     InputProcessResult InputProcess() override;
 //     void UpdateProcess() override;

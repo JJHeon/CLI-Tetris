@@ -80,6 +80,7 @@ void StartState::RenderProcess() {
 void StartState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
+    ui_.ClearScreen();
 }
 
 /* GameState - EndState Class ===================================================================================== */
@@ -140,6 +141,7 @@ void EndState::RenderProcess() {
 void EndState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
+    ui_.ClearScreen();
 }
 
 /* GameState - MenuState Class ===================================================================================== */
@@ -191,6 +193,8 @@ ProcessResult MenuState::UpdateProcess() {
         {
             switch (current_select_) {
                 case MenuItem::kKeepPlaying:
+                    MoveStateHandler(StateCode::kSoloPlay);
+                    return ProcessResult::kChangeState;
                     break;
                 case MenuItem::kCreateNewPlay:
                     break;
@@ -224,6 +228,74 @@ void MenuState::RenderProcess() {
 
 void MenuState::FinishProcess() {
     keypad(menu_accessor_->GetMenuWinAccessor(), FALSE);
+    // 할당한 Object를 모두 해제합니다.
+    ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
+    ui_.ClearScreen();
+}
+
+/* GameState - SoloPlayState Class ===================================================================================== */
+
+SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
+    : GameState(supervisor, user_player, ui, timer) {}
+
+void SoloPlayState::MoveStateHandler(StateCode where) {
+    this->FinishProcess();
+    supervisor_.ChangeSelcet(where);
+}
+
+void SoloPlayState::Initialize() {
+    // Get Timer accessor
+    accessor_list_.push_back(timer_.CreateTimer());
+}
+
+void SoloPlayState::EnterProcess() {
+    ui_.ClearScreen();
+
+    // Timer 5초 설정.
+    // timer_.SetTimer(accessor_list_.at(0), 5, 0);
+
+    // Drawing할 Ui object 등록
+    ui_object_list_.push_back(std::make_unique<FrameUI46X160>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<TetrisBoardUI>(ui_.getCurrentScreenSize(),YX(1, 1)));
+    
+    //    최초에 한번 Draw 합니다.
+    this->RenderProcess();
+}
+ProcessResult SoloPlayState::UpdateProcess() {
+    /*
+    // ncurse Input
+    int input = ui_.getInput();
+    switch (input) {
+        case KEY_DOWN:
+            break;
+        case KEY_UP:
+            break;
+        case 10:  // Enter
+
+            break;
+        default:
+            break;
+    }
+    */
+
+    /*
+     // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
+     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
+         return ProcessResult::kExit;
+     }
+     */
+
+    return ProcessResult::kNothing;
+}
+void SoloPlayState::RenderProcess() {
+    for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
+        if (!(*itr)->IsChanged()) continue;
+
+        ui_.Draw((*itr).get());
+    }
+}
+
+void SoloPlayState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
 }
@@ -277,8 +349,8 @@ void GameManager::Initialize() {
     game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
     game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
     game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
+    game_state_[3] = std::make_unique<SoloPlayState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
     // game_state_[3] = std::make_unique<TemperaryStopState>(*this, *(player_.get()), *(ui_));
-    // game_state_[4] = std::make_unique<SoloPlayState>(*this, *(player_.get()), *(ui_));
     // game_state_[5] = std::make_unique<DuoPlayState>(*this, *(player_.get()), *(ui_));
     // game_state_[6] = std::make_unique<MultiPlayState>(*this, *(player_.get()), *(ui_));
     // game_state_[7] = std::make_unique<SettingState>(*this, *(player_.get()), *(ui_));

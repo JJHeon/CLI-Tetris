@@ -146,6 +146,31 @@ class MenuUI : public UI {
     WINDOW* GetMenuWinAccessor() const;
 };
 
+/* FrameUI46X160 Class ===================================================================================== */
+class FrameUI46X160 : public UI {
+   public:
+    FrameUI46X160(const YX& currnet_screen_size);
+    ~FrameUI46X160();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+
+/* TetrisBoardUI Class ===================================================================================== */
+class TetrisBoardUI : public UI {
+   private:
+    YX relative_start_pos_;
+
+   public:
+    TetrisBoardUI(const YX& currnet_screen_size, const YX& offset);
+    ~TetrisBoardUI();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+};
+
 }  // namespace cli_tetris
 
 #endif  // CLI_TETRIS_GAME_OBJECT_DEFINED_H_
