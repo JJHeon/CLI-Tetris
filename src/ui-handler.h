@@ -3,6 +3,7 @@
 
 #include "thread-manager.h"
 #include "object-defined.h"
+#include "utility.h"
 
 extern "C" {
 #include <ncurses.h>
@@ -20,12 +21,17 @@ using MenuRequest = enum MenuRequest {
  *  ConsoleDevice를 반드시 정의를 유도 (ncurse initialize)
  *  Menu, 각 Part drawing등 다양한 drawing method 집합
  */
+// /* thread에서 ncurse 출력 문제로 threadManager 사용안하기로 결정 */
 class UiHandler : public CustomThreadManager<Object> {
+    // class UiHandler {
    private:
     bool is_initialized_;
 
    public:
+    /* thread에서 ncurse 출력 문제로 threadManager 사용안하기로 결정 */
     UiHandler(int thread_workers = 2);
+    // UiHandler(const int limit_queue_num);
+    // UiHandler();
     ~UiHandler();
 
    private:
@@ -62,6 +68,7 @@ inline void UiHandler::ControlMenuDriver(MENU* menu_ptr, MenuRequest request) {
             break;
     }
 }
+/* PointerQueue Class ===================================================================================== */
 
 }  // namespace cli_tetris
 
