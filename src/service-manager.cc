@@ -4,6 +4,7 @@
 #include "timer-handler.h"
 
 namespace cli_tetris {
+/* UiHandler  ===================================================================================== */
 
 UiHandler* Locator::ui_handler_ = nullptr;
 
@@ -17,6 +18,7 @@ void Locator::provideUiHandler(UiHandler* ui_handler) {
 void Locator::releaseUiHandler() {
     delete ui_handler_;
 }
+/* TimerHandler ===================================================================================== */
 
 timer::TimerHandler* Locator::timer_handler_ = nullptr;
 
@@ -28,6 +30,19 @@ void Locator::provideTimerHandler(timer::TimerHandler* timer_handler) {
 }
 void Locator::releaseTimerHandler() {
     delete timer_handler_;
+}
+
+/* RandomValueHandler ===================================================================================== */
+random::RandomValueHandler* Locator::random_value_handler_ = nullptr;
+
+random::RandomValueHandler* Locator::getRandomValueHandler() {
+    return random_value_handler_;
+}
+void Locator::provideRandomValueHandler(random::RandomValueHandler* random_value_handler) {
+    random_value_handler_ = random_value_handler;
+}
+void Locator::releaseRandomValueHandler() {
+    delete random_value_handler_;
 }
 
 }  // namespace cli_tetris
