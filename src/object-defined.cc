@@ -55,6 +55,110 @@ UI::~UI() {
     if (win_ != NULL) delwin(win_);
 }
 
+/* Object Class ===================================================================================== */
+
+static const int block_shape_i[2][4][2] = {
+    {{0, 0}, {0, -1}, {0, 1}, {0, 2}},  // laying I
+    {{0, 0}, {-1, 0}, {1, 0}, {2, 0}}};
+
+static const int block_shape_j[4][4][2] = {
+    {{0, 0}, {0, -1}, {0, 1}, {1, 1}},
+    {{0, 0}, {1, -1}, {1, 0}, {-1, 0}},
+    {{0, 0}, {-1, -1}, {0, -1}, {0, -1}},
+    {{0, 0}, {-1, 0}, {1, 0}, {-1, 1}}};
+
+static const int block_shape_l[4][4][2] = {
+    {{0, 0}, {0, -1}, {1, -1}, {0, 1}},
+    {{0, 0}, {-1, 0}, {-1, -1}, {1, 0}},
+    {{0, 0}, {0, 1}, {-1, 1}, {0, -1}},
+    {{0, 0}, {1, 0}, {1, 1}, {-1, 0}}};
+
+static const int block_shape_t[4][4][2] = {
+    {{0, 0}, {0, -1}, {0, 1}, {1, 0}},
+    {{0, 0}, {0, -1}, {-1, 0}, {1, 0}},
+    {{0, 0}, {0, -1}, {-1, 0}, {0, 1}},
+    {{0, 0}, {-1, 0}, {1, 0}, {0, 1}}};
+
+static const int block_shape_o[1][4][2] = {
+    {{0, 0}, {0, 1}, {1, 0}, {1, 1}}};
+
+static const int block_shape_z[2][4][2] = {
+    {{0, 0}, {0, -1}, {1, 0}, {1, 1}},
+    {{0, 0}, {-1, 0}, {0, -1}, {1, -1}}};
+
+static const int block_shape_s[2][4][2] = {
+    {{0, 0}, {1, -1}, {1, 0}, {0, 1}},
+    {{0, 0}, {-1, -1}, {0, -1}, {1, 0}}};
+
+TetrisBlcok::TetrisBlcok(const YX& start_pos, const TetrisBlockName& block_type)
+    : Object(start_pos), type_(block_type) {
+    block_shape_ = &block_shape[static_cast<int>(type_)];
+
+    int start_y = start_pos_.y;
+    int start_x = start_pos_.x;
+
+    switch (type_) {
+        case BlockType::I:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_i[0][i][0];
+                real_block_shape_[i].x = start_x + block_shape_i[0][i][1];
+            }
+            break;
+        case BlockType::J:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_j[0][i][0];
+                real_block_shape_[i].x = start_x + block_shape_j[0][i][1];
+            }
+            break;
+        case BlockType::L:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_l[0][i][0];
+                real_block_shape_[i].x = start_x + block_shape_l[0][i][1];
+            }
+            break;
+        case BlockType::T:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_t[0][i][0];
+                real_block_shape_[i].x = start_x + block_shape_t[0][i][1];
+            }
+            break;
+        case BlockType::O:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_o[0][i][0];
+                real_block_shape_[i].x = start_x + block_shape_o[0][i][1];
+            }
+            break;
+        case BlockType::Z:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_z[0][i][0];
+                real_block_shape_[i].x = start_x + block_shape_z[0][i][1];
+            }
+            break;
+        case BlockType::S:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_s[0][i][0];
+                real_block_shape_[i].x = start_x + block_shape_s[0][i][1];
+            }
+            break;
+    }
+}
+
+void TetrisBlcok::UpdatePhysics() {
+    // Not Use
+}
+
+void TetrisBlcok::UpdateRendering() {
+    // Not Use
+}
+
+void TetrisBlcok::CommandChangeDirection() {
+}
+
+void TetrisBlcok::CommandFall() {
+}
+void TetrisBlcok::RandomiseDirection() {
+}
+
 /* FramePerSecond Class ===================================================================================== */
 // FramePerSecondUI::FramePerSecondUI(YX start_pos)
 //     : Object(start_pos) {

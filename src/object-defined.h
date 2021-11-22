@@ -11,6 +11,16 @@ extern "C" {
 
 namespace cli_tetris {
 
+using BlockType = enum BlockType {
+    I = 1,
+    J = 2,
+    L = 3,
+    T = 4,
+    O = 5,
+    Z = 6,
+    S = 7
+};
+
 using YX = struct YX {
     int y;
     int x;
@@ -54,6 +64,28 @@ class Object {
     virtual void UpdatePhysics() = 0;
     virtual void UpdateRendering() = 0;
 };
+/* TetrisBlock Class ===================================================================================== */
+
+class TetrisBlcok : public Object {
+   private:
+    BlockType type_;
+    int** block_shape_;
+    YX real_block_shape_[4];
+
+   public:
+    TetrisBlcok(const YX& start_pos, const BlockType& block_type);
+    ~TetrisBlcok();
+
+    // Object Abstract
+    void UpdatePhysics() override;
+    void UpdateRendering() override;
+
+    // Custom method
+    void CommandChangeDirection();
+    void CommandFall();
+    void RandomiseDirection();
+};
+
 /* UI Class ===================================================================================== */
 /**
  *  ncurse newwin() 을 통해 window 생성 및 Variable 소유 class
@@ -169,6 +201,10 @@ class TetrisBoardUI : public UI {
     // Object Abstract
     void UpdatePhysics() override;
     void UpdateRendering() override;
+
+    // Custom method
+    void CreateTetris(const TetrisBlock& tetrisblock);
+    void UpdateTetrisBlock();
 };
 
 /* TopBoardUI Class ===================================================================================== */
@@ -210,8 +246,6 @@ class NextTetrisBoardUI : public UI {
     // Object Abstract
     void UpdatePhysics() override;
     void UpdateRendering() override;
-
-    
 };
 /* LevelBoardUI Class ===================================================================================== */
 class LevelBoardUI : public UI {
