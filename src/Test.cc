@@ -3,6 +3,7 @@
 #include "game-module.h"
 #include "service-manager.h"
 #include "ui-handler.h"
+#include "random-generate-handler.h"
 
 extern "C" {
 #include <signal.h>
@@ -16,8 +17,8 @@ int main(void) {
     using cli_tetris::Locator;
     using cli_tetris::StateCode;
     using cli_tetris::UiHandler;
+    using cli_tetris::random::RandomValueHandler;
     using cli_tetris::timer::TimerHandler;
-
     /**
      *  Ui -
      *  ncurse 화면 초기화와 관련된 함수
@@ -29,6 +30,7 @@ int main(void) {
     try {
         Locator::provideUiHandler(new UiHandler(1));
         Locator::provideTimerHandler(new TimerHandler);
+        Locator::provideRandomValueHandler(new RandomValueHandler(1, 7));
     } catch (std::runtime_error& e) {
         std::cout << e.what() << std::endl;
     }

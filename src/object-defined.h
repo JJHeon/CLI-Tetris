@@ -66,15 +66,15 @@ class Object {
 };
 /* TetrisBlock Class ===================================================================================== */
 
-class TetrisBlcok : public Object {
+class TetrisBlock : public Object {
    private:
     BlockType type_;
-    int** block_shape_;
     YX real_block_shape_[4];
+    int direction_;
 
    public:
-    TetrisBlcok(const YX& start_pos, const BlockType& block_type);
-    ~TetrisBlcok();
+    TetrisBlock(const YX& start_pos, const BlockType& block_type);
+    ~TetrisBlock();
 
     // Object Abstract
     void UpdatePhysics() override;
@@ -83,7 +83,7 @@ class TetrisBlcok : public Object {
     // Custom method
     void CommandChangeDirection();
     void CommandFall();
-    void RandomiseDirection();
+    void RandomiseDirection(int random_number_of_4);
 };
 
 /* UI Class ===================================================================================== */
@@ -193,6 +193,10 @@ class FrameUI46X160 : public UI {
 class TetrisBoardUI : public UI {
    private:
     YX relative_start_pos_;
+    TetrisBlock* current_block_;
+    int privious_block_position_[4][2];
+    int board_[41][21];
+    bool is_expired;
 
    public:
     TetrisBoardUI(const YX& currnet_screen_size, const YX& offset);
@@ -203,8 +207,9 @@ class TetrisBoardUI : public UI {
     void UpdateRendering() override;
 
     // Custom method
-    void CreateTetris(const TetrisBlock& tetrisblock);
-    void UpdateTetrisBlock();
+    void setTetrisBlock(TetrisBlock* current_block);
+    bool IsExpired() const;
+    TetrisBlock* RemoveTetrisBlock();
 };
 
 /* TopBoardUI Class ===================================================================================== */

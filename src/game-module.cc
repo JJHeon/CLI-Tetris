@@ -9,6 +9,7 @@
 #include "timer-handler.h"
 #include "service-manager.h"
 #include "object-defined.h"
+#include "random-generate-handler.h"
 
 extern "C" {
 #include <ncurses.h>
@@ -238,6 +239,14 @@ void MenuState::FinishProcess() {
 SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
     : GameState(supervisor, user_player, ui, timer),
       start_standby_flag_(false) {
+    random_generator_ = Locator::getRandomValueHandler();
+
+    tetris_board_ = nullptr;
+    top_board_ = nullptr;
+    score_board_ = nullptr;
+    next_tetris_board_ = nullptr;
+    level_board_ = nullptr;
+    inform_board_ = nullptr;
 }
 
 void SoloPlayState::MoveStateHandler(StateCode where) {
@@ -268,6 +277,21 @@ void SoloPlayState::EnterProcess() {
     ui_object_list_.push_back(std::make_unique<LevelBoardUI>(ui_.getCurrentScreenSize(), YX(27, 47)));
     ui_object_list_.push_back(std::make_unique<InformBoardUI>(ui_.getCurrentScreenSize(), YX(33, 47)));
 
+    if (tetris_board_ == nullptr &&
+        top_board_ == nullptr &&
+        score_board_ == nullptr &&
+        next_tetris_board_ == nullptr &&
+        level_board_ == nullptr &&
+        inform_board_ == nullptr) {
+        tetris_board_ = dynamic_cast<TetrisBoardUI*>(ui_object_list_[1].get());
+        top_board_ = dynamic_cast<TopBoardUI*>(ui_object_list_[2].get());
+        score_board_ = dynamic_cast<ScoreBoardUI*>(ui_object_list_[3].get());
+        next_tetris_board_ = dynamic_cast<NextTetrisBoardUI*>(ui_object_list_[4].get());
+        level_board_ = dynamic_cast<LevelBoardUI*>(ui_object_list_[5].get());
+        inform_board_ = dynamic_cast<InformBoardUI*>(ui_object_list_[6].get());
+    } else
+        throw std::runtime_error(std::string("E012 : pointer under SoloPlay cannot have nullptr"));
+
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
@@ -280,10 +304,12 @@ ProcessResult SoloPlayState::UpdateProcess() {
             start_standby_flag_ = true;  //최초 실행시 5초 대기용 flag
     }
 
+    //tetris_board_->CreateTetris(static_cast<BlockType>(random_generator_->getUniformRandomNumber()));
     // ncurse Input
     int input = ui_.getInput();
     switch (input) {
         case KEY_UP:
+
             break;
         case KEY_DOWN:
             break;
@@ -321,6 +347,13 @@ void SoloPlayState::RenderProcess() {
 void SoloPlayState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
+
+    tetris_board_ = nullptr;
+    top_board_ = nullptr;
+    score_board_ = nullptr;
+    next_tetris_board_ = nullptr;
+    level_board_ = nullptr;
+    inform_board_ = nullptr;
 }
 
 /* GameManager Class ===================================================================================== */

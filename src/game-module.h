@@ -7,6 +7,7 @@
 #include "user-data.h"
 #include "ui-handler.h"
 #include "timer-handler.h"
+#include "random-generate-handler.h"
 // #include "input-layer.h"
 
 namespace cli_tetris {
@@ -156,6 +157,14 @@ class SoloPlayState : public GameState {
    private:
     std::vector<TimerAccessor> accessor_list_;  // accessor list
     bool start_standby_flag_;
+    random::RandomValueHandler* random_generator_;
+
+    TetrisBoardUI* tetris_board_;
+    TopBoardUI* top_board_;
+    ScoreBoardUI* score_board_;
+    NextTetrisBoardUI* next_tetris_board_;
+    LevelBoardUI* level_board_;
+    InformBoardUI* inform_board_;
 
    protected:
     std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list

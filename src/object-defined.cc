@@ -55,45 +55,43 @@ UI::~UI() {
     if (win_ != NULL) delwin(win_);
 }
 
-/* Object Class ===================================================================================== */
+/* TetrisBlock Class ===================================================================================== */
 
-static const int block_shape_i[2][4][2] = {
+static constexpr int block_shape_i[2][4][2] = {
     {{0, 0}, {0, -1}, {0, 1}, {0, 2}},  // laying I
     {{0, 0}, {-1, 0}, {1, 0}, {2, 0}}};
 
-static const int block_shape_j[4][4][2] = {
+static constexpr int block_shape_j[4][4][2] = {
     {{0, 0}, {0, -1}, {0, 1}, {1, 1}},
     {{0, 0}, {1, -1}, {1, 0}, {-1, 0}},
     {{0, 0}, {-1, -1}, {0, -1}, {0, -1}},
     {{0, 0}, {-1, 0}, {1, 0}, {-1, 1}}};
 
-static const int block_shape_l[4][4][2] = {
+static constexpr int block_shape_l[4][4][2] = {
     {{0, 0}, {0, -1}, {1, -1}, {0, 1}},
     {{0, 0}, {-1, 0}, {-1, -1}, {1, 0}},
     {{0, 0}, {0, 1}, {-1, 1}, {0, -1}},
     {{0, 0}, {1, 0}, {1, 1}, {-1, 0}}};
 
-static const int block_shape_t[4][4][2] = {
+static constexpr int block_shape_t[4][4][2] = {
     {{0, 0}, {0, -1}, {0, 1}, {1, 0}},
     {{0, 0}, {0, -1}, {-1, 0}, {1, 0}},
     {{0, 0}, {0, -1}, {-1, 0}, {0, 1}},
     {{0, 0}, {-1, 0}, {1, 0}, {0, 1}}};
 
-static const int block_shape_o[1][4][2] = {
+static constexpr int block_shape_o[1][4][2] = {
     {{0, 0}, {0, 1}, {1, 0}, {1, 1}}};
 
-static const int block_shape_z[2][4][2] = {
+static constexpr int block_shape_z[2][4][2] = {
     {{0, 0}, {0, -1}, {1, 0}, {1, 1}},
     {{0, 0}, {-1, 0}, {0, -1}, {1, -1}}};
 
-static const int block_shape_s[2][4][2] = {
+static constexpr int block_shape_s[2][4][2] = {
     {{0, 0}, {1, -1}, {1, 0}, {0, 1}},
     {{0, 0}, {-1, -1}, {0, -1}, {1, 0}}};
 
-TetrisBlcok::TetrisBlcok(const YX& start_pos, const TetrisBlockName& block_type)
-    : Object(start_pos), type_(block_type) {
-    block_shape_ = &block_shape[static_cast<int>(type_)];
-
+TetrisBlock::TetrisBlock(const YX& start_pos, const BlockType& block_type)
+    : Object(start_pos), type_(block_type), direction_(0) {
     int start_y = start_pos_.y;
     int start_x = start_pos_.x;
 
@@ -143,20 +141,56 @@ TetrisBlcok::TetrisBlcok(const YX& start_pos, const TetrisBlockName& block_type)
     }
 }
 
-void TetrisBlcok::UpdatePhysics() {
+void TetrisBlock::UpdatePhysics() {
     // Not Use
 }
 
-void TetrisBlcok::UpdateRendering() {
+void TetrisBlock::UpdateRendering() {
     // Not Use
 }
 
-void TetrisBlcok::CommandChangeDirection() {
+void TetrisBlock::CommandChangeDirection() {
+    switch (type_) {
+        case BlockType::I:
+        case BlockType::Z:
+        case BlockType::S:
+            direction_ = (direction_ + 1) % 2;
+
+            break;
+        case BlockType::J:
+        case BlockType::L:
+        case BlockType::T:
+            direction_ = (direction_ + 1) % 4;
+            break;
+        case BlockType::O:
+            direction_ = 0;
+            break;
+    }
 }
 
-void TetrisBlcok::CommandFall() {
-}
-void TetrisBlcok::RandomiseDirection() {
+void TetrisBlock::CommandFall() {}
+void TetrisBlock::RandomiseDirection(int random_number_of_4) {
+    if (!(1 <= random_number_of_4 && random_number_of_4 <= 4)) throw std::runtime_error(std::string("E013 : TetrisBlock::RandomiseDirection param is wrong"));
+
+    switch (type_) {
+        case BlockType::I:
+        case BlockType::Z:
+        case BlockType::S:
+            if (random_number_of_4 == 1 || random_number_of_4 == 2)
+                direction_ = 0;
+            else if (random_number_of_4 == 3 || random_number_of_4 == 4)
+                direction_ = 1;
+
+            break;
+        case BlockType::J:
+        case BlockType::L:
+        case BlockType::T:
+            direction_ = random_number_of_4;
+            break;
+        case BlockType::O:
+            direction_ = 0;
+            break;
+    }
 }
 
 /* FramePerSecond Class ===================================================================================== */
@@ -410,7 +444,9 @@ void FrameUI46X160::UpdateRendering() {
 
 /* TetrisBoardUI Class ===================================================================================== */
 TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
-    : UI(currnet_screen_size) {
+    : UI(currnet_screen_size), is_expired(false) {
+    std::memset(board_, 0, sizeof(board_));
+
     // Set win Size
     // win_size_.y = 22;
     // win_size_.x = 24;
@@ -431,10 +467,22 @@ TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
 TetrisBoardUI::~TetrisBoardUI() {}
 
 void TetrisBoardUI::UpdatePhysics() {
-    // nothing
+    if (current_block_ == nullptr) return;
 
-    // necessary
+        // necessary
     this->setIsChanged(true);
+}
+
+void TetrisBoardUI::setTetrisBlock(TetrisBlock* current_block) {
+    current_block_ = current_block;
+}
+bool TetrisBoardUI::IsExpired() const {
+    return is_expired;
+}
+TetrisBlock* TetrisBoardUI::RemoveTetrisBlock() {
+    TetrisBlock* ptr = current_block_;
+    current_block_ = nullptr;
+    return ptr;
 }
 
 void TetrisBoardUI::UpdateRendering() {
