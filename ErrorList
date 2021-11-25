@@ -8,4 +8,6 @@ E007 : 지우려는 Timer 없음
 E008 : TimerHandler 등록 안됨
 E009 : 화면 크기가 너무 작음
 E010 : SetWindow 정의 안됨
-"E011 : You terminal does not support color
+E011 : You terminal does not support color
+E012 : pointer under SoloPlay cannot have nullptr
+E013 : TetrisBlcok::RandomiseDirection param is wrong
