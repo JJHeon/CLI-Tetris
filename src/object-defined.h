@@ -69,7 +69,7 @@ class Object {
 class TetrisBlock : public Object {
    private:
     BlockType type_;
-    YX real_block_shape_[4];
+    std::array<YX, 4> real_block_shape_;
     int direction_;
 
    public:
@@ -84,6 +84,7 @@ class TetrisBlock : public Object {
     void CommandChangeDirection();
     void CommandFall();
     void RandomiseDirection(int random_number_of_4);
+    const std::array<YX, 4>& getRealBlockPosition() const;
 };
 
 /* UI Class ===================================================================================== */

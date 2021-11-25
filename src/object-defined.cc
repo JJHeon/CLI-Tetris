@@ -192,6 +192,9 @@ void TetrisBlock::RandomiseDirection(int random_number_of_4) {
             break;
     }
 }
+const std::array<YX, 4>& TetrisBlock::getRealBlockPosition() const {
+    return real_block_shape_;
+}
 
 /* FramePerSecond Class ===================================================================================== */
 // FramePerSecondUI::FramePerSecondUI(YX start_pos)
@@ -469,7 +472,9 @@ TetrisBoardUI::~TetrisBoardUI() {}
 void TetrisBoardUI::UpdatePhysics() {
     if (current_block_ == nullptr) return;
 
-        // necessary
+    const std::array<YX, 4>& blocks_yx_list = current_block_->getRealBlockPosition();
+
+    // necessary
     this->setIsChanged(true);
 }
 
