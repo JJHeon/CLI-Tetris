@@ -2,6 +2,7 @@
 #define CLI_TETRIS_OBJECT_DEFINED_H_
 
 #include <chrono>
+#include <ui-handler.h>
 
 extern "C" {
 #include <ncurses.h>
@@ -195,10 +196,13 @@ class TetrisBoardUI : public UI {
    private:
     YX relative_start_pos_;
     TetrisBlock* current_block_;
-    int privious_block_position_[4][2];
+    std::array<YX, 4> privious_block_position_;
+    std::array<YX, 4> current_block_position_;
     int board_[41][21];
     bool is_expired;
 
+   private:
+   
    public:
     TetrisBoardUI(const YX& currnet_screen_size, const YX& offset);
     ~TetrisBoardUI();
@@ -211,6 +215,8 @@ class TetrisBoardUI : public UI {
     void setTetrisBlock(TetrisBlock* current_block);
     bool IsExpired() const;
     TetrisBlock* RemoveTetrisBlock();
+
+    void CommandMoveBlocks(Move way);
 };
 
 /* TopBoardUI Class ===================================================================================== */

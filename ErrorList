@@ -11,3 +11,4 @@ E010 : SetWindow 정의 안됨
 E011 : You terminal does not support color
 E012 : pointer under SoloPlay cannot have nullptr
 E013 : TetrisBlcok::RandomiseDirection param is wrong
+E014 : TetrisBoardUI don't have current_block pointer

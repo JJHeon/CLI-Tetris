@@ -11,6 +11,11 @@ extern "C" {
 
 namespace cli_tetris {
 
+using Move = enum Move { kUP = 0,
+                         kDown,
+                         kLeft,
+                         kRight };
+
 /* UiHandler::ControlMenuDriver()의 parm */
 using MenuRequest = enum MenuRequest {
     UP,

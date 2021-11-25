@@ -490,6 +490,27 @@ TetrisBlock* TetrisBoardUI::RemoveTetrisBlock() {
     return ptr;
 }
 
+void TetrisBoardUI::CommandMoveBlocks(Move way) {
+    if (current_block_ != nullptr) throw std::runtime_error("E014 : TetrisBoardUI don't have current_block pointer.");
+
+    switch (way) {
+        case kDown:
+            if (current_block_position_[0].y + 1 > 40 ||
+                current_block_position_[1].y + 1 > 40 ||
+                current_block_position_[2].y + 1 > 40 ||
+                current_block_position_[3].y + 1 > 40) return;
+            if (board_[current_block_position_[0].y + 1][current_block_position_[0].x] == 0)
+            //TODO: 21.11.26 현재 여기까지 작업..
+                break;
+        case kLeft:
+            break;
+        case kRight:
+            break;
+        default:
+            break;
+    }
+}
+
 void TetrisBoardUI::UpdateRendering() {
     //  Draw
     /*
