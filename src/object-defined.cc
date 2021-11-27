@@ -90,54 +90,13 @@ static constexpr int block_shape_s[2][4][2] = {
     {{0, 0}, {1, -1}, {1, 0}, {0, 1}},
     {{0, 0}, {-1, -1}, {0, -1}, {1, 0}}};
 
-TetrisBlock::TetrisBlock(const YX& start_pos, const BlockType& block_type)
+TetrisBlock::TetrisBlock(const YX& start_pos, const BlockType& block_type, int random_number_of_4)
     : Object(start_pos), type_(block_type), direction_(0) {
-    int start_y = start_pos_.y;
-    int start_x = start_pos_.x;
-
-    switch (type_) {
-        case BlockType::I:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_i[0][i][0];
-                real_block_shape_[i].x = start_x + block_shape_i[0][i][1];
-            }
-            break;
-        case BlockType::J:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_j[0][i][0];
-                real_block_shape_[i].x = start_x + block_shape_j[0][i][1];
-            }
-            break;
-        case BlockType::L:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_l[0][i][0];
-                real_block_shape_[i].x = start_x + block_shape_l[0][i][1];
-            }
-            break;
-        case BlockType::T:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_t[0][i][0];
-                real_block_shape_[i].x = start_x + block_shape_t[0][i][1];
-            }
-            break;
-        case BlockType::O:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_o[0][i][0];
-                real_block_shape_[i].x = start_x + block_shape_o[0][i][1];
-            }
-            break;
-        case BlockType::Z:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_z[0][i][0];
-                real_block_shape_[i].x = start_x + block_shape_z[0][i][1];
-            }
-            break;
-        case BlockType::S:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_s[0][i][0];
-                real_block_shape_[i].x = start_x + block_shape_s[0][i][1];
-            }
-            break;
+    if (random_number_of_4 == 0) {
+        this->DecideShape(direction_);
+    } else {
+        this->RandomiseDirection(random_number_of_4);  // dicide direction_
+        this->DecideShape(direction_);
     }
 }
 
@@ -148,27 +107,6 @@ void TetrisBlock::UpdatePhysics() {
 void TetrisBlock::UpdateRendering() {
     // Not Use
 }
-
-void TetrisBlock::CommandChangeDirection() {
-    switch (type_) {
-        case BlockType::I:
-        case BlockType::Z:
-        case BlockType::S:
-            direction_ = (direction_ + 1) % 2;
-
-            break;
-        case BlockType::J:
-        case BlockType::L:
-        case BlockType::T:
-            direction_ = (direction_ + 1) % 4;
-            break;
-        case BlockType::O:
-            direction_ = 0;
-            break;
-    }
-}
-
-void TetrisBlock::CommandFall() {}
 void TetrisBlock::RandomiseDirection(int random_number_of_4) {
     if (!(1 <= random_number_of_4 && random_number_of_4 <= 4)) throw std::runtime_error(std::string("E013 : TetrisBlock::RandomiseDirection param is wrong"));
 
@@ -192,6 +130,83 @@ void TetrisBlock::RandomiseDirection(int random_number_of_4) {
             break;
     }
 }
+
+void TetrisBlock::DecideShape(int direction) {
+    int start_y = start_pos_.y;
+    int start_x = start_pos_.x;
+
+    switch (type_) {
+        case BlockType::I:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_i[direction][i][0];
+                real_block_shape_[i].x = start_x + block_shape_i[direction][i][1];
+            }
+            break;
+        case BlockType::J:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_j[direction][i][0];
+                real_block_shape_[i].x = start_x + block_shape_j[direction][i][1];
+            }
+            break;
+        case BlockType::L:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_l[direction][i][0];
+                real_block_shape_[i].x = start_x + block_shape_l[direction][i][1];
+            }
+            break;
+        case BlockType::T:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_t[direction][i][0];
+                real_block_shape_[i].x = start_x + block_shape_t[direction][i][1];
+            }
+            break;
+        case BlockType::O:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_o[direction][i][0];
+                real_block_shape_[i].x = start_x + block_shape_o[direction][i][1];
+            }
+            break;
+        case BlockType::Z:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_z[direction][i][0];
+                real_block_shape_[i].x = start_x + block_shape_z[direction][i][1];
+            }
+            break;
+        case BlockType::S:
+            for (int i = 0; i != 4; ++i) {
+                real_block_shape_[i].y = start_y + block_shape_s[direction][i][0];
+                real_block_shape_[i].x = start_x + block_shape_s[direction][i][1];
+            }
+            break;
+    }
+}
+
+void TetrisBlock::CommandChangeDirection() {
+    switch (type_) {
+        case BlockType::I:
+        case BlockType::Z:
+        case BlockType::S:
+            direction_ = (direction_ + 1) % 2;
+
+            break;
+        case BlockType::J:
+        case BlockType::L:
+        case BlockType::T:
+            direction_ = (direction_ + 1) % 4;
+            break;
+        case BlockType::O:
+            direction_ = 0;
+            break;
+    }
+    this->DecideShape(direction_);
+}
+
+void TetrisBlock::CommandFall() {
+    start_pos_.y = start_pos_.y + 1;
+
+    this->DecideShape(direction_);
+}
+
 const std::array<YX, 4>& TetrisBlock::getRealBlockPosition() const {
     return real_block_shape_;
 }
@@ -500,7 +515,7 @@ void TetrisBoardUI::CommandMoveBlocks(Move way) {
                 current_block_position_[2].y + 1 > 40 ||
                 current_block_position_[3].y + 1 > 40) return;
             if (board_[current_block_position_[0].y + 1][current_block_position_[0].x] == 0)
-            //TODO: 21.11.26 현재 여기까지 작업..
+                // TODO: 21.11.26 현재 여기까지 작업..
                 break;
         case kLeft:
             break;

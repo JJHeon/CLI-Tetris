@@ -73,8 +73,15 @@ class TetrisBlock : public Object {
     std::array<YX, 4> real_block_shape_;
     int direction_;
 
+   private:
+    void DecideShape(int direction);
+    void RandomiseDirection(int random_number_of_4);
+
    public:
-    TetrisBlock(const YX& start_pos, const BlockType& block_type);
+    /** Constructor
+     *  @param random_number_of_4, 0 이면 direction_ = 0 인 shape 생성, 1~4의 random number이면 해당하는 direction_ 결정후 shape 생성
+     */
+    TetrisBlock(const YX& start_pos, const BlockType& block_type, int random_number_of_4);
     ~TetrisBlock();
 
     // Object Abstract
@@ -84,7 +91,6 @@ class TetrisBlock : public Object {
     // Custom method
     void CommandChangeDirection();
     void CommandFall();
-    void RandomiseDirection(int random_number_of_4);
     const std::array<YX, 4>& getRealBlockPosition() const;
 };
 
@@ -202,7 +208,6 @@ class TetrisBoardUI : public UI {
     bool is_expired;
 
    private:
-   
    public:
     TetrisBoardUI(const YX& currnet_screen_size, const YX& offset);
     ~TetrisBoardUI();
