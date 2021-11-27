@@ -8,6 +8,7 @@
 #include <exception>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 
 extern "C" {
 
@@ -462,8 +463,12 @@ void FrameUI46X160::UpdateRendering() {
 
 /* TetrisBoardUI Class ===================================================================================== */
 TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
-    : UI(currnet_screen_size), is_expired(false) {
-    std::memset(board_, 0, sizeof(board_));
+    : UI(currnet_screen_size) {
+    for (auto itr1 = board_.begin(); itr1 != board_.end(); ++itr1) {
+        for (auto itr2 = (*itr1).begin(); itr2 != (*itr1).end(); ++itr2) {
+            *itr2 = 0;
+        }
+    }
 
     // Set win Size
     // win_size_.y = 22;
@@ -485,45 +490,12 @@ TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
 TetrisBoardUI::~TetrisBoardUI() {}
 
 void TetrisBoardUI::UpdatePhysics() {
-    if (current_block_ == nullptr) return;
-
-    const std::array<YX, 4>& blocks_yx_list = current_block_->getRealBlockPosition();
-
     // necessary
     this->setIsChanged(true);
 }
 
-void TetrisBoardUI::setTetrisBlock(TetrisBlock* current_block) {
-    current_block_ = current_block;
-}
-bool TetrisBoardUI::IsExpired() const {
-    return is_expired;
-}
-TetrisBlock* TetrisBoardUI::RemoveTetrisBlock() {
-    TetrisBlock* ptr = current_block_;
-    current_block_ = nullptr;
-    return ptr;
-}
-
-void TetrisBoardUI::CommandMoveBlocks(Move way) {
-    if (current_block_ != nullptr) throw std::runtime_error("E014 : TetrisBoardUI don't have current_block pointer.");
-
-    switch (way) {
-        case kDown:
-            if (current_block_position_[0].y + 1 > 40 ||
-                current_block_position_[1].y + 1 > 40 ||
-                current_block_position_[2].y + 1 > 40 ||
-                current_block_position_[3].y + 1 > 40) return;
-            if (board_[current_block_position_[0].y + 1][current_block_position_[0].x] == 0)
-                // TODO: 21.11.26 현재 여기까지 작업..
-                break;
-        case kLeft:
-            break;
-        case kRight:
-            break;
-        default:
-            break;
-    }
+std::array<std::array<int, 21>, 41>* TetrisBoardUI::getTetrisBoard() {
+    return &board_;
 }
 
 void TetrisBoardUI::UpdateRendering() {

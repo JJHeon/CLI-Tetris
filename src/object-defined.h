@@ -201,11 +201,7 @@ class FrameUI46X160 : public UI {
 class TetrisBoardUI : public UI {
    private:
     YX relative_start_pos_;
-    TetrisBlock* current_block_;
-    std::array<YX, 4> privious_block_position_;
-    std::array<YX, 4> current_block_position_;
-    int board_[41][21];
-    bool is_expired;
+    std::array<std::array<int, 21>, 41> board_;
 
    private:
    public:
@@ -216,12 +212,7 @@ class TetrisBoardUI : public UI {
     void UpdatePhysics() override;
     void UpdateRendering() override;
 
-    // Custom method
-    void setTetrisBlock(TetrisBlock* current_block);
-    bool IsExpired() const;
-    TetrisBlock* RemoveTetrisBlock();
-
-    void CommandMoveBlocks(Move way);
+    std::array<std::array<int, 21>, 41>* getTetrisBoard();
 };
 
 /* TopBoardUI Class ===================================================================================== */
