@@ -138,47 +138,57 @@ void TetrisBlock::DecideShape(int direction) {
 
     switch (type_) {
         case BlockType::I:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_i[direction][i][0];
-                real_block_shape_[i].x = start_x + block_shape_i[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                real_block_shape_[i].y = start_y + (block_shape_i[direction][i][0] * 2);
+                real_block_shape_[i].x = start_x + (block_shape_i[direction][i][1] * 2);
             }
             break;
         case BlockType::J:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_j[direction][i][0];
-                real_block_shape_[i].x = start_x + block_shape_j[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                real_block_shape_[i].y = start_y + (block_shape_j[direction][i][0] * 2);
+                real_block_shape_[i].x = start_x + (block_shape_j[direction][i][1] * 2);
             }
             break;
         case BlockType::L:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_l[direction][i][0];
-                real_block_shape_[i].x = start_x + block_shape_l[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                real_block_shape_[i].y = start_y + (block_shape_l[direction][i][0] * 2);
+                real_block_shape_[i].x = start_x + (block_shape_l[direction][i][1] * 2);
             }
             break;
         case BlockType::T:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_t[direction][i][0];
-                real_block_shape_[i].x = start_x + block_shape_t[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                real_block_shape_[i].y = start_y + (block_shape_t[direction][i][0] * 2);
+                real_block_shape_[i].x = start_x + (block_shape_t[direction][i][1] * 2);
             }
             break;
         case BlockType::O:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_o[direction][i][0];
-                real_block_shape_[i].x = start_x + block_shape_o[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                real_block_shape_[i].y = start_y + (block_shape_o[direction][i][0] * 2);
+                real_block_shape_[i].x = start_x + (block_shape_o[direction][i][1] * 2);
             }
             break;
         case BlockType::Z:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_z[direction][i][0];
-                real_block_shape_[i].x = start_x + block_shape_z[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                real_block_shape_[i].y = start_y + (block_shape_z[direction][i][0] * 2);
+                real_block_shape_[i].x = start_x + (block_shape_z[direction][i][1] * 2);
             }
             break;
         case BlockType::S:
-            for (int i = 0; i != 4; ++i) {
-                real_block_shape_[i].y = start_y + block_shape_s[direction][i][0];
-                real_block_shape_[i].x = start_x + block_shape_s[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                real_block_shape_[i].y = start_y + (block_shape_s[direction][i][0] * 2);
+                real_block_shape_[i].x = start_x + (block_shape_s[direction][i][1] * 2);
             }
             break;
+    }
+    for (int i = 0; i <= 12; i += 4) {
+        real_block_shape_[i + 1].y = real_block_shape_[i].y;
+        real_block_shape_[i + 1].x = real_block_shape_[i].x + 1;
+
+        real_block_shape_[i + 2].y = real_block_shape_[i].y + 1;
+        real_block_shape_[i + 2].x = real_block_shape_[i].x;
+
+        real_block_shape_[i + 3].y = real_block_shape_[i].y + 1;
+        real_block_shape_[i + 3].x = real_block_shape_[i].x + 1;
     }
 }
 
@@ -208,12 +218,12 @@ void TetrisBlock::CommandFall() {
     this->DecideShape(direction_);
 }
 
-const std::array<YX, 4>& TetrisBlock::getRealBlockPosition() const {
+const std::array<YX, 16>& TetrisBlock::getRealBlockPosition() const {
     return real_block_shape_;
 }
 
-std::array<YX, 4> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object) {
-    std::array<YX, 4> forcast_object;
+std::array<YX, 16> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object) {
+    std::array<YX, 16> forcast_object;
     int direction = object.direction_;
     BlockType type = object.type_;
     switch (type) {
@@ -237,67 +247,77 @@ std::array<YX, 4> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object)
     int start_x = object.start_pos_.x;
     switch (type) {
         case BlockType::I:
-            for (int i = 0; i != 4; ++i) {
-                forcast_object[i].y = start_y + block_shape_i[direction][i][0];
-                forcast_object[i].x = start_x + block_shape_i[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                forcast_object[i].y = start_y + (block_shape_i[direction][i][0] * 2);
+                forcast_object[i].x = start_x + (block_shape_i[direction][i][1] * 2);
             }
             break;
         case BlockType::J:
-            for (int i = 0; i != 4; ++i) {
-                forcast_object[i].y = start_y + block_shape_j[direction][i][0];
-                forcast_object[i].x = start_x + block_shape_j[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                forcast_object[i].y = start_y + (block_shape_j[direction][i][0] * 2);
+                forcast_object[i].x = start_x + (block_shape_j[direction][i][1] * 2);
             }
             break;
         case BlockType::L:
-            for (int i = 0; i != 4; ++i) {
-                forcast_object[i].y = start_y + block_shape_l[direction][i][0];
-                forcast_object[i].x = start_x + block_shape_l[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                forcast_object[i].y = start_y + (block_shape_l[direction][i][0] * 2);
+                forcast_object[i].x = start_x + (block_shape_l[direction][i][1] * 2);
             }
             break;
         case BlockType::T:
-            for (int i = 0; i != 4; ++i) {
-                forcast_object[i].y = start_y + block_shape_t[direction][i][0];
-                forcast_object[i].x = start_x + block_shape_t[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                forcast_object[i].y = start_y + (block_shape_t[direction][i][0] * 2);
+                forcast_object[i].x = start_x + (block_shape_t[direction][i][1] * 2);
             }
             break;
         case BlockType::O:
-            for (int i = 0; i != 4; ++i) {
-                forcast_object[i].y = start_y + block_shape_o[direction][i][0];
-                forcast_object[i].x = start_x + block_shape_o[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                forcast_object[i].y = start_y + (block_shape_o[direction][i][0] * 2);
+                forcast_object[i].x = start_x + (block_shape_o[direction][i][1] * 2);
             }
             break;
         case BlockType::Z:
-            for (int i = 0; i != 4; ++i) {
-                forcast_object[i].y = start_y + block_shape_z[direction][i][0];
-                forcast_object[i].x = start_x + block_shape_z[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                forcast_object[i].y = start_y + (block_shape_z[direction][i][0] * 2);
+                forcast_object[i].x = start_x + (block_shape_z[direction][i][1] * 2);
             }
             break;
         case BlockType::S:
-            for (int i = 0; i != 4; ++i) {
-                forcast_object[i].y = start_y + block_shape_s[direction][i][0];
-                forcast_object[i].x = start_x + block_shape_s[direction][i][1];
+            for (int i = 0; i <= 12; i += 4) {
+                forcast_object[i].y = start_y + (block_shape_s[direction][i][0] * 2);
+                forcast_object[i].x = start_x + (block_shape_s[direction][i][1] * 2);
             }
             break;
+    }
+    for (int i = 0; i <= 12; i += 4) {
+        forcast_object[i + 1].y = forcast_object[i].y;
+        forcast_object[i + 1].x = forcast_object[i].x + 1;
+
+        forcast_object[i + 2].y = forcast_object[i].y + 1;
+        forcast_object[i + 2].x = forcast_object[i].x;
+
+        forcast_object[i + 3].y = forcast_object[i].y + 1;
+        forcast_object[i + 3].x = forcast_object[i].x + 1;
     }
 
     return forcast_object;
 }
-std::array<YX, 4> TetrisBlock::ForcastMoving(const TetrisBlock& object, const Move& move) {
-    std::array<YX, 4> forcast_object = object.real_block_shape_;
+std::array<YX, 16> TetrisBlock::ForcastMoving(const TetrisBlock& object, const Move& move) {
+    std::array<YX, 16> forcast_object = object.real_block_shape_;
 
     switch (move) {
         case Move::kDown:
-            for (int i = 0; i != 4; ++i) {
+            for (int i = 0; i < 16; ++i) {
                 forcast_object[i].y = forcast_object[i].y + 1;
             }
             break;
         case Move::kLeft:
-            for (int i = 0; i != 4; ++i) {
+            for (int i = 0; i < 16; ++i) {
                 forcast_object[i].x = forcast_object[i].x - 1;
             }
             break;
         case Move::kRight:
-            for (int i = 0; i != 4; ++i) {
+            for (int i = 0; i < 16; ++i) {
                 forcast_object[i].x = forcast_object[i].x + 1;
             }
             break;
@@ -309,9 +329,6 @@ std::array<YX, 4> TetrisBlock::ForcastMoving(const TetrisBlock& object, const Mo
     }
 
     return forcast_object;
-}
-static std::array<YX, 16> TetrisBlock::ConvertBlockDimension4to16(const TetrisBlock& object, const std::array<YX, 4>& blocks) {
-    // TODO: 여기까지 작업중..
 }
 
 /* FramePerSecond Class ===================================================================================== */

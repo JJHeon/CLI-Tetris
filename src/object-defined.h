@@ -76,7 +76,7 @@ class Object {
 class TetrisBlock : public Object {
    private:
     BlockType type_;
-    std::array<YX, 4> real_block_shape_;
+    std::array<YX, 16> real_block_shape_;
     int direction_;
 
    private:
@@ -97,11 +97,10 @@ class TetrisBlock : public Object {
     // Custom method
     void CommandChangeDirection();
     void CommandFall();
-    const std::array<YX, 4>& getRealBlockPosition() const;
+    const std::array<YX, 16>& getRealBlockPosition() const;
 
-    static std::array<YX, 4> ForcastChangeDirection(const TetrisBlock& object);
-    static std::array<YX, 4> ForcastMoving(const TetrisBlock& object, const Move& move);
-    static std::array<YX, 16> ConvertBlockDimension4to16(const TetrisBlock& object, const std::array<YX, 4>& blocks);
+    static std::array<YX, 16> ForcastChangeDirection(const TetrisBlock& object);
+    static std::array<YX, 16> ForcastMoving(const TetrisBlock& object, const Move& move);
 };
 
 /* UI Class ===================================================================================== */
