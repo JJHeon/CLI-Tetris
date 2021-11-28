@@ -210,7 +210,7 @@ class FrameUI46X160 : public UI {
 class TetrisBoardUI : public UI {
    private:
     YX relative_start_pos_;
-    std::array<std::array<int, 21>, 41> board_;
+    std::array<std::array<int, 41>, 21> board_;
     YX block_entry_point_;
 
    private:
@@ -222,7 +222,7 @@ class TetrisBoardUI : public UI {
     void UpdatePhysics() override;
     void UpdateRendering() override;
 
-    std::array<std::array<int, 21>, 41>* getTetrisBoard();
+    std::array<std::array<int, 41>, 21>* getTetrisBoard();
     const YX& getBlockEntryPoint() const;
 };
 

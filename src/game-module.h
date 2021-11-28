@@ -167,7 +167,7 @@ class SoloPlayState : public GameState {
     LevelBoardUI* level_board_;
     InformBoardUI* inform_board_;
 
-    std::array<std::array<int, 21>, 41>* block_board_;  // From TetrisBoardUI
+    std::array<std::array<int, 41>, 21>* block_board_;  // From TetrisBoardUI
 
     TetrisBlock* block_;  //내려오는 block.
 

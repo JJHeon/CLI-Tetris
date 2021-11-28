@@ -609,7 +609,7 @@ TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
 
     // calculated value of board size 40x20
     block_entry_point_.y = 1;
-    block_entry_point_.x = 20;
+    block_entry_point_.x = 22;
 }
 TetrisBoardUI::~TetrisBoardUI() {}
 
@@ -618,7 +618,7 @@ void TetrisBoardUI::UpdatePhysics() {
     this->setIsChanged(true);
 }
 
-std::array<std::array<int, 21>, 41>* TetrisBoardUI::getTetrisBoard() {
+std::array<std::array<int, 41>, 21>* TetrisBoardUI::getTetrisBoard() {
     return &board_;
 }
 const YX& TetrisBoardUI::getBlockEntryPoint() const {
