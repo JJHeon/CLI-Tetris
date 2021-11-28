@@ -156,8 +156,9 @@ class MenuState : public GameState {
 class SoloPlayState : public GameState {
    private:
     std::vector<TimerAccessor> accessor_list_;  // accessor list
-    bool start_standby_flag_;
     random::RandomValueHandler* random_generator_;
+
+    bool start_standby_flag_;  // timer와 함께할 시작 대기 Flag
 
     TetrisBoardUI* tetris_board_;
     TopBoardUI* top_board_;
@@ -165,6 +166,13 @@ class SoloPlayState : public GameState {
     NextTetrisBoardUI* next_tetris_board_;
     LevelBoardUI* level_board_;
     InformBoardUI* inform_board_;
+
+    std::array<std::array<int, 21>, 41>* block_board_;  // From TetrisBoardUI
+
+    TetrisBlock* block_;  //내려오는 block.
+
+   private:
+    bool IsBlockAlive() const;
 
    protected:
     std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
@@ -174,6 +182,7 @@ class SoloPlayState : public GameState {
 
    public:
     SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
+    ~SoloPlayState();
 
     void Initialize() override;
 

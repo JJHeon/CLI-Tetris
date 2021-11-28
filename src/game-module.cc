@@ -247,6 +247,11 @@ SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player, UiH
     next_tetris_board_ = nullptr;
     level_board_ = nullptr;
     inform_board_ = nullptr;
+
+    block_ = nullptr;
+}
+SoloPlayState::~SoloPlayState() {
+    if (block_ != nullptr) delete block_;
 }
 
 void SoloPlayState::MoveStateHandler(StateCode where) {
@@ -292,11 +297,17 @@ void SoloPlayState::EnterProcess() {
     } else
         throw std::runtime_error(std::string("E012 : pointer under SoloPlay cannot have nullptr"));
 
+    // Get Tetris Block Board
+    block_board_ = tetris_board_->getTetrisBoard();
+
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
 ProcessResult SoloPlayState::UpdateProcess() {
-    // timer 설정값 현재 5초 만큼 대기, 그 전까지 입력을 받지 않습니다.
+    /**
+     * State 1 대기상태
+     * timer 설정값 현재 5초 만큼 대기, 그 전까지 입력을 받지 않습니다.
+     */
     if (!start_standby_flag_) {
         if (accessor_list_.at(0).IsAlive() && accessor_list_.at(0).IsRunning()) {
             return ProcessResult::kNothing;
@@ -304,18 +315,35 @@ ProcessResult SoloPlayState::UpdateProcess() {
             start_standby_flag_ = true;  //최초 실행시 5초 대기용 flag
     }
 
-    //tetris_board_->CreateTetris(static_cast<BlockType>(random_generator_->getUniformRandomNumber()));
-    // ncurse Input
+    // tetris_board_->CreateTetris(static_cast<BlockType>(random_generator_->getUniformRandomNumber()));
+    /**
+     * State 2 Block 유무 확인
+     * Block이 없으면 생성
+     */
+    if (this->IsBlockAlive()) {
+        block_ = new TetrisBlock(YX(1, 5),
+                                 static_cast<BlockType>(random_generator_->getUniform1RandomNumber()),
+                                 random_generator_->getUniform2RandomNumber());
+    }
+
+    /**
+     * State 3 입력
+     * ncurse Input
+     */
     int input = ui_.getInput();
+    Move where_to_move = Move::kNothing;
     switch (input) {
         case KEY_UP:
-
+            where_to_move = Move::kUP;
             break;
         case KEY_DOWN:
+            where_to_move = Move::kDown;
             break;
         case KEY_LEFT:
+            where_to_move = Move::kLeft;
             break;
         case KEY_RIGHT:
+            where_to_move = Move::kRight;
             break;
         case KEY_STAB:
             break;
@@ -326,6 +354,20 @@ ProcessResult SoloPlayState::UpdateProcess() {
         default:
             break;
     }
+    /**
+     * State 4 충돌 여부 확인
+     */
+    if (where_to_move == Move::kUP) {
+        std::array<YX, 4> forcast_block = TetrisBlock::ForcastChangeDirection(*block_);
+        // TODO: 여기까지 하는중
+    }
+    else if (where_to_move != Move::kNothing) {
+        std::array<YX, 4> forcast_block = TetrisBlock::ForcastMoving(*block_, where_to_move);
+    }
+
+    /**
+     * State 4 충돌 확인
+     */
 
     /*
      // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
@@ -354,6 +396,14 @@ void SoloPlayState::FinishProcess() {
     next_tetris_board_ = nullptr;
     level_board_ = nullptr;
     inform_board_ = nullptr;
+
+    block_board_ = nullptr;
+}
+bool SoloPlayState::IsBlockAlive() const {
+    if (block_ != nullptr)
+        return true;
+    else
+        return false;
 }
 
 /* GameManager Class ===================================================================================== */
