@@ -212,6 +212,108 @@ const std::array<YX, 4>& TetrisBlock::getRealBlockPosition() const {
     return real_block_shape_;
 }
 
+std::array<YX, 4> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object) {
+    std::array<YX, 4> forcast_object;
+    int direction = object.direction_;
+    BlockType type = object.type_;
+    switch (type) {
+        case BlockType::I:
+        case BlockType::Z:
+        case BlockType::S:
+            direction = (direction + 1) % 2;
+
+            break;
+        case BlockType::J:
+        case BlockType::L:
+        case BlockType::T:
+            direction = (direction + 1) % 4;
+            break;
+        case BlockType::O:
+            direction = 0;
+            break;
+    }
+
+    int start_y = object.start_pos_.y;
+    int start_x = object.start_pos_.x;
+    switch (type) {
+        case BlockType::I:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = start_y + block_shape_i[direction][i][0];
+                forcast_object[i].x = start_x + block_shape_i[direction][i][1];
+            }
+            break;
+        case BlockType::J:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = start_y + block_shape_j[direction][i][0];
+                forcast_object[i].x = start_x + block_shape_j[direction][i][1];
+            }
+            break;
+        case BlockType::L:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = start_y + block_shape_l[direction][i][0];
+                forcast_object[i].x = start_x + block_shape_l[direction][i][1];
+            }
+            break;
+        case BlockType::T:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = start_y + block_shape_t[direction][i][0];
+                forcast_object[i].x = start_x + block_shape_t[direction][i][1];
+            }
+            break;
+        case BlockType::O:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = start_y + block_shape_o[direction][i][0];
+                forcast_object[i].x = start_x + block_shape_o[direction][i][1];
+            }
+            break;
+        case BlockType::Z:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = start_y + block_shape_z[direction][i][0];
+                forcast_object[i].x = start_x + block_shape_z[direction][i][1];
+            }
+            break;
+        case BlockType::S:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = start_y + block_shape_s[direction][i][0];
+                forcast_object[i].x = start_x + block_shape_s[direction][i][1];
+            }
+            break;
+    }
+
+    return forcast_object;
+}
+std::array<YX, 4> TetrisBlock::ForcastMoving(const TetrisBlock& object, const Move& move) {
+    std::array<YX, 4> forcast_object = object.real_block_shape_;
+
+    switch (move) {
+        case Move::kDown:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].y = forcast_object[i].y + 1;
+            }
+            break;
+        case Move::kLeft:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].x = forcast_object[i].x - 1;
+            }
+            break;
+        case Move::kRight:
+            for (int i = 0; i != 4; ++i) {
+                forcast_object[i].x = forcast_object[i].x + 1;
+            }
+            break;
+        case Move::kUP:
+            // Nothing
+            break;
+        default:
+            break;
+    }
+
+    return forcast_object;
+}
+static std::array<YX, 16> TetrisBlock::ConvertBlockDimension4to16(const TetrisBlock& object, const std::array<YX, 4>& blocks) {
+    // TODO: 여기까지 작업중..
+}
+
 /* FramePerSecond Class ===================================================================================== */
 // FramePerSecondUI::FramePerSecondUI(YX start_pos)
 //     : Object(start_pos) {
@@ -464,6 +566,7 @@ void FrameUI46X160::UpdateRendering() {
 /* TetrisBoardUI Class ===================================================================================== */
 TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
     : UI(currnet_screen_size) {
+    // Board Initialize
     for (auto itr1 = board_.begin(); itr1 != board_.end(); ++itr1) {
         for (auto itr2 = (*itr1).begin(); itr2 != (*itr1).end(); ++itr2) {
             *itr2 = 0;
@@ -486,6 +589,10 @@ TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
     start_pos_.x = relative_start_pos_.x + offset.x;
 
     win_ = newwin(win_size_.y, win_size_.x, start_pos_.y, start_pos_.x);
+
+    // calculated value of board size 40x20
+    block_entry_point_.y = 1;
+    block_entry_point_.x = 20;
 }
 TetrisBoardUI::~TetrisBoardUI() {}
 
@@ -496,6 +603,9 @@ void TetrisBoardUI::UpdatePhysics() {
 
 std::array<std::array<int, 21>, 41>* TetrisBoardUI::getTetrisBoard() {
     return &board_;
+}
+const YX& TetrisBoardUI::getBlockEntryPoint() const {
+    return block_entry_point_;
 }
 
 void TetrisBoardUI::UpdateRendering() {

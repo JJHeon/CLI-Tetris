@@ -12,6 +12,12 @@ extern "C" {
 
 namespace cli_tetris {
 
+using Move = enum Move { kNothing = 0,
+                         kUP,
+                         kDown,
+                         kLeft,
+                         kRight };
+
 using BlockType = enum BlockType {
     I = 1,
     J = 2,
@@ -92,6 +98,10 @@ class TetrisBlock : public Object {
     void CommandChangeDirection();
     void CommandFall();
     const std::array<YX, 4>& getRealBlockPosition() const;
+
+    static std::array<YX, 4> ForcastChangeDirection(const TetrisBlock& object);
+    static std::array<YX, 4> ForcastMoving(const TetrisBlock& object, const Move& move);
+    static std::array<YX, 16> ConvertBlockDimension4to16(const TetrisBlock& object, const std::array<YX, 4>& blocks);
 };
 
 /* UI Class ===================================================================================== */
@@ -202,6 +212,7 @@ class TetrisBoardUI : public UI {
    private:
     YX relative_start_pos_;
     std::array<std::array<int, 21>, 41> board_;
+    YX block_entry_point_;
 
    private:
    public:
@@ -213,6 +224,7 @@ class TetrisBoardUI : public UI {
     void UpdateRendering() override;
 
     std::array<std::array<int, 21>, 41>* getTetrisBoard();
+    const YX& getBlockEntryPoint() const;
 };
 
 /* TopBoardUI Class ===================================================================================== */
