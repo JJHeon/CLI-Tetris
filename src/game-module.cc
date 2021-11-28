@@ -321,7 +321,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
      * Block이 없으면 생성
      */
     if (this->IsBlockAlive()) {
-        block_ = new TetrisBlock(YX(1, 5),
+        block_ = new TetrisBlock(tetris_board_->getBlockEntryPoint(),
                                  static_cast<BlockType>(random_generator_->getUniform1RandomNumber()),
                                  random_generator_->getUniform2RandomNumber());
     }
@@ -355,18 +355,38 @@ ProcessResult SoloPlayState::UpdateProcess() {
             break;
     }
     /**
+     * TODO: 일단 잘못짰는데, 블럭이 Forcast ChangeDirection, Moviing 한건 움직일 수 없다. 따라서 forcast_block이 아닌 현재 위치를 그려야 하고
+     * 충돌하고 시간이 다된 경우에 멈춰야하는 로직이 필요하며
+     * 그리고 멈추는 것은 오직 아래로 내려가는 것이 걸릴때만 수행되어야 한다.
+     */
+
+    /**
      * State 4 충돌 여부 확인
      */
-    if (where_to_move == Move::kUP) {
-        std::array<YX, 4> forcast_block = TetrisBlock::ForcastChangeDirection(*block_);
-        // TODO: 여기까지 하는중
-    }
-    else if (where_to_move != Move::kNothing) {
-        std::array<YX, 4> forcast_block = TetrisBlock::ForcastMoving(*block_, where_to_move);
+    bool is_close = false;
+    std::array<YX, 16> forcast_block;
+    if (where_to_move == Move::kUP)
+        forcast_block = TetrisBlock::ForcastChangeDirection(*block_);
+    else if (where_to_move != Move::kNothing)
+        forcast_block = TetrisBlock::ForcastMoving(*block_, where_to_move);
+
+    if (forcast_block.begin() != forcast_block.end()) {
+        for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
+            if (block_board_->at((*itr).y).at((*itr).x) != static_cast<int>(BlockType::kNothing)) is_close = true;
+        }
     }
 
     /**
-     * State 4 충돌 확인
+     * State 5 충돌하지 않았을 경우에 m
+     */
+    if (!is_close &&) {
+        for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
+            block_board_->at((*itr).y).at((*itr).x) = static_cast<int>(block_->getBlocktype());
+        }
+    }
+
+    /**
+     * State 5 충돌 확인
      */
 
     /*

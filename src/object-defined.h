@@ -19,6 +19,7 @@ using Move = enum Move { kNothing = 0,
                          kRight };
 
 using BlockType = enum BlockType {
+    kNothing = 0,
     I = 1,
     J = 2,
     L = 3,
@@ -72,7 +73,6 @@ class Object {
     virtual void UpdateRendering() = 0;
 };
 /* TetrisBlock Class ===================================================================================== */
-
 class TetrisBlock : public Object {
    private:
     BlockType type_;
@@ -98,6 +98,7 @@ class TetrisBlock : public Object {
     void CommandChangeDirection();
     void CommandFall();
     const std::array<YX, 16>& getRealBlockPosition() const;
+    const BlockType& getBlocktype() const;
 
     static std::array<YX, 16> ForcastChangeDirection(const TetrisBlock& object);
     static std::array<YX, 16> ForcastMoving(const TetrisBlock& object, const Move& move);

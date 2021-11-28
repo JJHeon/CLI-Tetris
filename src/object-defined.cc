@@ -221,6 +221,9 @@ void TetrisBlock::CommandFall() {
 const std::array<YX, 16>& TetrisBlock::getRealBlockPosition() const {
     return real_block_shape_;
 }
+const BlockType& TetrisBlock::getBlocktype() const {
+    return type_;
+}
 
 std::array<YX, 16> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object) {
     std::array<YX, 16> forcast_object;
@@ -586,7 +589,7 @@ TetrisBoardUI::TetrisBoardUI(const YX& currnet_screen_size, const YX& offset)
     // Board Initialize
     for (auto itr1 = board_.begin(); itr1 != board_.end(); ++itr1) {
         for (auto itr2 = (*itr1).begin(); itr2 != (*itr1).end(); ++itr2) {
-            *itr2 = 0;
+            *itr2 = 0;  // kNothing
         }
     }
 
