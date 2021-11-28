@@ -8,7 +8,8 @@ class RandomValueHandler final {
    private:
     std::random_device random_device_;
     std::mt19937 generator_;
-    std::uniform_int_distribution<int> uniform_distribution_;
+    std::uniform_int_distribution<int> uniform_distribution_1_;
+    std::uniform_int_distribution<int> uniform_distribution_2_;
     // std::normal_distribution<double> normal_distribution_1_;
     // std::normal_distribution<double> normal_distribution_2_;
     // std::normal_distribution<double> normal_distribution_3_;
@@ -23,8 +24,10 @@ class RandomValueHandler final {
 
    public:
     RandomValueHandler(
-        const int& uniform_distribution_start,
-        const int& uniform_distribution_end);
+        const int& uniform_distribution_1_start,
+        const int& uniform_distribution_1_end,
+        const int& uniform_distribution_2_start,
+        const int& uniform_distribution_2_end);
     // RandomValueHandler(
     //     const int& uniform_distribution_start,
     //     const int& uniform_distribution_end,
@@ -52,7 +55,8 @@ class RandomValueHandler final {
     //     const int& normal_distribution_11_diviation);
     ~RandomValueHandler() = default;
 
-    int getUniformRandomNumber();
+    int getUniform1RandomNumber();
+    int getUniform2RandomNumber();
     // int getNormalRandomNumberVer1();
     // int getNormalRandomNumberVer2();
     // int getNormalRandomNumberVer3();

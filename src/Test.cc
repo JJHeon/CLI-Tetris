@@ -30,7 +30,8 @@ int main(void) {
     try {
         Locator::provideUiHandler(new UiHandler(1));
         Locator::provideTimerHandler(new TimerHandler);
-        Locator::provideRandomValueHandler(new RandomValueHandler(1, 7));
+        Locator::provideRandomValueHandler(new RandomValueHandler(1, 7,
+                                                                  1, 4));
     } catch (std::runtime_error& e) {
         std::cout << e.what() << std::endl;
     }

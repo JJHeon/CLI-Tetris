@@ -5,10 +5,13 @@
 namespace cli_tetris::random {
 
 RandomValueHandler::RandomValueHandler(
-    const int& uniform_distribution_start,
-    const int& uniform_distribution_end)
-    :generator_(random_device_()), uniform_distribution_(uniform_distribution_start, uniform_distribution_end){}
-
+    const int& uniform_distribution_1_start,
+    const int& uniform_distribution_1_end,
+    const int& uniform_distribution_2_start,
+    const int& uniform_distribution_2_end)
+    : generator_(random_device_()),
+      uniform_distribution_1_(uniform_distribution_1_start, uniform_distribution_1_end),
+      uniform_distribution_2_(uniform_distribution_2_start, uniform_distribution_2_end) {}
 
 // RandomValueHandler::RandomValueHandler(
 //     const int& uniform_distribution_start,
@@ -49,8 +52,11 @@ RandomValueHandler::RandomValueHandler(
 //       normal_distribution_10_(normal_distribution_10_mean, normal_distribution_10_diviation),
 //       normal_distribution_11_(normal_distribution_11_mean, normal_distribution_11_diviation) {}
 
-int RandomValueHandler::getUniformRandomNumber() {
-    return uniform_distribution_(generator_);
+int RandomValueHandler::getUniform1RandomNumber() {
+    return uniform_distribution_1_(generator_);
+}
+int RandomValueHandler::getUniform2RandomNumber() {
+    return uniform_distribution_2_(generator_);
 }
 // int RandomValueHandler::getNormalRandomNumberVer1() {
 //     return std::round(normal_distribution_1_(generator_));
@@ -85,6 +91,5 @@ int RandomValueHandler::getUniformRandomNumber() {
 // int RandomValueHandler::getNormalRandomNumberVer11() {
 //     return std::round(normal_distribution_11_(generator_));
 // }
-
 
 }  // namespace cli_tetris::random
