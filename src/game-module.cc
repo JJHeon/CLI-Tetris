@@ -270,7 +270,7 @@ void SoloPlayState::EnterProcess() {
 
     start_standby_flag_ = false;
 
-    // Timer 5초 설정.
+    // 시작 대기 Timer 5초 설정.
     timer_.SetTimer(accessor_list_.at(0), 5, 0);
 
     // Drawing할 Ui object 등록
@@ -305,19 +305,20 @@ void SoloPlayState::EnterProcess() {
 }
 ProcessResult SoloPlayState::UpdateProcess() {
     /**
-     * State 1 대기상태
+     * Progress 1 대기상태
      * timer 설정값 현재 5초 만큼 대기, 그 전까지 입력을 받지 않습니다.
      */
     if (!start_standby_flag_) {
         if (accessor_list_.at(0).IsAlive() && accessor_list_.at(0).IsRunning()) {
             return ProcessResult::kNothing;
-        } else
-            start_standby_flag_ = true;  //최초 실행시 5초 대기용 flag
+        } else {
+            start_standby_flag_ = true;                           //최초 실행시 5초 대기용 flag
+            timer_.SetTimer(accessor_list_.at(1), 0, 800000000);  //800ms
+        }
     }
 
-    // tetris_board_->CreateTetris(static_cast<BlockType>(random_generator_->getUniformRandomNumber()));
     /**
-     * State 2 Block 유무 확인
+     * Progress 2 Block 유무 확인
      * Block이 없으면 생성
      */
     if (this->IsBlockAlive()) {
@@ -327,7 +328,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
     }
 
     /**
-     * State 3 입력
+     * Progress 3 입력
      * ncurse Input
      */
     int input = ui_.getInput();
@@ -354,47 +355,101 @@ ProcessResult SoloPlayState::UpdateProcess() {
         default:
             break;
     }
-    /**
-     * TODO: 일단 잘못짰는데, 블럭이 Forcast ChangeDirection, Moviing 한건 움직일 수 없다. 따라서 forcast_block이 아닌 현재 위치를 그려야 하고
-     * 충돌하고 시간이 다된 경우에 멈춰야하는 로직이 필요하며
-     * 그리고 멈추는 것은 오직 아래로 내려가는 것이 걸릴때만 수행되어야 한다.
-     */
 
     /**
-     * State 4 충돌 여부 확인
+     * proceed 4 key로 인한 움직임에 대한 충돌체크. 
      */
-    bool is_close = false;
+    bool is_move_command_possable = true;
     std::array<YX, 16> forcast_block;
-    if (where_to_move == Move::kUP)
-        forcast_block = TetrisBlock::ForcastChangeDirection(*block_);
-    else if (where_to_move != Move::kNothing)
-        forcast_block = TetrisBlock::ForcastMoving(*block_, where_to_move);
+    if (where_to_move != Move::kNothing) {
+        if (where_to_move == Move::kUP)
+            forcast_block = TetrisBlock::ForcastChangeDirection(block_->getRealBlockPosition(), block_->getBlocktype(), block_->getDirection());
 
-    if (forcast_block.begin() != forcast_block.end()) {
+        else
+            forcast_block = TetrisBlock::ForcastMoving(block_->getRealBlockPosition(), where_to_move);
+
+        //이동 가능 여부 확인
         for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
-            if (block_board_->at((*itr).y).at((*itr).x) != static_cast<int>(BlockType::kNothing)) is_close = true;
+            //아래 boundary 초과 YX인지 확인
+            if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y) {
+                is_move_command_possable = false;
+                break;
+            }
+            //양옆 boundary 초과 YX인지확인
+            else if ((*block_board_).at(0).size() <= (*itr).x || 0 >= (*itr).x) {
+                is_move_command_possable = false;
+                break;
+            }
+            //기존 Block에 닿는지
+            else if (block_board_->at((*itr).y).at((*itr).x) != static_cast<int>(BlockType::kNothing)) {
+                is_move_command_possable = false;
+                break;
+            }
         }
     }
 
     /**
-     * State 5 충돌하지 않았을 경우에 m
+     * Progress 5 일정 시간 간격 check
+     * 시간 마다 아래로 아래 방향으로 Fall, 이후 충돌체크 확인
      */
-    if (!is_close &&) {
-        for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
-            block_board_->at((*itr).y).at((*itr).x) = static_cast<int>(block_->getBlocktype());
+
+    //Falling할 시각.
+    if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
+        timer_.SetTimer(accessor_list_.at(1), 0, 800000000);
+
+        /**
+         * 한칸 Fall함에 앞서
+         * 앞서 계산된 forcast_block과 아닌 경우를 구분함
+         */
+        std::array<YX, 16> fall_block;
+        bool is_reach_end = false;
+        //미리 계산된 forcast block이 존재할 경우
+        if (is_move_command_possable) {
+            fall_block = TetrisBlock::ForcastMoving(forcast_block, Move::kDown);
+
+            //앞선 좌표와 충돌하는지 확인.
+            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
+                if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y || (*block_board_)[(*itr).y][(*itr).x] != static_cast<int>(BlockType::kNothing)) {
+                    is_reach_end = true;
+                    //현재 forcast를.
+                    //Board에 새기고
+                    //Delete block ptr
+                    //board 줄 확인.
+                    break;
+                }
+        }
+        //미리 계산된 것이 없는 경우.
+        else {
+            fall_block = TetrisBlock::ForcastMoving(block_->getRealBlockPosition(), Move::kDown);
+
+            //앞선 좌표와 충돌하는지 확인.
+            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
+                if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y || (*block_board_)[(*itr).y][(*itr).x] != static_cast<int>(BlockType::kNothing)) {
+                    is_reach_end = true;
+                    break;
+                }
+        }
+
+        //block의 마지막에 도달함.
+        if (is_reach_end) {
         }
     }
+    //아직 Fall할 시간이 아님.
+    else {
+        if (is_move_command_possable) {
+            //앞서 Progrss 4 에서 수행했던 이동이 가능하다면 다음을 수행
+            if (where_to_move == Move::kUP)
+                block_->CommandChangeDirection();
+            else
+                block_->setRealBlockPosition(std::move(forcast_block));
 
-    /**
-     * State 5 충돌 확인
-     */
-
-    /*
-     // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
-     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
-         return ProcessResult::kExit;
-     }
-     */
+            //실제 board에 기록
+            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
+                (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
+        }
+    }
+}
+else
 
     return ProcessResult::kNothing;
 }

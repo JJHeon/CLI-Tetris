@@ -221,14 +221,22 @@ void TetrisBlock::CommandFall() {
 const std::array<YX, 16>& TetrisBlock::getRealBlockPosition() const {
     return real_block_shape_;
 }
+void TetrisBlock::setRealBlockPosition(std::array<YX, 16>&& block_shape) {
+    this->start_pos_ = block_shape[0];  //shape의 0번째는 start_pos
+    this->real_block_shape_ = std::move(block_shape);
+}
+
 const BlockType& TetrisBlock::getBlocktype() const {
     return type_;
 }
+const int TetrisBlock::getDirection() const {
+    return direction_;
+}
 
-std::array<YX, 16> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object) {
-    std::array<YX, 16> forcast_object;
-    int direction = object.direction_;
-    BlockType type = object.type_;
+std::array<YX, 16> TetrisBlock::ForcastChangeDirection(const std::array<YX, 16>& shape, const BlockType& type, const int& current_direction) {
+    std::array<YX, 16> forcast_object = shape;
+    int direction = current_direction;
+
     switch (type) {
         case BlockType::I:
         case BlockType::Z:
@@ -246,8 +254,8 @@ std::array<YX, 16> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object
             break;
     }
 
-    int start_y = object.start_pos_.y;
-    int start_x = object.start_pos_.x;
+    int start_y = shape.at(0).y;  // shape[0]은 항상 start_pos
+    int start_x = shape.at(0).x;
     switch (type) {
         case BlockType::I:
             for (int i = 0; i <= 12; i += 4) {
@@ -305,8 +313,8 @@ std::array<YX, 16> TetrisBlock::ForcastChangeDirection(const TetrisBlock& object
 
     return forcast_object;
 }
-std::array<YX, 16> TetrisBlock::ForcastMoving(const TetrisBlock& object, const Move& move) {
-    std::array<YX, 16> forcast_object = object.real_block_shape_;
+std::array<YX, 16> TetrisBlock::ForcastMoving(const std::array<YX, 16>& shape, const Move& move) {
+    std::array<YX, 16> forcast_object = shape;
 
     switch (move) {
         case Move::kDown:

@@ -98,10 +98,13 @@ class TetrisBlock : public Object {
     void CommandChangeDirection();
     void CommandFall();
     const std::array<YX, 16>& getRealBlockPosition() const;
+    void setRealBlockPosition(std::array<YX, 16>&& block_shape);
     const BlockType& getBlocktype() const;
+    const int getDirection() const;
 
-    static std::array<YX, 16> ForcastChangeDirection(const TetrisBlock& object);
-    static std::array<YX, 16> ForcastMoving(const TetrisBlock& object, const Move& move);
+    static std::array<YX, 16> ForcastChangeDirection(const std::array<YX, 16>& shape, const BlockType& type, const int& current_direction);
+    //static std::array<YX, 16> ForcastChangeDirection(const TetrisBlock& object);
+    static std::array<YX, 16> ForcastMoving(const std::array<YX, 16>& shape, const Move& move);
 };
 
 /* UI Class ===================================================================================== */
