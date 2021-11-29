@@ -238,7 +238,8 @@ void MenuState::FinishProcess() {
 
 SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
     : GameState(supervisor, user_player, ui, timer),
-      start_standby_flag_(false) {
+      start_standby_flag_(false),
+      privious_block_shapes_{{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}} {
     random_generator_ = Locator::getRandomValueHandler();
 
     tetris_board_ = nullptr;
@@ -325,6 +326,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
         block_ = new TetrisBlock(tetris_board_->getBlockEntryPoint(),
                                  static_cast<BlockType>(random_generator_->getUniform1RandomNumber()),
                                  random_generator_->getUniform2RandomNumber());
+        privious_block_shapes_ = block_->getRealBlockPosition();
     }
 
     /**
@@ -391,12 +393,13 @@ ProcessResult SoloPlayState::UpdateProcess() {
     /**
      * Progress 5 일정 시간 간격 check
      * 시간 마다 아래로 아래 방향으로 Fall, 이후 충돌체크 확인
+     * 위에서 계산한 array를 바탕으로 마지막으로 값을 변경하고 저장하고 반영함.
      */
-
     //Falling할 시각.
     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
         timer_.SetTimer(accessor_list_.at(1), 0, 800000000);
 
+        /* --------------------------------------------------------------------------------- */
         /**
          * 한칸 Fall함에 앞서
          * 앞서 계산된 forcast_block과 아닌 경우를 구분함
@@ -411,10 +414,6 @@ ProcessResult SoloPlayState::UpdateProcess() {
             for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
                 if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y || (*block_board_)[(*itr).y][(*itr).x] != static_cast<int>(BlockType::kNothing)) {
                     is_reach_end = true;
-                    //현재 forcast를.
-                    //Board에 새기고
-                    //Delete block ptr
-                    //board 줄 확인.
                     break;
                 }
         }
@@ -429,9 +428,46 @@ ProcessResult SoloPlayState::UpdateProcess() {
                     break;
                 }
         }
-
+        /* --------------------------------------------------------------------------------- */
         //block의 마지막에 도달함.
         if (is_reach_end) {
+            //privious block data 제거
+            for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
+                (*block_board_)[(*itr).y][(*itr).x] = 0;
+            }
+
+            std::array<YX, 16> shape;
+            if (is_move_command_possable)
+                shape = forcast_block;
+            else
+                shape = block_->getRealBlockPosition();
+
+            privious_block_shapes_ = shape;
+
+            //실제 board에 기록
+            for (auto itr = shape.begin(); itr != shape.end(); ++itr) {
+                (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
+            }
+
+            //board line 확인
+
+            //delete block ptr
+            delete block_;
+
+        }
+        //마지막이 아닌 경우
+        else {
+            //privious block data 제거
+            for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
+                (*block_board_)[(*itr).y][(*itr).x] = 0;
+            }
+
+            privious_block_shapes_ = fall_block;
+
+            //실제 board에 기록
+            for (auto itr = fall_block.begin(); itr != fall_block.end(); ++itr) {
+                (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
+            }
         }
     }
     //아직 Fall할 시간이 아님.
@@ -443,13 +479,19 @@ ProcessResult SoloPlayState::UpdateProcess() {
             else
                 block_->setRealBlockPosition(std::move(forcast_block));
 
+            //privious block data 제거
+            for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
+                (*block_board_)[(*itr).y][(*itr).x] = 0;
+            }
+
+            privious_block_shapes_ = forcast_block;
+
             //실제 board에 기록
-            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
+            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
                 (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
+            }
         }
     }
-}
-else
 
     return ProcessResult::kNothing;
 }

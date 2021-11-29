@@ -170,6 +170,7 @@ class SoloPlayState : public GameState {
     std::array<std::array<int, 41>, 21>* block_board_;  // From TetrisBoardUI
 
     TetrisBlock* block_;  //내려오는 block.
+    std::array<YX, 16> privious_block_shapes_; //내려오기 전에 저장한 위치.
 
    private:
     bool IsBlockAlive() const;
