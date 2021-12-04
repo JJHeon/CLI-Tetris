@@ -267,6 +267,7 @@ void SoloPlayState::Initialize() {
 }
 
 void SoloPlayState::EnterProcess() {
+    using namespace object;
     ui_.ClearScreen();
 
     start_standby_flag_ = false;
@@ -274,14 +275,20 @@ void SoloPlayState::EnterProcess() {
     // 시작 대기 Timer 5초 설정.
     timer_.SetTimer(accessor_list_.at(0), 5, 0);
 
+    YX game_screen_size = GameManager::getNeededScreenSize();
+    YX current_screen_size = ui_.getCurrentScreenSize();
+    int relative_start_pos_y = ((current_screen_size.y - game_screen_size.y) / 2) + 1;
+    int relative_start_pos_x = ((current_screen_size.x - game_screen_size.x) / 2) + 1;
+
     // Drawing할 Ui object 등록
+
     ui_object_list_.push_back(std::make_unique<FrameUI46X160>(ui_.getCurrentScreenSize()));
-    ui_object_list_.push_back(std::make_unique<TetrisBoardUI>(ui_.getCurrentScreenSize(), YX(1, 1)));
-    ui_object_list_.push_back(std::make_unique<TopBoardUI>(ui_.getCurrentScreenSize(), YX(1, 47)));
-    ui_object_list_.push_back(std::make_unique<ScoreBoardUI>(ui_.getCurrentScreenSize(), YX(7, 47)));
-    ui_object_list_.push_back(std::make_unique<NextTetrisBoardUI>(ui_.getCurrentScreenSize(), YX(13, 47)));
-    ui_object_list_.push_back(std::make_unique<LevelBoardUI>(ui_.getCurrentScreenSize(), YX(27, 47)));
-    ui_object_list_.push_back(std::make_unique<InformBoardUI>(ui_.getCurrentScreenSize(), YX(33, 47)));
+    ui_object_list_.push_back(std::make_unique<TetrisBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 1)));
+    ui_object_list_.push_back(std::make_unique<TopBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<ScoreBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 7, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<NextTetrisBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 13, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<LevelBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 27, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<InformBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 33, relative_start_pos_x + 47)));
 
     if (tetris_board_ == nullptr &&
         top_board_ == nullptr &&
@@ -314,7 +321,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
             return ProcessResult::kNothing;
         } else {
             start_standby_flag_ = true;                           //최초 실행시 5초 대기용 flag
-            timer_.SetTimer(accessor_list_.at(1), 0, 800000000);  //800ms
+            timer_.SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
         }
     }
 
@@ -359,7 +366,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
     }
 
     /**
-     * proceed 4 key로 인한 움직임에 대한 충돌체크. 
+     * proceed 4 key로 인한 움직임에 대한 충돌체크.
      */
     bool is_move_command_possable = true;
     std::array<YX, 16> forcast_block;
@@ -395,7 +402,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
      * 시간 마다 아래로 아래 방향으로 Fall, 이후 충돌체크 확인
      * 위에서 계산한 array를 바탕으로 마지막으로 값을 변경하고 저장하고 반영함.
      */
-    //Falling할 시각.
+    // Falling할 시각.
     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
         timer_.SetTimer(accessor_list_.at(1), 0, 800000000);
 
@@ -429,9 +436,9 @@ ProcessResult SoloPlayState::UpdateProcess() {
                 }
         }
         /* --------------------------------------------------------------------------------- */
-        //block의 마지막에 도달함.
+        // block의 마지막에 도달함.
         if (is_reach_end) {
-            //privious block data 제거
+            // privious block data 제거
             for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
                 (*block_board_)[(*itr).y][(*itr).x] = 0;
             }
@@ -449,15 +456,15 @@ ProcessResult SoloPlayState::UpdateProcess() {
                 (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
             }
 
-            //board line 확인
+            // board line 확인
 
-            //delete block ptr
+            // delete block ptr
             delete block_;
 
         }
         //마지막이 아닌 경우
         else {
-            //privious block data 제거
+            // privious block data 제거
             for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
                 (*block_board_)[(*itr).y][(*itr).x] = 0;
             }
@@ -479,7 +486,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
             else
                 block_->setRealBlockPosition(std::move(forcast_block));
 
-            //privious block data 제거
+            // privious block data 제거
             for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
                 (*block_board_)[(*itr).y][(*itr).x] = 0;
             }

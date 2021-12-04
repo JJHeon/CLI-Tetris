@@ -11,8 +11,6 @@ extern "C" {
 
 namespace cli_tetris {
 
-
-
 /* UiHandler::ControlMenuDriver()의 parm */
 using MenuRequest = enum MenuRequest {
     UP,
@@ -24,7 +22,7 @@ using MenuRequest = enum MenuRequest {
  *  Menu, 각 Part drawing등 다양한 drawing method 집합
  */
 // /* thread에서 ncurse 출력 문제로 threadManager 사용안하기로 결정 */
-class UiHandler : public CustomThreadManager<Object> {
+class UiHandler : public CustomThreadManager<object::GraphicObject> {
     // class UiHandler {
    private:
     bool is_initialized_;
@@ -43,9 +41,9 @@ class UiHandler : public CustomThreadManager<Object> {
     void SetColors();
 
    public:
-    YX getCurrentScreenSize();
+    object::YX getCurrentScreenSize();
     // YX getGameScreenSize() const;
-    void Draw(Object* object);
+    void Draw(object::GraphicObject* object);
     void ClearScreen();
     int getInput();
 

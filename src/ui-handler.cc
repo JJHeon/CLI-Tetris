@@ -14,7 +14,7 @@ namespace cli_tetris {
 
 namespace user_thread_worker {
 
-static void UiWorker(std::mutex& mutex, std::condition_variable& cv, std::queue<Object*>& job, unsigned int& request_count) {
+static void UiWorker(std::mutex& mutex, std::condition_variable& cv, std::queue<object::GraphicObject*>& job, unsigned int& request_count) {
     while (true) {
         std::unique_lock<std::mutex> lock(mutex);
 
@@ -62,7 +62,7 @@ UiHandler::UiHandler(const int limit_queue_num) : utility::PointerQueue<Object>(
 */
 
 UiHandler::UiHandler(int thread_workers)
-    : CustomThreadManager<Object>(thread_workers, user_thread_worker::UiWorker), is_initialized_(false) {
+    : CustomThreadManager<object::GraphicObject>(thread_workers, user_thread_worker::UiWorker), is_initialized_(false) {
     assert(!is_initialized_);
     is_initialized_ = true;
 
@@ -108,16 +108,16 @@ bool UiHandler::IsInitialized() const {
     return is_initialized_;
 }
 
-YX UiHandler::getCurrentScreenSize() {
+object::YX UiHandler::getCurrentScreenSize() {
     if (!this->IsInitialized()) throw std::runtime_error(std::string("E005 : UI 초기화 안됨"));
 
-    YX n = {0, 0};
+    object::YX n = {0, 0};
     getmaxyx(stdscr, n.y, n.x);
 
     return n;
 }
 
-void UiHandler::Draw(Object* object) {
+void UiHandler::Draw(object::GraphicObject* object) {
     if (!this->IsInitialized()) throw std::runtime_error(std::string("E005 : UI 초기화 안됨"));
 
     // TODO: 여기에 object 객체를 판별해, Object 상속개체가 아니면 throw해주면 좋겠다.
