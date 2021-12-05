@@ -239,6 +239,10 @@ void TetrisBoard::UpdateRendering() {
     this->setIsChanged(false);
 }
 
+void TetrisBoard::ConnectBoard(const std::array<std::array<int, 41>, 21>* board) {
+    this->board_ = board;
+}
+
 /* TopBoard Class ===================================================================================== */
 TopBoard::TopBoard(const YX& currnet_screen_size, const YX& start_pos)
     : TerminalWindowFunction(currnet_screen_size, start_pos, YX(5, 28)) {

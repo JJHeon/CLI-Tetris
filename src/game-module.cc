@@ -63,7 +63,8 @@ void StartState::EnterProcess() {
 }
 ProcessResult StartState::UpdateProcess() {
     // timer 설정값 현재 10초 만큼 대기 후, MenuState로 이동.
-    if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
+
+    if (TimerAccessor::WaitingTimer(accessor_list_.at(0))) {
         MoveStateHandler(StateCode::kMenu);
         return ProcessResult::kChangeState;
     }
@@ -227,6 +228,7 @@ void MenuState::FinishProcess() {
 /* GameState - SoloPlayState Class ===================================================================================== */
 SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player)
     : GameState(supervisor, user_player) {
+    board_object_ptr_ = nullptr;
 }
 SoloPlayState::~SoloPlayState() {
 }
@@ -267,6 +269,11 @@ void SoloPlayState::EnterProcess() {
     ui_object_list_.push_back(std::make_unique<LevelBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 27, relative_start_pos_x + 47)));
     ui_object_list_.push_back(std::make_unique<InformBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 33, relative_start_pos_x + 47)));
 
+    // Get TetrisBoard Pointer
+    board_object_ptr_ = dynamic_cast<TetrisBoard*>(ui_object_list_[1].get());
+    // Connect UI and Engine
+    board_object_ptr_->ConnectBoard(user_tetris_engine_.getTetrisBoard());
+
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
@@ -284,6 +291,8 @@ void SoloPlayState::RenderProcess() {
 void SoloPlayState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
+
+    board_object_ptr_ = nullptr;
 }
 
 /* GameManager Class ===================================================================================== */

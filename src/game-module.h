@@ -29,7 +29,7 @@
 #include "ui-handler.h"
 #include "timer-handler.h"
 #include "random-generate-handler.h"
-// #include "input-layer.h"
+#include "tetris-engine.h"
 
 namespace cli_tetris {
 using namespace timer;
@@ -173,6 +173,11 @@ class SoloPlayState : public GameState {
 
     std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
     std::vector<TimerAccessor> accessor_list_;                    // accessor list
+
+    engine::TetrisEngine user_tetris_engine_;
+
+    object::TetrisBoard* board_object_ptr_;
+
 
    private:
     void MoveStateHandler(StateCode where) override;

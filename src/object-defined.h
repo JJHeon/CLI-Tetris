@@ -172,6 +172,9 @@ class TetrisBoard : public TerminalWindowFunction {
     // TerminalWindowFunction override
     void UpdateState() override;
     void UpdateRendering() override;
+
+    // Custom
+    void ConnectBoard(const std::array<std::array<int, 41>, 21>* board);
 };
 
 /* TopBoard Class ===================================================================================== */
