@@ -1,3 +1,12 @@
+/** Note
+ * Main
+ *
+ * -- 설명 --
+ * GameManager Start
+ *
+ * -- 변경 이력 -- (21.12.05 이전 기록 없음)
+ */
+
 #include <iostream>
 
 #include "game-module.h"
@@ -27,6 +36,7 @@ int main(void) {
      *  TimerHandler - linux system call 포함
      *  단 한개의 객체만 허용됨
      * */
+    // Provider Init
     try {
         Locator::provideUiHandler(new UiHandler());
         Locator::provideTimerHandler(new TimerHandler);
@@ -36,12 +46,10 @@ int main(void) {
         std::cout << e.what() << std::endl;
     }
 
-    //* TestCode for Timer */
-    // TimerTestcode();
+    /* Tetris Manager Create */
+    GameManager tetris(StateCode::kStart);
 
-    /* Tetris Manager */
-    GameManager tetris(Locator::getUiHandler(), Locator::getTimerHandler(), StateCode::kStart);
-
+    // Tetris Manager Initalize
     try {
         tetris.Initialize();
     } catch (std::runtime_error& e) {
@@ -49,16 +57,26 @@ int main(void) {
     }
 
     if (!tetris.CheckGameState()) return -1;
-    tetris.Run();
+
+    // Tetris Manager Start
+    try {
+        tetris.Run();
+    } catch (std::runtime_error& e) {
+        std::cout << e.what() << std::endl;
+    } catch (...) {
+        std::cout << std::string("Default Error!") << std::endl;
+    }
 
     // Finish ncurse, timer
     Locator::releaseUiHandler();
     Locator::releaseTimerHandler();
+    Locator::releaseRandomValueHandler();
 
     return 0;
 }
 
-void TimerTestcode() {
+namespace cli_tetris::Test::TestCode {
+static void TimerTestcode() {
     using cli_tetris::Locator;
     using namespace cli_tetris::timer;
     TimerHandler* tmp = Locator::getTimerHandler();
@@ -169,3 +187,4 @@ retry7:
         }
     }
 }
+}  // namespace cli_tetris::Test::TestCode
