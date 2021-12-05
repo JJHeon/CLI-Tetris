@@ -1,3 +1,23 @@
+/** Note
+ * game-module
+ *
+ * -- 설명 --
+ * GameState class는 state pattern 위한 abstract class입니다.
+ * GameManager는 GameState를 관리하는 책임을 가집니다.
+ * GameManager는 GameState를 GameState array에 보관합니다. 이를 사용해서 State를 변경하는 method를 State들에게 제공합니다.
+ * GameState는 GameManager에 접근할 수 있는 참조자를 받습니다.
+ *
+ * GameState들은 GameManager 의 Initalize에서 Initialize가 수행됩니다.
+ * 각각의 GameState들은
+ * EnterProcess
+ * UpdateProcess
+ * RenderProcess
+ * FinishProcess
+ * 를 가집니다.
+ *
+ * -- 변경 이력 -- (21.12.05 이전 기록 없음)
+ */
+
 #ifndef CLI_TETRIS_GAME_MODULE_H_
 #define CLI_TETRIS_GAME_MODULE_H_
 
@@ -51,11 +71,9 @@ class GameState {
    protected:
     GameManager& supervisor_;  // GameState를 실행한(관리하는) Manager, 일반적으로 MoveState를 위해 사용합니다.
     UserData& player_;         //게임을 실행한 User
-    UiHandler& ui_;
-    TimerHandler& timer_;
 
    protected:
-    GameState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer);
+    GameState(GameManager& supervisor, UserData& user_player);
 
    protected:
     virtual void MoveStateHandler(StateCode where) = 0;
@@ -70,32 +88,26 @@ class GameState {
      */
     virtual void Initialize() = 0;
 
-    // virtual ProcessResult InputProcess() = 0;
-    // virtual ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) = 0;
     virtual ProcessResult UpdateProcess() = 0;
     virtual void RenderProcess() = 0;
     virtual void EnterProcess() = 0;
     virtual void FinishProcess() = 0;
 };
 /* GameState - StartState Class ===================================================================================== */
-/** 게임의 시작단계에서 Device component 등록 및 UserData loading을 담당합니다. */
 class StartState : public GameState {
    private:
-    int ready_milliseconds_;                    // StartState 대기 시간
-    std::vector<TimerAccessor> accessor_list_;  // accessor list
-
-   protected:
+    UiHandler* ui_handler_;
+    TimerHandler* timer_handler_;
     std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
+    std::vector<TimerAccessor> accessor_list_;                    // accessor list
 
-   protected:
+   private:
     void MoveStateHandler(StateCode where) override;
 
    public:
-    StartState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
+    StartState(GameManager& supervisor, UserData& user_player);
 
     void Initialize() override;
-    // ProcessResult InputProcess() override;
-    // ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
     ProcessResult UpdateProcess() override;
     void RenderProcess() override;
     void EnterProcess() override;
@@ -104,20 +116,18 @@ class StartState : public GameState {
 /* GameState - EndState Class ===================================================================================== */
 class EndState : public GameState {
    private:
-    int ready_milliseconds_;                    // EndState 대기 시간
-    std::vector<TimerAccessor> accessor_list_;  // accessor list
-   protected:
+    UiHandler* ui_handler_;
+    TimerHandler* timer_handler_;
     std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
+    std::vector<TimerAccessor> accessor_list_;                    // accessor list
 
-   protected:
+   private:
     void MoveStateHandler(StateCode where) override;
 
    public:
-    EndState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
+    EndState(GameManager& supervisor, UserData& user_player);
 
     void Initialize() override;
-    // ProcessResult InputProcess() override;
-    // ProcessResult UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) override;
     ProcessResult UpdateProcess() override;
     void RenderProcess() override;
     void EnterProcess() override;
@@ -126,9 +136,9 @@ class EndState : public GameState {
 /* GameState - MenuState Class ===================================================================================== */
 class MenuState : public GameState {
    private:
-    std::vector<std::unique_ptr<GraphicObject>>
-        ui_object_list_;  // Ui list
-                          // CommandQueue input_buffers_;
+    UiHandler* ui_handler_;
+    std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
+
     using MenuItem = enum MenuItem {
         kKeepPlaying = 0,
         kCreateNewPlay = 1,
@@ -140,14 +150,13 @@ class MenuState : public GameState {
     int current_select_;
     MenuObject* menu_accessor_;
 
-   protected:
+   private:
     void MoveStateHandler(StateCode where) override;
 
    public:
-    MenuState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
+    MenuState(GameManager& supervisor, UserData& user_player);
 
     void Initialize() override;
-    // ProcessResult InputProcess() override;
     ProcessResult UpdateProcess() override;
     void RenderProcess() override;
     void EnterProcess() override;
@@ -158,17 +167,18 @@ class MenuState : public GameState {
 
 class SoloPlayState : public GameState {
    private:
-    std::vector<TimerAccessor> accessor_list_;  // accessor list
+    UiHandler* ui_handler_;
+    TimerHandler* timer_handler_;
     random::RandomValueHandler* random_generator_;
 
-   protected:
     std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
+    std::vector<TimerAccessor> accessor_list_;                    // accessor list
 
-   protected:
+   private:
     void MoveStateHandler(StateCode where) override;
 
    public:
-    SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& tiemr);
+    SoloPlayState(GameManager& supervisor, UserData& user_player);
     ~SoloPlayState();
 
     void Initialize() override;
@@ -180,61 +190,13 @@ class SoloPlayState : public GameState {
 };
 
 /* TODO: 미구현, 추후 구현 예정
-// class TemperaryStopState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
+// class TemperaryStopState
+// class DuoPlayState
+// class MultiPlayState
+// class SettingState
+// class CreditState
 
-//    public:
-//     TemperaryStopState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
-// class DuoPlayState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
 
-//    public:
-//     DuoPlayState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
-// class MultiPlayState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
-
-//    public:
-//     MultiPlayState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
-// class SettingState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
-
-//    public:
-//     SettingState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
-// class CreditState : public GameState {
-//    protected:
-//     void MoveStateHandler(StateCode where) override;
-
-//    public:
-//     CreditState(GameManager& supervisor, UserData& user_player, Ui& ui);
-//     void Initialize() override;
-//     InputProcessResult InputProcess() override;
-//     void UpdateProcess() override;
-//     void RenderProcess() override;
-// };
 /* GameManager Class ===================================================================================== */
 
 /** GameManager는 GameState를 초기화하고 실행할 형태를 제공하는 Class입니다.
@@ -242,9 +204,7 @@ class SoloPlayState : public GameState {
  *  빠른 State 전환을 위해서 사전에 생성된 state들을 select_state_가 가르키는 형식으로 구성되있습니다.
  *  main()에서 단 하나의 객체만 생성되며 CheckGameState() 이후 Run() 됩니다.
  *  Run() 시작 단계에서 game_state_에 nullptr가 존재하면 안됩니다.
- *  Initialize는 반드시 의도적으로 최초 한번은 실행되어야 합니다. (virtual method라서 생성자에서 호출할 수 없었습니다.)
  *  등록된 GameState들은 오직 GameManager의 허락된(public 된) 기능만을 사용할 수 있습니다.
-
  */
 class GameManager final {
    private:
@@ -252,21 +212,16 @@ class GameManager final {
     StateCode select_state_;
 
    private:
-    // GameManager는 driver 정보를 관리합니다.
-    UiHandler* const ui_handler_;
-    timer::TimerHandler* const timer_handler_;
-    // GameManager는 접속한 Player의 정보를 관리합니다.
     std::unique_ptr<UserData> player_;
 
     /* 게임 실행에 필요한 console screen의 size입니다. */
-    // constexpr static YX game_size_ = {.y = 46, .column = 160};
     constexpr static YX game_size_ = YX(46, 160);
-    /* UI Object for frame time */
-   public:  // TODO: Test
-            // private: //Origianl
-            // std::unique_ptr<FramePerSecondUI> frame_time_object_;
+
+   private:
+    UiHandler* ui_handler_;
+
    public:
-    GameManager(UiHandler* ui_driver, timer::TimerHandler* timer_handler, StateCode select_state = StateCode::kStart);
+    GameManager(StateCode select_state = StateCode::kStart);
     ~GameManager();
 
     // Game Run
@@ -282,16 +237,17 @@ class GameManager final {
     void LoadPreviousUserData();  // TODO: File system 관련 예외처리 필요.
 
     static YX getNeededScreenSize();
-
-    // TestCode
-    friend void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::nano> diff, std::chrono::time_point<std::chrono::high_resolution_clock> present, std::chrono::time_point<std::chrono::high_resolution_clock> past);
 };
 
+namespace GameModuleTest {
 // TestCode
 void GameManagerTestCode(void);
 void GameManagerTestThreadManager(void);
 void GameManagerTestThread(int* start_t);
 void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::nano> diff, std::chrono::time_point<std::chrono::high_resolution_clock> present, std::chrono::time_point<std::chrono::high_resolution_clock> past);
+
+}  // namespace GameModuleTest
+
 }  // namespace cli_tetris
 
 #endif  // CLI_TETRIS_GAME_MODULE_H_

@@ -24,15 +24,15 @@ using namespace object;
 
 /* GameState Class ===================================================================================== */
 
-GameState::GameState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : supervisor_(supervisor), player_(user_player), ui_(ui), timer_(timer) {}
+GameState::GameState(GameManager& supervisor, UserData& user_player)
+    : supervisor_(supervisor), player_(user_player) {}
 
 GameState::~GameState() {}
 
 /* GameState - StartState Class ===================================================================================== */
 
-StartState::StartState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : GameState(supervisor, user_player, ui, timer) {
+StartState::StartState(GameManager& supervisor, UserData& user_player)
+    : GameState(supervisor, user_player) {
 }
 
 void StartState::MoveStateHandler(StateCode where) {
@@ -41,30 +41,26 @@ void StartState::MoveStateHandler(StateCode where) {
 }
 
 void StartState::Initialize() {
-    //대기시간 설정
-    ready_milliseconds_ = 5000;
+    // Get Handlers
+    ui_handler_ = Locator::getUiHandler();
+    timer_handler_ = Locator::getTimerHandler();
 
     // Get Timer accessor
-    accessor_list_.push_back(timer_.CreateTimer());
+    accessor_list_.push_back(timer_handler_->CreateTimer());
 }
 
-// ProcessResult StartState::InputProcess() {
-//     //아무것도 입력받지 않습니다.
-//     return ProcessResult::kNothing;
-// }
 void StartState::EnterProcess() {
-    ui_.ClearScreen();
+    ui_handler_->ClearScreen();
 
     // Timer 10초 설정.
-    timer_.SetTimer(accessor_list_.at(0), 1, 0);
+    timer_handler_->SetTimer(accessor_list_.at(0), 1, 0);
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<StandbyPage>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<StandbyPage>(ui_handler_->getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
-// ProcessResult StartState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
 ProcessResult StartState::UpdateProcess() {
     // timer 설정값 현재 10초 만큼 대기 후, MenuState로 이동.
     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
@@ -79,20 +75,19 @@ void StartState::RenderProcess() {
     for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
         if (!(*itr)->IsChanged()) continue;
 
-        ui_.Draw((*itr).get());
+        ui_handler_->Draw((*itr).get());
     }
 }
 
 void StartState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
-    ui_.ClearScreen();
 }
 
 /* GameState - EndState Class ===================================================================================== */
 
-EndState::EndState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : GameState(supervisor, user_player, ui, timer) {}
+EndState::EndState(GameManager& supervisor, UserData& user_player)
+    : GameState(supervisor, user_player) {}
 
 void EndState::MoveStateHandler(StateCode where) {
     this->FinishProcess();
@@ -100,35 +95,27 @@ void EndState::MoveStateHandler(StateCode where) {
 }
 
 void EndState::Initialize() {
-    //대기시간 설정
-    ready_milliseconds_ = 10000;
+    // Get Handlers
+    ui_handler_ = Locator::getUiHandler();
+    timer_handler_ = Locator::getTimerHandler();
 
     // Get Timer accessor
-    accessor_list_.push_back(timer_.CreateTimer());
+    accessor_list_.push_back(timer_handler_->CreateTimer());
 }
 
-// ProcessResult EndState::InputProcess() {
-//     //아무것도 입력받지 않습니다.
-//     return ProcessResult::kNothing;
-// }
 void EndState::EnterProcess() {
-    ui_.ClearScreen();
+    ui_handler_->ClearScreen();
 
     // Timer 5초 설정.
-    timer_.SetTimer(accessor_list_.at(0), 5, 0);
+    timer_handler_->SetTimer(accessor_list_.at(0), 5, 0);
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<ExitPage>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<ExitPage>(ui_handler_->getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
-// ProcessResult EndState::UpdateProcess(std::chrono::duration<int64_t, std::nano> diff) {
 ProcessResult EndState::UpdateProcess() {
-    // auto n = std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
-    // if (n < 0) return ProcessResult::kOut;
-    // ready_milliseconds_ -= n;
-
     // timer 설정값 현재 5초 만큼 대기 후, Exit. Game 종료.
     if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
         return ProcessResult::kExit;
@@ -140,20 +127,19 @@ void EndState::RenderProcess() {
     for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
         if (!(*itr)->IsChanged()) continue;
 
-        ui_.Draw((*itr).get());
+        ui_handler_->Draw((*itr).get());
     }
 }
 
 void EndState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
-    ui_.ClearScreen();
 }
 
 /* GameState - MenuState Class ===================================================================================== */
 
-MenuState::MenuState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : GameState(supervisor, user_player, ui, timer), current_select_(kKeepPlaying) {}
+MenuState::MenuState(GameManager& supervisor, UserData& user_player)
+    : GameState(supervisor, user_player), current_select_(kKeepPlaying) {}
 
 void MenuState::MoveStateHandler(StateCode where) {
     this->FinishProcess();
@@ -161,18 +147,16 @@ void MenuState::MoveStateHandler(StateCode where) {
 }
 
 void MenuState::Initialize() {
+    // Get Handlers
+    ui_handler_ = Locator::getUiHandler();
 }
 
-// ProcessResult MenuState::InputProcess() {
-//     return ProcessResult::kNothing;
-// }
-
 void MenuState::EnterProcess() {
-    ui_.ClearScreen();
+    ui_handler_->ClearScreen();
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<FrameObject46X160>(ui_.getCurrentScreenSize()));
-    ui_object_list_.push_back(std::make_unique<MenuObject>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<FrameObject46X160>(ui_handler_->getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<MenuObject>(ui_handler_->getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
@@ -184,16 +168,16 @@ void MenuState::EnterProcess() {
 ProcessResult MenuState::UpdateProcess() {
     // ncurse Input
     auto menu_ptr = menu_accessor_->GetMenuAccessor();
-    int input = ui_.getInput();
+    int input = ui_handler_->getInput();
     switch (input) {
         case KEY_DOWN:
-            ui_.ControlMenuDriver(menu_ptr, MenuRequest::DOWN);
+            ui_handler_->ControlMenuDriver(menu_ptr, MenuRequest::DOWN);
             if (current_select_ != MenuItem::kExitPlay) current_select_++;
             menu_accessor_->UpdateState();
 
             break;
         case KEY_UP:
-            ui_.ControlMenuDriver(menu_ptr, MenuRequest::UP);
+            ui_handler_->ControlMenuDriver(menu_ptr, MenuRequest::UP);
             if (current_select_ != MenuItem::kKeepPlaying) current_select_--;
             menu_accessor_->UpdateState();
             break;
@@ -231,22 +215,18 @@ void MenuState::RenderProcess() {
     for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
         if (!(*itr)->IsChanged()) continue;
 
-        ui_.Draw((*itr).get());
+        ui_handler_->Draw((*itr).get());
     }
 }
 
 void MenuState::FinishProcess() {
-    // keypad(menu_accessor_->GetMenuWinAccessor(), FALSE);
     //  할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
-    // ui_.ClearScreen();
 }
 
 /* GameState - SoloPlayState Class ===================================================================================== */
-
-SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : GameState(supervisor, user_player, ui, timer) {
-    random_generator_ = Locator::getRandomValueHandler();
+SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player)
+    : GameState(supervisor, user_player) {
 }
 SoloPlayState::~SoloPlayState() {
 }
@@ -257,30 +237,35 @@ void SoloPlayState::MoveStateHandler(StateCode where) {
 }
 
 void SoloPlayState::Initialize() {
+    // Get Handlers
+    ui_handler_ = Locator::getUiHandler();
+    timer_handler_ = Locator::getTimerHandler();
+    random_generator_ = Locator::getRandomValueHandler();
+
     // Get Timer accessor
-    accessor_list_.push_back(timer_.CreateTimer());
-    accessor_list_.push_back(timer_.CreateTimer());
+    accessor_list_.push_back(timer_handler_->CreateTimer());
+    accessor_list_.push_back(timer_handler_->CreateTimer());
 }
 
 void SoloPlayState::EnterProcess() {
-    ui_.ClearScreen();
+    ui_handler_->ClearScreen();
 
     // 시작 대기 Timer 5초 설정.
-    timer_.SetTimer(accessor_list_.at(0), 5, 0);
+    timer_handler_->SetTimer(accessor_list_.at(0), 5, 0);
 
     YX game_screen_size = GameManager::getNeededScreenSize();
-    YX current_screen_size = ui_.getCurrentScreenSize();
+    YX current_screen_size = ui_handler_->getCurrentScreenSize();
     int relative_start_pos_y = ((current_screen_size.y - game_screen_size.y) / 2) + 1;
     int relative_start_pos_x = ((current_screen_size.x - game_screen_size.x) / 2) + 1;
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<FrameObject46X160>(ui_.getCurrentScreenSize()));
-    ui_object_list_.push_back(std::make_unique<TetrisBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 1)));
-    ui_object_list_.push_back(std::make_unique<TopBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<ScoreBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 7, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<NextTetrisBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 13, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<LevelBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 27, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<InformBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 33, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<FrameObject46X160>(ui_handler_->getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<TetrisBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 1)));
+    ui_object_list_.push_back(std::make_unique<TopBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<ScoreBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 7, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<NextTetrisBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 13, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<LevelBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 27, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<InformBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 33, relative_start_pos_x + 47)));
 
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
@@ -292,7 +277,7 @@ void SoloPlayState::RenderProcess() {
     for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
         if (!(*itr)->IsChanged()) continue;
 
-        ui_.Draw((*itr).get());
+        ui_handler_->Draw((*itr).get());
     }
 }
 
@@ -303,8 +288,8 @@ void SoloPlayState::FinishProcess() {
 
 /* GameManager Class ===================================================================================== */
 constexpr YX GameManager::game_size_;
-GameManager::GameManager(UiHandler* ui_handler, timer::TimerHandler* timer_handler, StateCode select_state)
-    : ui_handler_(ui_handler), timer_handler_(timer_handler), select_state_(select_state) {
+GameManager::GameManager(StateCode select_state)
+    : select_state_(select_state) {
 }
 
 // TODO: exception condtion's needed
@@ -317,8 +302,8 @@ void GameManager::ChangeSelcet(StateCode where) {
 }
 
 bool GameManager::CheckGameState() const {
-    // for (int i = 0; i < game_state_.size(); ++i) { //TODO: Original
-    for (int i = 0; i < 2; ++i) {  // TODO: 개발용 임시, EndState까지
+    // for (int i = 0; i < game_state_.size(); ++i) { //Original
+    for (int i = 0; i < 4; ++i) {  // TODO: 개발용 임시
         if (game_state_[i] == nullptr) return false;
     }
 
@@ -340,22 +325,17 @@ void GameManager::LoadPreviousUserData() {
 }
 
 void GameManager::Initialize() {
-    // Ui driver는 생성자 단계에서 받습니다.
-    if (ui_handler_ == nullptr) throw std::runtime_error(std::string("E001 : UI Driver 없음"));
-    if (timer_handler_ == nullptr) throw std::runtime_error(std::string("EE008 : TimerHandler 등록 안됨"));
+    // Get Handlers
+    ui_handler_ = Locator::getUiHandler();
 
     // GameState Initalizing
-    for (auto i = game_state_.begin(); i != game_state_.end(); ++i) (*i) = nullptr;  // std::move(nullptr);
+    for (auto i = game_state_.begin(); i != game_state_.end(); ++i) (*i) = nullptr;
+
     // GameState는 GameManager가 소유합니다.
-    game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
-    game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
-    game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
-    game_state_[3] = std::make_unique<SoloPlayState>(*this, *(player_.get()), *(ui_handler_), *(timer_handler_));
-    // game_state_[3] = std::make_unique<TemperaryStopState>(*this, *(player_.get()), *(ui_));
-    // game_state_[5] = std::make_unique<DuoPlayState>(*this, *(player_.get()), *(ui_));
-    // game_state_[6] = std::make_unique<MultiPlayState>(*this, *(player_.get()), *(ui_));
-    // game_state_[7] = std::make_unique<SettingState>(*this, *(player_.get()), *(ui_));
-    // game_state_[8] = std::make_unique<CreditState>(*this, *(player_.get()), *(ui_));
+    game_state_[0] = std::make_unique<StartState>(*this, *(player_.get()));
+    game_state_[1] = std::make_unique<EndState>(*this, *(player_.get()));
+    game_state_[2] = std::make_unique<MenuState>(*this, *(player_.get()));
+    game_state_[3] = std::make_unique<SoloPlayState>(*this, *(player_.get()));
 
     // 생성 Check
     if (!CheckGameState()) throw std::runtime_error(std::string("E002 : GameState isn't Loaded"));
@@ -366,7 +346,7 @@ void GameManager::Initialize() {
         game_state_[i]->Initialize();
 
     /** 화면 크기 Check, 게임 실행에 필요한 크기는 다음과 같습니다.
-     *  y   : 46
+     *  y : 46
      *  x : 160
      */
     YX screen_size;
@@ -374,34 +354,17 @@ void GameManager::Initialize() {
     if (!CheckScreenSize(screen_size)) throw std::runtime_error(std::string("E003 : Terminal 크기 부족"));
 
     /*TODO: Sound 등록 필요 */
-
-    /* FrameTime Object 등록 */
-    // frame_time_object_ = std::make_unique<FramePerSecondUI>(game_size_.y - 2, 1);
 }
 
 void GameManager::Run() {
-    // TestCode //TODO: 나중에 지울것
-    // GameManagerTestCode();
-    // GameManagerTestThreadManager();
-
     game_state_.at(static_cast<int>(select_state_))->EnterProcess();
-    // std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
 
     while (true) {
         ProcessResult n = ProcessResult::kNothing;
 
-        // std::chrono::time_point<std::chrono::high_resolution_clock> present = std::chrono::high_resolution_clock::now();
-        // auto diff = present - past;
-        // past = present;
-
-        // GameManagerTestTimer(*this, diff, present, past);  // TestCode
-
-        /* 21.11.14 Command Pattern을 사용하지 않기로 했으므로, 현재 시점에선 InputProccess는 필요가 없다. */
-        // if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
         if ((n = game_state_.at(static_cast<int>(select_state_))->UpdateProcess()) == ProcessResult::kNothing) {
             game_state_.at(static_cast<int>(select_state_))->RenderProcess();
         }
-        //}
 
         switch (n) {
             case ProcessResult::kNothing:
@@ -425,6 +388,7 @@ void GameManager::Run() {
 }
 
 /* TestCode =========================================================================================== */
+namespace GameModuleTest {
 void GameManagerTestCode(void) {
     attrset(A_ITALIC);
     mvprintw(5, 0, "attrset ITALIC");
@@ -493,5 +457,5 @@ void GameManagerTestTimer(GameManager& G, std::chrono::duration<int64_t, std::na
     // wrefresh(win_);
     // usleep(1);
 }
-
+}  // namespace GameModuleTest
 }  // namespace cli_tetris
