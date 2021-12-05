@@ -27,6 +27,7 @@
 
 namespace cli_tetris::timer {
 
+/* TimerAccessor Class ===================================================================================== */
 /**
  * TimerHandler를 위한 key 로 사용됩니다.
  * TimerHandler의 CreateTimer method를 통해 생성됩니다.
@@ -51,8 +52,18 @@ class TimerAccessor {
 
     bool IsRunning() const;
     bool IsAlive() const;
+
+    static bool WaitingTimer(const TimerAccessor& accessor);
 };
 
+inline bool TimerAccessor::WaitingTimer(const TimerAccessor& accessor) {
+    if (accessor.IsAlive() && !accessor.IsRunning())
+        return true;
+    else
+        return false;
+}
+
+/* TimerHandler Class ===================================================================================== */
 class TimerHandler {
    private:
     class TimerData {

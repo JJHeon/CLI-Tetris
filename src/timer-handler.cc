@@ -145,6 +145,8 @@ bool TimerAccessor::IsAlive() const {
         return false;
 }
 
+
+
 /* class TimerData  ===================================================================================== */
 TimerHandler::TimerData::TimerData(std::shared_ptr<bool> accessor_allive) : accessor_allive_(std::move(accessor_allive)) {}
 TimerHandler::TimerData::TimerData(const TimerData& obj) : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
