@@ -1,3 +1,17 @@
+
+    bool start_standby_flag_;  // timer와 함께할 시작 대기 Flag
+
+    TetrisBoard* tetris_board_;
+    TopBoard* top_board_;
+    ScoreBoard* score_board_;
+    NextTetrisBoard* next_tetris_board_;
+    LevelBoard* level_board_;
+    InformBoard* inform_board_;
+
+    std::array<std::array<int, 41>, 21>* block_board_;  // From TetrisBoardUI
+
+    std::array<YX, 16> privious_block_shapes_;  //내려오기 전에 저장한 위치.
+
 // /**
 //  * Progress 1 대기상태
 //  * timer 설정값 현재 5초 만큼 대기, 그 전까지 입력을 받지 않습니다.
