@@ -146,10 +146,10 @@ bool TimerAccessor::IsAlive() const {
 }
 
 /* class TimerData  ===================================================================================== */
-TimerData::TimerData(std::shared_ptr<bool> accessor_allive) : accessor_allive_(std::move(accessor_allive)) {}
-TimerData::TimerData(const TimerData& obj) : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
-TimerData::TimerData(TimerData&& obj) noexcept : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
-TimerData& TimerData::operator=(const TimerData& obj) {
+TimerHandler::TimerData::TimerData(std::shared_ptr<bool> accessor_allive) : accessor_allive_(std::move(accessor_allive)) {}
+TimerHandler::TimerData::TimerData(const TimerData& obj) : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
+TimerHandler::TimerData::TimerData(TimerData&& obj) noexcept : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
+TimerHandler::TimerData& TimerHandler::TimerData::operator=(const TimerData& obj) {
     this->accessor_allive_ = obj.accessor_allive_;
     this->timer_ = obj.timer_;
 
