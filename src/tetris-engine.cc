@@ -1,5 +1,7 @@
 #include "tetris-engine.h"
 
+#include <algorithm>
+
 namespace cli_tetris::engine {
 
 static constexpr int block_shape_i[2][4][2] = {
@@ -279,6 +281,50 @@ bool TetrisEngine::FallCurrentBlock() {
     }
 
     return true;
+}
+
+bool TetrisEngine::MovingCurrentBlock(Move where) {
+    int offset_y = 0;
+    int offset_x = 0;
+    switch (where) {
+        case Move::kDown:
+            offset_y = 1;
+            for (int i = 0; i < 16; ++i) {
+                forcast_object[i].y = forcast_object[i].y + 1;
+            }
+            break;
+        case Move::kLeft:
+            offset_x = -1;
+            for (int i = 0; i < 16; ++i) {
+                forcast_object[i].x = forcast_object[i].x - 1;
+            }
+            break;
+        case Move::kRight:
+            offset_x = 1;
+            for (int i = 0; i < 16; ++i) {
+                forcast_object[i].x = forcast_object[i].x + 1;
+            }
+            break;
+        case Move::kUP:
+            // Nothing
+            break;
+    }
+    std::array<object::YX, 16>& preview = current_block_->pos;
+    std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](object::YX& i) {
+        i.y = offset_y;
+        i.x = offset_x;
+    });
+
+    std::find_if(preview.begin(), preview.end(), [this](const object::YX& i) -> bool {
+        if ()
+    });
+}
+
+bool TetrisEngine::IsNextBlockExist() const {
+    if (next_block_ == nullptr)
+        return false;
+    else
+        return true;
 }
 
 }  // namespace cli_tetris::engine

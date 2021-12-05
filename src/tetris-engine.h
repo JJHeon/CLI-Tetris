@@ -92,10 +92,11 @@ class TetrisEngine {
     const std::array<object::YX, 16> getNextBlockShape() const;
     bool RotateCurrentBlock();
     bool FallCurrentBlock();
+    bool MovingCurrentBlock(Move where);
+    bool IsNextBlockExist() const;
 
     // LATER:
     // bool IsCurrentBlockExist() const;
-    // bool IsNextBlockExist() const;
     // getCurrentBlockType();
     // getFinishedLineNumbers();
 };

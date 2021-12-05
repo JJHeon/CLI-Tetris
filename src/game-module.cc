@@ -228,7 +228,7 @@ void MenuState::FinishProcess() {
 /* GameState - SoloPlayState Class ===================================================================================== */
 SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player)
     : GameState(supervisor, user_player) {
-    board_object_ptr_ = nullptr;
+    tetris_board_ptr_ = nullptr;
 }
 SoloPlayState::~SoloPlayState() {
 }
@@ -270,14 +270,56 @@ void SoloPlayState::EnterProcess() {
     ui_object_list_.push_back(std::make_unique<InformBoard>(ui_handler_->getCurrentScreenSize(), YX(relative_start_pos_y + 33, relative_start_pos_x + 47)));
 
     // Get TetrisBoard Pointer
-    board_object_ptr_ = dynamic_cast<TetrisBoard*>(ui_object_list_[1].get());
+    tetris_board_ptr_ = dynamic_cast<TetrisBoard*>(ui_object_list_[1].get());
     // Connect UI and Engine
-    board_object_ptr_->ConnectBoard(user_tetris_engine_.getTetrisBoard());
+    tetris_board_ptr_->ConnectBoard(user_tetris_engine_.getTetrisBoard());
 
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
 ProcessResult SoloPlayState::UpdateProcess() {
+    // Process 0 - 5초 대기
+    if (TimerAccessor::WaitingTimer(accessor_list_.at(0))) {
+        timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
+        user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+    } else
+        return ProcessResult::kNothing;
+
+    // Progress 2 - Next Block 유무 확인, 없으면 생성
+    if (!user_tetris_engine_.IsNextBlockExist()) user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+
+    /**
+     * Progress 3 입력
+     * ncurse Input
+     */
+    int input = ui_handler_->getInput();
+    switch (input) {
+        case KEY_UP:
+            if (user_tetris_engine_.RotateCurrentBlock()) {
+                tetris_board_ptr_->UpdateState();
+            }
+            break;
+        case KEY_DOWN:
+            break;
+        case KEY_LEFT:
+            break;
+        case KEY_RIGHT:
+            break;
+        case KEY_STAB:
+            break;
+        case 32:  // Space
+            break;
+        case 27:  // ESC
+            break;
+        default:
+            break;
+    }
+
+    /**
+     * proceed 4 key로 인한 움직임에 대한 충돌체크.
+     */
+
     return ProcessResult::kNothing;
 }
 void SoloPlayState::RenderProcess() {

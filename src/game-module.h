@@ -176,7 +176,7 @@ class SoloPlayState : public GameState {
 
     engine::TetrisEngine user_tetris_engine_;
 
-    object::TetrisBoard* board_object_ptr_;
+    object::TetrisBoard* tetris_board_ptr_;
 
 
    private:
