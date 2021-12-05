@@ -2,8 +2,7 @@
 #define CLI_TETRIS_OBJECT_DEFINED_H_
 
 #include <chrono>
-
-#include "ui-handler.h"
+#include <array>
 
 extern "C" {
 #include <ncurses.h>
@@ -13,13 +12,13 @@ extern "C" {
 
 namespace cli_tetris::object {
 
-using Move = enum Move { kNothing = 0,
-                         kUP,
-                         kDown,
-                         kLeft,
-                         kRight };
+using Move = enum class Move { kNothing = 0,
+                               kUP,
+                               kDown,
+                               kLeft,
+                               kRight };
 
-using BlockType = enum BlockType {
+using BlockType = enum class BlockType {
     kNothing = 0,
     I = 1,
     J = 2,
@@ -50,7 +49,7 @@ class GraphicObject {
     /**
      * 내부 상태가 변했는지를 설정하는 method
      * UpdatePyhiscs 와 UpdateRendering 내부에서 사용합니다.
-     */ 
+     */
     void setIsChanged(bool changed);
 
    public:

@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <chrono>
+#include <vector>
 
 #include "user-data.h"
 #include "ui-handler.h"
@@ -12,13 +13,14 @@
 
 namespace cli_tetris {
 using namespace timer;
+using namespace object;
 
 class GameManager;
 
 /* GameState Class ===================================================================================== */
 
 /* GameState의 식별자입니다. */
-using StateCode = enum StateCode {
+using StateCode = enum class StateCode {
     kStart = 0,
     kEnd,
     kMenu,
@@ -31,7 +33,7 @@ using StateCode = enum StateCode {
 };
 
 /** GameState::Process() 의 return 값을 식별하기 위한 enum입니다. */
-using ProcessResult = enum ProcessResult {
+using ProcessResult = enum class ProcessResult {
     kNothing = -3,
     kChangeState = -2,
     kOut = -1,
@@ -83,7 +85,7 @@ class StartState : public GameState {
     std::vector<TimerAccessor> accessor_list_;  // accessor list
 
    protected:
-    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
+    std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
 
    protected:
     void MoveStateHandler(StateCode where) override;
@@ -105,7 +107,7 @@ class EndState : public GameState {
     int ready_milliseconds_;                    // EndState 대기 시간
     std::vector<TimerAccessor> accessor_list_;  // accessor list
    protected:
-    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
+    std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
 
    protected:
     void MoveStateHandler(StateCode where) override;
@@ -123,9 +125,10 @@ class EndState : public GameState {
 };
 /* GameState - MenuState Class ===================================================================================== */
 class MenuState : public GameState {
-   protected:
-    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
-                                                           // CommandQueue input_buffers_;
+   private:
+    std::vector<std::unique_ptr<GraphicObject>>
+        ui_object_list_;  // Ui list
+                          // CommandQueue input_buffers_;
     using MenuItem = enum MenuItem {
         kKeepPlaying = 0,
         kCreateNewPlay = 1,
@@ -135,7 +138,7 @@ class MenuState : public GameState {
         kExitPlay = 5
     };
     int current_select_;
-    MenuUI* menu_accessor_;
+    MenuObject* menu_accessor_;
 
    protected:
     void MoveStateHandler(StateCode where) override;
@@ -158,25 +161,8 @@ class SoloPlayState : public GameState {
     std::vector<TimerAccessor> accessor_list_;  // accessor list
     random::RandomValueHandler* random_generator_;
 
-    bool start_standby_flag_;  // timer와 함께할 시작 대기 Flag
-
-    TetrisBoardUI* tetris_board_;
-    TopBoardUI* top_board_;
-    ScoreBoardUI* score_board_;
-    NextTetrisBoardUI* next_tetris_board_;
-    LevelBoardUI* level_board_;
-    InformBoardUI* inform_board_;
-
-    std::array<std::array<int, 41>, 21>* block_board_;  // From TetrisBoardUI
-
-    TetrisBlock* block_;  //내려오는 block.
-    std::array<YX, 16> privious_block_shapes_; //내려오기 전에 저장한 위치.
-
-   private:
-    bool IsBlockAlive() const;
-
    protected:
-    std::vector<std::unique_ptr<Object>> ui_object_list_;  // Ui list
+    std::vector<std::unique_ptr<GraphicObject>> ui_object_list_;  // Ui list
 
    protected:
     void MoveStateHandler(StateCode where) override;
@@ -263,7 +249,7 @@ class SoloPlayState : public GameState {
 class GameManager final {
    private:
     std::array<std::unique_ptr<GameState>, 9> game_state_;
-    int select_state_;
+    StateCode select_state_;
 
    private:
     // GameManager는 driver 정보를 관리합니다.
@@ -280,7 +266,7 @@ class GameManager final {
             // private: //Origianl
             // std::unique_ptr<FramePerSecondUI> frame_time_object_;
    public:
-    GameManager(UiHandler* ui_driver, timer::TimerHandler* timer_handler, int select_state = StateCode::kStart);
+    GameManager(UiHandler* ui_driver, timer::TimerHandler* timer_handler, StateCode select_state = StateCode::kStart);
     ~GameManager();
 
     // Game Run

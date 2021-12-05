@@ -11,11 +11,10 @@
 #include <algorithm>
 
 extern "C" {
-
+#include <ncurses.h>
 #include <menu.h>
 #include <panel.h>
 }
-#include <ncurses.h>
 
 #include "game-module.h"
 
@@ -71,291 +70,6 @@ MENU* TerminalMenuFunction::GetMenuAccessor() const {
 WINDOW* TerminalMenuFunction::GetMenuWinAccessor() const {
     return menu_win_;
 }
-/* TetrisBlock Class ===================================================================================== */
-
-// static constexpr int block_shape_i[2][4][2] = {
-//     {{0, 0}, {0, -1}, {0, 1}, {0, 2}},  // laying I
-//     {{0, 0}, {-1, 0}, {1, 0}, {2, 0}}};
-
-// static constexpr int block_shape_j[4][4][2] = {
-//     {{0, 0}, {0, -1}, {0, 1}, {1, 1}},
-//     {{0, 0}, {1, -1}, {1, 0}, {-1, 0}},
-//     {{0, 0}, {-1, -1}, {0, -1}, {0, -1}},
-//     {{0, 0}, {-1, 0}, {1, 0}, {-1, 1}}};
-
-// static constexpr int block_shape_l[4][4][2] = {
-//     {{0, 0}, {0, -1}, {1, -1}, {0, 1}},
-//     {{0, 0}, {-1, 0}, {-1, -1}, {1, 0}},
-//     {{0, 0}, {0, 1}, {-1, 1}, {0, -1}},
-//     {{0, 0}, {1, 0}, {1, 1}, {-1, 0}}};
-
-// static constexpr int block_shape_t[4][4][2] = {
-//     {{0, 0}, {0, -1}, {0, 1}, {1, 0}},
-//     {{0, 0}, {0, -1}, {-1, 0}, {1, 0}},
-//     {{0, 0}, {0, -1}, {-1, 0}, {0, 1}},
-//     {{0, 0}, {-1, 0}, {1, 0}, {0, 1}}};
-
-// static constexpr int block_shape_o[1][4][2] = {
-//     {{0, 0}, {0, 1}, {1, 0}, {1, 1}}};
-
-// static constexpr int block_shape_z[2][4][2] = {
-//     {{0, 0}, {0, -1}, {1, 0}, {1, 1}},
-//     {{0, 0}, {-1, 0}, {0, -1}, {1, -1}}};
-
-// static constexpr int block_shape_s[2][4][2] = {
-//     {{0, 0}, {1, -1}, {1, 0}, {0, 1}},
-//     {{0, 0}, {-1, -1}, {0, -1}, {1, 0}}};
-
-// TetrisBlock::TetrisBlock(const YX& start_pos, const BlockType& block_type, int random_number_of_4)
-//     : Object(start_pos), type_(block_type), direction_(0) {
-//     if (random_number_of_4 == 0) {
-//         this->DecideShape(direction_);
-//     } else {
-//         this->RandomiseDirection(random_number_of_4);  // dicide direction_
-//         this->DecideShape(direction_);
-//     }
-// }
-
-// void TetrisBlock::UpdatePhysics() {
-//     // Not Use
-// }
-
-// void TetrisBlock::UpdateRendering() {
-//     // Not Use
-// }
-// void TetrisBlock::RandomiseDirection(int random_number_of_4) {
-//     if (!(1 <= random_number_of_4 && random_number_of_4 <= 4)) throw std::runtime_error(std::string("E013 : TetrisBlock::RandomiseDirection param is wrong"));
-
-//     switch (type_) {
-//         case BlockType::I:
-//         case BlockType::Z:
-//         case BlockType::S:
-//             if (random_number_of_4 == 1 || random_number_of_4 == 2)
-//                 direction_ = 0;
-//             else if (random_number_of_4 == 3 || random_number_of_4 == 4)
-//                 direction_ = 1;
-
-//             break;
-//         case BlockType::J:
-//         case BlockType::L:
-//         case BlockType::T:
-//             direction_ = random_number_of_4;
-//             break;
-//         case BlockType::O:
-//             direction_ = 0;
-//             break;
-//     }
-// }
-
-// void TetrisBlock::DecideShape(int direction) {
-//     int start_y = start_pos_.y;
-//     int start_x = start_pos_.x;
-
-//     switch (type_) {
-//         case BlockType::I:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 real_block_shape_[i].y = start_y + (block_shape_i[direction][i][0] * 2);
-//                 real_block_shape_[i].x = start_x + (block_shape_i[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::J:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 real_block_shape_[i].y = start_y + (block_shape_j[direction][i][0] * 2);
-//                 real_block_shape_[i].x = start_x + (block_shape_j[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::L:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 real_block_shape_[i].y = start_y + (block_shape_l[direction][i][0] * 2);
-//                 real_block_shape_[i].x = start_x + (block_shape_l[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::T:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 real_block_shape_[i].y = start_y + (block_shape_t[direction][i][0] * 2);
-//                 real_block_shape_[i].x = start_x + (block_shape_t[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::O:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 real_block_shape_[i].y = start_y + (block_shape_o[direction][i][0] * 2);
-//                 real_block_shape_[i].x = start_x + (block_shape_o[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::Z:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 real_block_shape_[i].y = start_y + (block_shape_z[direction][i][0] * 2);
-//                 real_block_shape_[i].x = start_x + (block_shape_z[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::S:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 real_block_shape_[i].y = start_y + (block_shape_s[direction][i][0] * 2);
-//                 real_block_shape_[i].x = start_x + (block_shape_s[direction][i][1] * 2);
-//             }
-//             break;
-//     }
-//     for (int i = 0; i <= 12; i += 4) {
-//         real_block_shape_[i + 1].y = real_block_shape_[i].y;
-//         real_block_shape_[i + 1].x = real_block_shape_[i].x + 1;
-
-//         real_block_shape_[i + 2].y = real_block_shape_[i].y + 1;
-//         real_block_shape_[i + 2].x = real_block_shape_[i].x;
-
-//         real_block_shape_[i + 3].y = real_block_shape_[i].y + 1;
-//         real_block_shape_[i + 3].x = real_block_shape_[i].x + 1;
-//     }
-// }
-
-// void TetrisBlock::CommandChangeDirection() {
-//     switch (type_) {
-//         case BlockType::I:
-//         case BlockType::Z:
-//         case BlockType::S:
-//             direction_ = (direction_ + 1) % 2;
-
-//             break;
-//         case BlockType::J:
-//         case BlockType::L:
-//         case BlockType::T:
-//             direction_ = (direction_ + 1) % 4;
-//             break;
-//         case BlockType::O:
-//             direction_ = 0;
-//             break;
-//     }
-//     this->DecideShape(direction_);
-// }
-
-// void TetrisBlock::CommandFall() {
-//     start_pos_.y = start_pos_.y + 1;
-
-//     this->DecideShape(direction_);
-// }
-
-// const std::array<YX, 16>& TetrisBlock::getRealBlockPosition() const {
-//     return real_block_shape_;
-// }
-// void TetrisBlock::setRealBlockPosition(std::array<YX, 16>&& block_shape) {
-//     this->start_pos_ = block_shape[0];  // shape의 0번째는 start_pos
-//     this->real_block_shape_ = std::move(block_shape);
-// }
-
-// const BlockType& TetrisBlock::getBlocktype() const {
-//     return type_;
-// }
-// const int TetrisBlock::getDirection() const {
-//     return direction_;
-// }
-
-// std::array<YX, 16> TetrisBlock::ForcastChangeDirection(const std::array<YX, 16>& shape, const BlockType& type, const int& current_direction) {
-//     std::array<YX, 16> forcast_object = shape;
-//     int direction = current_direction;
-
-//     switch (type) {
-//         case BlockType::I:
-//         case BlockType::Z:
-//         case BlockType::S:
-//             direction = (direction + 1) % 2;
-
-//             break;
-//         case BlockType::J:
-//         case BlockType::L:
-//         case BlockType::T:
-//             direction = (direction + 1) % 4;
-//             break;
-//         case BlockType::O:
-//             direction = 0;
-//             break;
-//     }
-
-//     int start_y = shape.at(0).y;  // shape[0]은 항상 start_pos
-//     int start_x = shape.at(0).x;
-//     switch (type) {
-//         case BlockType::I:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 forcast_object[i].y = start_y + (block_shape_i[direction][i][0] * 2);
-//                 forcast_object[i].x = start_x + (block_shape_i[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::J:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 forcast_object[i].y = start_y + (block_shape_j[direction][i][0] * 2);
-//                 forcast_object[i].x = start_x + (block_shape_j[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::L:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 forcast_object[i].y = start_y + (block_shape_l[direction][i][0] * 2);
-//                 forcast_object[i].x = start_x + (block_shape_l[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::T:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 forcast_object[i].y = start_y + (block_shape_t[direction][i][0] * 2);
-//                 forcast_object[i].x = start_x + (block_shape_t[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::O:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 forcast_object[i].y = start_y + (block_shape_o[direction][i][0] * 2);
-//                 forcast_object[i].x = start_x + (block_shape_o[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::Z:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 forcast_object[i].y = start_y + (block_shape_z[direction][i][0] * 2);
-//                 forcast_object[i].x = start_x + (block_shape_z[direction][i][1] * 2);
-//             }
-//             break;
-//         case BlockType::S:
-//             for (int i = 0; i <= 12; i += 4) {
-//                 forcast_object[i].y = start_y + (block_shape_s[direction][i][0] * 2);
-//                 forcast_object[i].x = start_x + (block_shape_s[direction][i][1] * 2);
-//             }
-//             break;
-//     }
-//     for (int i = 0; i <= 12; i += 4) {
-//         forcast_object[i + 1].y = forcast_object[i].y;
-//         forcast_object[i + 1].x = forcast_object[i].x + 1;
-
-//         forcast_object[i + 2].y = forcast_object[i].y + 1;
-//         forcast_object[i + 2].x = forcast_object[i].x;
-
-//         forcast_object[i + 3].y = forcast_object[i].y + 1;
-//         forcast_object[i + 3].x = forcast_object[i].x + 1;
-//     }
-
-//     return forcast_object;
-// }
-// std::array<YX, 16> TetrisBlock::ForcastMoving(const std::array<YX, 16>& shape, const Move& move) {
-//     std::array<YX, 16> forcast_object = shape;
-
-//     switch (move) {
-//         case Move::kDown:
-//             for (int i = 0; i < 16; ++i) {
-//                 forcast_object[i].y = forcast_object[i].y + 1;
-//             }
-//             break;
-//         case Move::kLeft:
-//             for (int i = 0; i < 16; ++i) {
-//                 forcast_object[i].x = forcast_object[i].x - 1;
-//             }
-//             break;
-//         case Move::kRight:
-//             for (int i = 0; i < 16; ++i) {
-//                 forcast_object[i].x = forcast_object[i].x + 1;
-//             }
-//             break;
-//         case Move::kUP:
-//             // Nothing
-//             break;
-//         default:
-//             break;
-//     }
-
-//     return forcast_object;
-// }
 
 /* StandbyPage Class ===================================================================================== */
 StandbyPage::StandbyPage(const YX& currnet_screen_size)
@@ -485,8 +199,7 @@ void MenuObject::UpdateRendering() {
     post_menu(menu_);
 
     // Last excution
-    update_panels();
-    doupdate();
+    wrefresh(menu_win_);
 
     // necessary.
     this->setIsChanged(false);
@@ -581,9 +294,6 @@ void TopBoard::UpdateRendering() {
     //  Draw
     wattron(win_, A_BOLD);
     box(win_, 0, 0);
-    wattroff(win_, A_BOLD);
-
-    wattron(win_, A_BOLD);
     mvwprintw(win_, 1, 8, "TOP");
     mvwprintw(win_, 3, 8, "000000000000");
     wattroff(win_, A_BOLD);
@@ -610,9 +320,6 @@ void ScoreBoard::UpdateRendering() {
     //  Draw
     wattron(win_, A_BOLD);
     box(win_, 0, 0);
-    wattroff(win_, A_BOLD);
-
-    wattron(win_, A_BOLD);
     mvwprintw(win_, 1, 8, "SCORE");
     mvwprintw(win_, 3, 8, "000000000000");
     wattroff(win_, A_BOLD);
@@ -639,9 +346,6 @@ void NextTetrisBoard::UpdateRendering() {
     //  Draw
     wattron(win_, A_BOLD);
     box(win_, 0, 0);
-    wattroff(win_, A_BOLD);
-
-    wattron(win_, A_BOLD);
     mvwprintw(win_, 1, 8, "Next Tetris");
     wattroff(win_, A_BOLD);
 
@@ -653,7 +357,7 @@ void NextTetrisBoard::UpdateRendering() {
 }
 /* LevelBoard Class ===================================================================================== */
 LevelBoard::LevelBoard(const YX& currnet_screen_size, const YX& start_pos)
-    : TerminalWindowFunction(currnet_screen_size, start_pos, YX(13, 28)) {}
+    : TerminalWindowFunction(currnet_screen_size, start_pos, YX(5, 28)) {}
 
 LevelBoard::~LevelBoard() {}
 
@@ -667,9 +371,6 @@ void LevelBoard::UpdateRendering() {
     //  Draw
     wattron(win_, A_BOLD);
     box(win_, 0, 0);
-    wattroff(win_, A_BOLD);
-
-    wattron(win_, A_BOLD);
     mvwprintw(win_, 1, 8, "LEVEL");
     mvwprintw(win_, 3, 8, "1");
     wattroff(win_, A_BOLD);
@@ -696,9 +397,6 @@ void InformBoard::UpdateRendering() {
     //  Draw
     wattron(win_, A_BOLD);
     box(win_, 0, 0);
-    wattroff(win_, A_BOLD);
-
-    wattron(win_, A_BOLD);
     mvwprintw(win_, 1, 8, "INFORM");
     wattroff(win_, A_BOLD);
 

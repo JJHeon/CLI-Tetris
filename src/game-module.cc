@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <chrono>
 #include <thread>
+#include <vector>
+#include <iostream>
 
 #include "ui-handler.h"
 #include "user-data.h"
@@ -17,6 +19,9 @@ extern "C" {
 }
 
 namespace cli_tetris {
+
+using namespace object;
+
 /* GameState Class ===================================================================================== */
 
 GameState::GameState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
@@ -54,7 +59,7 @@ void StartState::EnterProcess() {
     timer_.SetTimer(accessor_list_.at(0), 1, 0);
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<StandbyUI>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<StandbyPage>(ui_.getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
@@ -113,7 +118,7 @@ void EndState::EnterProcess() {
     timer_.SetTimer(accessor_list_.at(0), 5, 0);
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<ExitUI>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<ExitPage>(ui_.getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
@@ -166,14 +171,15 @@ void MenuState::EnterProcess() {
     ui_.ClearScreen();
 
     // Drawing할 Ui object 등록
-    ui_object_list_.push_back(std::make_unique<MenuUI>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<FrameObject46X160>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<MenuObject>(ui_.getCurrentScreenSize()));
 
     // 최초에 한번 Draw 합니다.
     this->RenderProcess();
 
     current_select_ = 0;
-    auto object_ptr = ui_object_list_.at(0).get();
-    menu_accessor_ = dynamic_cast<MenuUI*>(object_ptr);
+    auto object_ptr = ui_object_list_.at(1).get();
+    menu_accessor_ = dynamic_cast<MenuObject*>(object_ptr);
 }
 ProcessResult MenuState::UpdateProcess() {
     // ncurse Input
@@ -183,17 +189,19 @@ ProcessResult MenuState::UpdateProcess() {
         case KEY_DOWN:
             ui_.ControlMenuDriver(menu_ptr, MenuRequest::DOWN);
             if (current_select_ != MenuItem::kExitPlay) current_select_++;
-            menu_accessor_->UpdatePhysics();
+            menu_accessor_->UpdateState();
+
             break;
         case KEY_UP:
             ui_.ControlMenuDriver(menu_ptr, MenuRequest::UP);
             if (current_select_ != MenuItem::kKeepPlaying) current_select_--;
-            menu_accessor_->UpdatePhysics();
+            menu_accessor_->UpdateState();
             break;
         case 10:  // Enter
         {
             switch (current_select_) {
                 case MenuItem::kKeepPlaying:
+
                     MoveStateHandler(StateCode::kSoloPlay);
                     return ProcessResult::kChangeState;
                     break;
@@ -228,31 +236,19 @@ void MenuState::RenderProcess() {
 }
 
 void MenuState::FinishProcess() {
-    keypad(menu_accessor_->GetMenuWinAccessor(), FALSE);
-    // 할당한 Object를 모두 해제합니다.
+    // keypad(menu_accessor_->GetMenuWinAccessor(), FALSE);
+    //  할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
-    ui_.ClearScreen();
+    // ui_.ClearScreen();
 }
 
 /* GameState - SoloPlayState Class ===================================================================================== */
 
 SoloPlayState::SoloPlayState(GameManager& supervisor, UserData& user_player, UiHandler& ui, TimerHandler& timer)
-    : GameState(supervisor, user_player, ui, timer),
-      start_standby_flag_(false),
-      privious_block_shapes_{{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}} {
+    : GameState(supervisor, user_player, ui, timer) {
     random_generator_ = Locator::getRandomValueHandler();
-
-    tetris_board_ = nullptr;
-    top_board_ = nullptr;
-    score_board_ = nullptr;
-    next_tetris_board_ = nullptr;
-    level_board_ = nullptr;
-    inform_board_ = nullptr;
-
-    block_ = nullptr;
 }
 SoloPlayState::~SoloPlayState() {
-    if (block_ != nullptr) delete block_;
 }
 
 void SoloPlayState::MoveStateHandler(StateCode where) {
@@ -267,10 +263,7 @@ void SoloPlayState::Initialize() {
 }
 
 void SoloPlayState::EnterProcess() {
-    using namespace object;
     ui_.ClearScreen();
-
-    start_standby_flag_ = false;
 
     // 시작 대기 Timer 5초 설정.
     timer_.SetTimer(accessor_list_.at(0), 5, 0);
@@ -281,225 +274,18 @@ void SoloPlayState::EnterProcess() {
     int relative_start_pos_x = ((current_screen_size.x - game_screen_size.x) / 2) + 1;
 
     // Drawing할 Ui object 등록
-
-    ui_object_list_.push_back(std::make_unique<FrameUI46X160>(ui_.getCurrentScreenSize()));
-    ui_object_list_.push_back(std::make_unique<TetrisBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 1)));
-    ui_object_list_.push_back(std::make_unique<TopBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<ScoreBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 7, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<NextTetrisBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 13, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<LevelBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 27, relative_start_pos_x + 47)));
-    ui_object_list_.push_back(std::make_unique<InformBoardUI>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 33, relative_start_pos_x + 47)));
-
-    if (tetris_board_ == nullptr &&
-        top_board_ == nullptr &&
-        score_board_ == nullptr &&
-        next_tetris_board_ == nullptr &&
-        level_board_ == nullptr &&
-        inform_board_ == nullptr) {
-        tetris_board_ = dynamic_cast<TetrisBoardUI*>(ui_object_list_[1].get());
-        top_board_ = dynamic_cast<TopBoardUI*>(ui_object_list_[2].get());
-        score_board_ = dynamic_cast<ScoreBoardUI*>(ui_object_list_[3].get());
-        next_tetris_board_ = dynamic_cast<NextTetrisBoardUI*>(ui_object_list_[4].get());
-        level_board_ = dynamic_cast<LevelBoardUI*>(ui_object_list_[5].get());
-        inform_board_ = dynamic_cast<InformBoardUI*>(ui_object_list_[6].get());
-    } else
-        throw std::runtime_error(std::string("E012 : pointer under SoloPlay cannot have nullptr"));
-
-    // Get Tetris Block Board
-    block_board_ = tetris_board_->getTetrisBoard();
+    ui_object_list_.push_back(std::make_unique<FrameObject46X160>(ui_.getCurrentScreenSize()));
+    ui_object_list_.push_back(std::make_unique<TetrisBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 1)));
+    ui_object_list_.push_back(std::make_unique<TopBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 1, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<ScoreBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 7, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<NextTetrisBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 13, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<LevelBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 27, relative_start_pos_x + 47)));
+    ui_object_list_.push_back(std::make_unique<InformBoard>(ui_.getCurrentScreenSize(), YX(relative_start_pos_y + 33, relative_start_pos_x + 47)));
 
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
 ProcessResult SoloPlayState::UpdateProcess() {
-    /**
-     * Progress 1 대기상태
-     * timer 설정값 현재 5초 만큼 대기, 그 전까지 입력을 받지 않습니다.
-     */
-    if (!start_standby_flag_) {
-        if (accessor_list_.at(0).IsAlive() && accessor_list_.at(0).IsRunning()) {
-            return ProcessResult::kNothing;
-        } else {
-            start_standby_flag_ = true;                           //최초 실행시 5초 대기용 flag
-            timer_.SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
-        }
-    }
-
-    /**
-     * Progress 2 Block 유무 확인
-     * Block이 없으면 생성
-     */
-    if (this->IsBlockAlive()) {
-        block_ = new TetrisBlock(tetris_board_->getBlockEntryPoint(),
-                                 static_cast<BlockType>(random_generator_->getUniform1RandomNumber()),
-                                 random_generator_->getUniform2RandomNumber());
-        privious_block_shapes_ = block_->getRealBlockPosition();
-    }
-
-    /**
-     * Progress 3 입력
-     * ncurse Input
-     */
-    int input = ui_.getInput();
-    Move where_to_move = Move::kNothing;
-    switch (input) {
-        case KEY_UP:
-            where_to_move = Move::kUP;
-            break;
-        case KEY_DOWN:
-            where_to_move = Move::kDown;
-            break;
-        case KEY_LEFT:
-            where_to_move = Move::kLeft;
-            break;
-        case KEY_RIGHT:
-            where_to_move = Move::kRight;
-            break;
-        case KEY_STAB:
-            break;
-        case 32:  // Space
-            break;
-        case 27:  // ESC
-            break;
-        default:
-            break;
-    }
-
-    /**
-     * proceed 4 key로 인한 움직임에 대한 충돌체크.
-     */
-    bool is_move_command_possable = true;
-    std::array<YX, 16> forcast_block;
-    if (where_to_move != Move::kNothing) {
-        if (where_to_move == Move::kUP)
-            forcast_block = TetrisBlock::ForcastChangeDirection(block_->getRealBlockPosition(), block_->getBlocktype(), block_->getDirection());
-
-        else
-            forcast_block = TetrisBlock::ForcastMoving(block_->getRealBlockPosition(), where_to_move);
-
-        //이동 가능 여부 확인
-        for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
-            //아래 boundary 초과 YX인지 확인
-            if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y) {
-                is_move_command_possable = false;
-                break;
-            }
-            //양옆 boundary 초과 YX인지확인
-            else if ((*block_board_).at(0).size() <= (*itr).x || 0 >= (*itr).x) {
-                is_move_command_possable = false;
-                break;
-            }
-            //기존 Block에 닿는지
-            else if (block_board_->at((*itr).y).at((*itr).x) != static_cast<int>(BlockType::kNothing)) {
-                is_move_command_possable = false;
-                break;
-            }
-        }
-    }
-
-    /**
-     * Progress 5 일정 시간 간격 check
-     * 시간 마다 아래로 아래 방향으로 Fall, 이후 충돌체크 확인
-     * 위에서 계산한 array를 바탕으로 마지막으로 값을 변경하고 저장하고 반영함.
-     */
-    // Falling할 시각.
-    if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
-        timer_.SetTimer(accessor_list_.at(1), 0, 800000000);
-
-        /* --------------------------------------------------------------------------------- */
-        /**
-         * 한칸 Fall함에 앞서
-         * 앞서 계산된 forcast_block과 아닌 경우를 구분함
-         */
-        std::array<YX, 16> fall_block;
-        bool is_reach_end = false;
-        //미리 계산된 forcast block이 존재할 경우
-        if (is_move_command_possable) {
-            fall_block = TetrisBlock::ForcastMoving(forcast_block, Move::kDown);
-
-            //앞선 좌표와 충돌하는지 확인.
-            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
-                if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y || (*block_board_)[(*itr).y][(*itr).x] != static_cast<int>(BlockType::kNothing)) {
-                    is_reach_end = true;
-                    break;
-                }
-        }
-        //미리 계산된 것이 없는 경우.
-        else {
-            fall_block = TetrisBlock::ForcastMoving(block_->getRealBlockPosition(), Move::kDown);
-
-            //앞선 좌표와 충돌하는지 확인.
-            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
-                if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y || (*block_board_)[(*itr).y][(*itr).x] != static_cast<int>(BlockType::kNothing)) {
-                    is_reach_end = true;
-                    break;
-                }
-        }
-        /* --------------------------------------------------------------------------------- */
-        // block의 마지막에 도달함.
-        if (is_reach_end) {
-            // privious block data 제거
-            for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
-                (*block_board_)[(*itr).y][(*itr).x] = 0;
-            }
-
-            std::array<YX, 16> shape;
-            if (is_move_command_possable)
-                shape = forcast_block;
-            else
-                shape = block_->getRealBlockPosition();
-
-            privious_block_shapes_ = shape;
-
-            //실제 board에 기록
-            for (auto itr = shape.begin(); itr != shape.end(); ++itr) {
-                (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
-            }
-
-            // board line 확인
-
-            // delete block ptr
-            delete block_;
-
-        }
-        //마지막이 아닌 경우
-        else {
-            // privious block data 제거
-            for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
-                (*block_board_)[(*itr).y][(*itr).x] = 0;
-            }
-
-            privious_block_shapes_ = fall_block;
-
-            //실제 board에 기록
-            for (auto itr = fall_block.begin(); itr != fall_block.end(); ++itr) {
-                (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
-            }
-        }
-    }
-    //아직 Fall할 시간이 아님.
-    else {
-        if (is_move_command_possable) {
-            //앞서 Progrss 4 에서 수행했던 이동이 가능하다면 다음을 수행
-            if (where_to_move == Move::kUP)
-                block_->CommandChangeDirection();
-            else
-                block_->setRealBlockPosition(std::move(forcast_block));
-
-            // privious block data 제거
-            for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
-                (*block_board_)[(*itr).y][(*itr).x] = 0;
-            }
-
-            privious_block_shapes_ = forcast_block;
-
-            //실제 board에 기록
-            for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
-                (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
-            }
-        }
-    }
-
     return ProcessResult::kNothing;
 }
 void SoloPlayState::RenderProcess() {
@@ -513,26 +299,11 @@ void SoloPlayState::RenderProcess() {
 void SoloPlayState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
-
-    tetris_board_ = nullptr;
-    top_board_ = nullptr;
-    score_board_ = nullptr;
-    next_tetris_board_ = nullptr;
-    level_board_ = nullptr;
-    inform_board_ = nullptr;
-
-    block_board_ = nullptr;
-}
-bool SoloPlayState::IsBlockAlive() const {
-    if (block_ != nullptr)
-        return true;
-    else
-        return false;
 }
 
 /* GameManager Class ===================================================================================== */
 constexpr YX GameManager::game_size_;
-GameManager::GameManager(UiHandler* ui_handler, timer::TimerHandler* timer_handler, int select_state)
+GameManager::GameManager(UiHandler* ui_handler, timer::TimerHandler* timer_handler, StateCode select_state)
     : ui_handler_(ui_handler), timer_handler_(timer_handler), select_state_(select_state) {
 }
 
@@ -542,7 +313,7 @@ GameManager::~GameManager() {
 }
 
 void GameManager::ChangeSelcet(StateCode where) {
-    select_state_ = static_cast<int>(where);
+    select_state_ = where;
 }
 
 bool GameManager::CheckGameState() const {
@@ -591,7 +362,7 @@ void GameManager::Initialize() {
 
     // 각 GameState Initializing
     // for (int i = 0; i < sizeof(game_state_) / sizeof(std::unique_ptr<GameState>); ++i) //Original
-    for (int i = 0; i != 2; ++i)  // TODO: 임시.
+    for (int i = 0; i != 4; ++i)  // TODO: 임시.
         game_state_[i]->Initialize();
 
     /** 화면 크기 Check, 게임 실행에 필요한 크기는 다음과 같습니다.
@@ -613,11 +384,11 @@ void GameManager::Run() {
     // GameManagerTestCode();
     // GameManagerTestThreadManager();
 
-    game_state_.at(select_state_)->EnterProcess();
+    game_state_.at(static_cast<int>(select_state_))->EnterProcess();
     // std::chrono::time_point<std::chrono::high_resolution_clock> past = std::chrono::time_point<std::chrono::high_resolution_clock>::max();
 
     while (true) {
-        ProcessResult n = kNothing;
+        ProcessResult n = ProcessResult::kNothing;
 
         // std::chrono::time_point<std::chrono::high_resolution_clock> present = std::chrono::high_resolution_clock::now();
         // auto diff = present - past;
@@ -627,22 +398,22 @@ void GameManager::Run() {
 
         /* 21.11.14 Command Pattern을 사용하지 않기로 했으므로, 현재 시점에선 InputProccess는 필요가 없다. */
         // if ((n = game_state_.at(select_state_)->InputProcess()) == ProcessResult::kNothing) {
-        if ((n = game_state_.at(select_state_)->UpdateProcess()) == ProcessResult::kNothing) {
-            game_state_.at(select_state_)->RenderProcess();
+        if ((n = game_state_.at(static_cast<int>(select_state_))->UpdateProcess()) == ProcessResult::kNothing) {
+            game_state_.at(static_cast<int>(select_state_))->RenderProcess();
         }
         //}
 
         switch (n) {
-            case kNothing:
+            case ProcessResult::kNothing:
                 // Normal Excution
                 break;
-            case kChangeState:
-                game_state_.at(select_state_)->EnterProcess();
+            case ProcessResult::kChangeState:
+                game_state_.at(static_cast<int>(select_state_))->EnterProcess();
                 break;
-            case kOut:
+            case ProcessResult::kOut:
                 // Not error, but just away
                 break;
-            case kExit:
+            case ProcessResult::kExit:
                 return;  // finish(정상 종료)
                 break;
 

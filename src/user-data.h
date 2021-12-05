@@ -31,10 +31,10 @@ class GameData {
    private:
     GameLevel current_game_level_;
     int block_speed_;
-    std::vector<Object> blocks;
+    std::vector<object::GraphicObject> blocks;
 
    public:
-    void AddObject(std::vector<Object>* object);
+    void AddObject(std::vector<object::GraphicObject>* object);
 };
 
 }  // namespace cli_tetris
