@@ -1,3 +1,13 @@
+/** Note
+ * random-generate-handler
+ *
+ * standard Cpp의 random 을 사용하기 쉽게 warrap한 class 입니다.
+ * -- 설명 --
+ * 생성 단계에서 사용을 위한 초기화를 모두 끝내고 get-Method를 통해 Random value를 바로 얻습니다.
+ *
+ * -- 변경 이력 -- (21.12.05 이전 기록 없음)
+ */
+
 #ifndef CLI_TETRIS_RANDOM_GENERATE_HANDLER_H_
 #define CLI_TETRIS_RANDOM_GENERATE_HANDLER_H_
 
