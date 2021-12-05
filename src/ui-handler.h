@@ -1,7 +1,7 @@
 #ifndef CLI_TETRIS_UI_H_
 #define CLI_TETRIS_UI_H_
 
-#include "thread-manager.h"
+#include "thread-manager.hpp"
 #include "object-defined.h"
 #include "utility.h"
 
@@ -12,7 +12,7 @@ extern "C" {
 namespace cli_tetris {
 
 /* UiHandler::ControlMenuDriver()의 parm */
-using MenuRequest = enum MenuRequest {
+using MenuRequest = enum class MenuRequest {
     UP,
     DOWN
 };
@@ -23,7 +23,6 @@ using MenuRequest = enum MenuRequest {
  */
 // /* thread에서 ncurse 출력 문제로 threadManager 사용안하기로 결정 */
 class UiHandler : public CustomThreadManager<object::GraphicObject> {
-    // class UiHandler {
    private:
     bool is_initialized_;
 

@@ -23,43 +23,16 @@ static void UiWorker(std::mutex& mutex, std::condition_variable& cv, std::queue<
                     return !job.empty();
                 });
 
-        // auto& obj = job.front().one;
-        // auto exc = job.front().two;
         auto painter = job.front();
         job.pop();
 
         lock.unlock();
 
         // excute
-        // exc(obj);
         painter->UpdateRendering();
     }
 }
 };  // namespace user_thread_worker
-/*
-UiHandler::UiHandler() : is_initialized_(false) {
-    assert(!is_initialized_);
-    is_initialized_ = true;
-
-    this->Initialize();
-    if (has_colors())
-        this->SetColors();
-    else
-        throw std::runtime_error(std::string("E011 : You terminal does not support color"));
-}
-*/
-/*
-UiHandler::UiHandler(const int limit_queue_num) : utility::PointerQueue<Object>(limit_queue_num), is_initialized_(false) {
-    assert(!is_initialized_);
-    is_initialized_ = true;
-
-    this->Initialize();
-    if (has_colors())
-        this->SetColors();
-    else
-        throw std::runtime_error(std::string("E011 : You terminal does not support color"));
-}
-*/
 
 UiHandler::UiHandler(int thread_workers)
     : CustomThreadManager<object::GraphicObject>(thread_workers, user_thread_worker::UiWorker), is_initialized_(false) {
@@ -120,8 +93,6 @@ object::YX UiHandler::getCurrentScreenSize() {
 void UiHandler::Draw(object::GraphicObject* object) {
     if (!this->IsInitialized()) throw std::runtime_error(std::string("E005 : UI 초기화 안됨"));
 
-    // TODO: 여기에 object 객체를 판별해, Object 상속개체가 아니면 throw해주면 좋겠다.
-    // CustomThreadManager<Object>::AddJob(object);
     object->UpdateRendering();
 }
 
