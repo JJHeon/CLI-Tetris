@@ -1,4 +1,39 @@
 /* TetrisBlock Class ===================================================================================== */
+// class TetrisBlock : public Object {
+//    private:
+//     BlockType type_;
+//     std::array<YX, 16> real_block_shape_;
+//     int direction_;
+
+//    private:
+//     void DecideShape(int direction);
+//     void RandomiseDirection(int random_number_of_4);
+
+//    public:
+//     /** Constructor
+//      *  @param random_number_of_4, 0 이면 direction_ = 0 인 shape 생성, 1~4의 random number이면 해당하는 direction_ 결정후 shape 생성
+//      */
+//     TetrisBlock(const YX& start_pos, const BlockType& block_type, int random_number_of_4);
+//     ~TetrisBlock();
+
+//     // Object Abstract
+//     void UpdatePhysics() override;
+//     void UpdateRendering() override;
+
+//     // Custom method
+//     void CommandChangeDirection();
+//     void CommandFall();
+//     const std::array<YX, 16>& getRealBlockPosition() const;
+//     void setRealBlockPosition(std::array<YX, 16>&& block_shape);
+//     const BlockType& getBlocktype() const;
+//     const int getDirection() const;
+
+//     static std::array<YX, 16> ForcastChangeDirection(const std::array<YX, 16>& shape, const BlockType& type, const int& current_direction);
+//     // static std::array<YX, 16> ForcastChangeDirection(const TetrisBlock& object);
+//     static std::array<YX, 16> ForcastMoving(const std::array<YX, 16>& shape, const Move& move);
+// };
+
+/* TetrisBlock Class ===================================================================================== */
 
 // static constexpr int block_shape_i[2][4][2] = {
 //     {{0, 0}, {0, -1}, {0, 1}, {0, 2}},  // laying I

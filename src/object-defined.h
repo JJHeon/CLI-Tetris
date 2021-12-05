@@ -1,3 +1,17 @@
+/** Note
+ * object-defined
+ *
+ * -- 설명 --
+ * GraphicObject abstract class는 Drawing 여부 확인 method 제공
+ * drived class인 TerminalWindowFunction는 ncurse window 생성 및 관련 변수 제공
+ * drived class인 TerminalMenuFunction는 ncurse menu 생성 및 제어 method 제공
+ *
+ * Page는 전체 그림을 의미합니다.
+ * Object는 ncurse window 한개를 의미합니다.
+ * Baord는 값을 갱신 받거나 전달해야하는 window입니다.
+ * -- 변경 이력 -- (21.12.05 이전 기록 없음)
+ */
+
 #ifndef CLI_TETRIS_OBJECT_DEFINED_H_
 #define CLI_TETRIS_OBJECT_DEFINED_H_
 
@@ -116,41 +130,6 @@ class TerminalMenuFunction : public GraphicObject {
     MENU* GetMenuAccessor() const;
     WINDOW* GetMenuWinAccessor() const;
 };
-
-/* TetrisBlock Class ===================================================================================== */
-// class TetrisBlock : public Object {
-//    private:
-//     BlockType type_;
-//     std::array<YX, 16> real_block_shape_;
-//     int direction_;
-
-//    private:
-//     void DecideShape(int direction);
-//     void RandomiseDirection(int random_number_of_4);
-
-//    public:
-//     /** Constructor
-//      *  @param random_number_of_4, 0 이면 direction_ = 0 인 shape 생성, 1~4의 random number이면 해당하는 direction_ 결정후 shape 생성
-//      */
-//     TetrisBlock(const YX& start_pos, const BlockType& block_type, int random_number_of_4);
-//     ~TetrisBlock();
-
-//     // Object Abstract
-//     void UpdatePhysics() override;
-//     void UpdateRendering() override;
-
-//     // Custom method
-//     void CommandChangeDirection();
-//     void CommandFall();
-//     const std::array<YX, 16>& getRealBlockPosition() const;
-//     void setRealBlockPosition(std::array<YX, 16>&& block_shape);
-//     const BlockType& getBlocktype() const;
-//     const int getDirection() const;
-
-//     static std::array<YX, 16> ForcastChangeDirection(const std::array<YX, 16>& shape, const BlockType& type, const int& current_direction);
-//     // static std::array<YX, 16> ForcastChangeDirection(const TetrisBlock& object);
-//     static std::array<YX, 16> ForcastMoving(const std::array<YX, 16>& shape, const Move& move);
-// };
 
 /* StandbyPage Class ===================================================================================== */
 class StandbyPage : public TerminalWindowFunction {

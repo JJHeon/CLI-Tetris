@@ -1,0 +1,16 @@
+//  Draw
+/*
+    wattron(win_, COLOR_PAIR(3));
+    for (int i = 0; i != win_size_.y; ++i) {
+        wmove(win_, i, 0);
+        if (i == 0 || i == (win_size_.y - 1)) {
+            for (int j = 0; j != win_size_.x; ++j) waddch(win_, ' ');
+        }
+
+        mvwaddch(win_, i, 0, ' ');
+        mvwaddch(win_, i, 1, ' ');
+        mvwaddch(win_, i, win_size_.x - 2, ' ');
+        mvwaddch(win_, i, win_size_.x - 1, ' ');
+    }
+    wattroff(win_, COLOR_PAIR(3));
+*/

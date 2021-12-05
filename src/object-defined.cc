@@ -124,8 +124,8 @@ void ExitPage::UpdateRendering() {
     int goodbye_message_x = 4;
 
     // Draw
-    box(win_, 0, 0);
     attron(A_BOLD);
+    box(win_, 0, 0);
     mvwprintw(win_, goodbye_message_y, goodbye_message_x, goodbye_message);
     attroff(A_BOLD);
 
@@ -166,17 +166,6 @@ MenuObject::MenuObject(const YX& currnet_screen_size)
     set_menu_win(menu_, menu_win_);
     set_menu_sub(menu_, derwin(menu_win_, 8, 22, 3, 1));
     set_menu_mark(menu_, " -> ");
-
-    /* Set Panel ---------------------------------------------------------------------------------- */
-
-    // ui_panel_[0] = new_panel(win_);
-    // ui_panel_[1] = new_panel(menu_win_);
-
-    // ui_panel_data_[0].hide = false;
-    // ui_panel_data_[1].hide = false;
-
-    // set_panel_userptr(ui_panel_[0], &ui_panel_data_[0]);
-    // set_panel_userptr(ui_panel_[1], &ui_panel_data_[1]);
 }
 MenuObject::~MenuObject() {
     unpost_menu(menu_);
@@ -196,9 +185,8 @@ void MenuObject::UpdateRendering() {
     box(menu_win_, 0, 0);
     attroff(A_BOLD);
 
-    post_menu(menu_);
-
     // Last excution
+    post_menu(menu_);
     wrefresh(menu_win_);
 
     // necessary.
@@ -250,22 +238,6 @@ std::array<std::array<int, 41>, 21>* TetrisBoard::getTetrisBoard() {
 }
 
 void TetrisBoard::UpdateRendering() {
-    //  Draw
-    /*
-        wattron(win_, COLOR_PAIR(3));
-        for (int i = 0; i != win_size_.y; ++i) {
-            wmove(win_, i, 0);
-            if (i == 0 || i == (win_size_.y - 1)) {
-                for (int j = 0; j != win_size_.x; ++j) waddch(win_, ' ');
-            }
-
-            mvwaddch(win_, i, 0, ' ');
-            mvwaddch(win_, i, 1, ' ');
-            mvwaddch(win_, i, win_size_.x - 2, ' ');
-            mvwaddch(win_, i, win_size_.x - 1, ' ');
-        }
-        wattroff(win_, COLOR_PAIR(3));
-    */
     wattron(win_, A_BOLD);
     box(win_, 0, 0);
     wattroff(win_, A_BOLD);
