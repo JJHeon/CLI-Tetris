@@ -219,22 +219,12 @@ void FrameObject46X160::UpdateRendering() {
 /* TetrisBoardUI Class ===================================================================================== */
 TetrisBoard::TetrisBoard(const YX& currnet_screen_size, const YX& start_pos)
     : TerminalWindowFunction(currnet_screen_size, start_pos, YX(42, 44)) {
-    // Board Initialize
-    for (auto itr1 = board_.begin(); itr1 != board_.end(); ++itr1) {
-        for (auto itr2 = (*itr1).begin(); itr2 != (*itr1).end(); ++itr2) {
-            *itr2 = 0;  // kNothing
-        }
-    }
 }
 TetrisBoard::~TetrisBoard() {}
 
 void TetrisBoard::UpdateState() {
     // necessary
     this->setIsChanged(true);
-}
-
-std::array<std::array<int, 41>, 21>* TetrisBoard::getTetrisBoard() {
-    return &board_;
 }
 
 void TetrisBoard::UpdateRendering() {

@@ -26,23 +26,6 @@ extern "C" {
 
 namespace cli_tetris::object {
 
-using Move = enum class Move { kNothing = 0,
-                               kUP,
-                               kDown,
-                               kLeft,
-                               kRight };
-
-using BlockType = enum class BlockType {
-    kNothing = 0,
-    I = 1,
-    J = 2,
-    L = 3,
-    T = 4,
-    O = 5,
-    Z = 6,
-    S = 7
-};
-
 using YX = struct YX {
     int y;
     int x;
@@ -179,7 +162,7 @@ class FrameObject46X160 : public TerminalWindowFunction {
 /* TetrisBoard Class ===================================================================================== */
 class TetrisBoard : public TerminalWindowFunction {
    private:
-    std::array<std::array<int, 41>, 21> board_;
+    const std::array<std::array<int, 41>, 21>* board_;
 
    private:
    public:
@@ -189,8 +172,6 @@ class TetrisBoard : public TerminalWindowFunction {
     // TerminalWindowFunction override
     void UpdateState() override;
     void UpdateRendering() override;
-
-    std::array<std::array<int, 41>, 21>* getTetrisBoard();
 };
 
 /* TopBoard Class ===================================================================================== */
