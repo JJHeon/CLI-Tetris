@@ -1,0 +1,187 @@
+// /**
+//  * Progress 1 대기상태
+//  * timer 설정값 현재 5초 만큼 대기, 그 전까지 입력을 받지 않습니다.
+//  */
+// if (!start_standby_flag_) {
+//     if (accessor_list_.at(0).IsAlive() && accessor_list_.at(0).IsRunning()) {
+//         return ProcessResult::kNothing;
+//     } else {
+//         start_standby_flag_ = true;                           //최초 실행시 5초 대기용 flag
+//         timer_.SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
+//     }
+// }
+
+// /**
+//  * Progress 2 Block 유무 확인
+//  * Block이 없으면 생성
+//  */
+// if (this->IsBlockAlive()) {
+//     block_ = new TetrisBlock(tetris_board_->getBlockEntryPoint(),
+//                              static_cast<BlockType>(random_generator_->getUniform1RandomNumber()),
+//                              random_generator_->getUniform2RandomNumber());
+//     privious_block_shapes_ = block_->getRealBlockPosition();
+// }
+
+// /**
+//  * Progress 3 입력
+//  * ncurse Input
+//  */
+// int input = ui_.getInput();
+// Move where_to_move = Move::kNothing;
+// switch (input) {
+//     case KEY_UP:
+//         where_to_move = Move::kUP;
+//         break;
+//     case KEY_DOWN:
+//         where_to_move = Move::kDown;
+//         break;
+//     case KEY_LEFT:
+//         where_to_move = Move::kLeft;
+//         break;
+//     case KEY_RIGHT:
+//         where_to_move = Move::kRight;
+//         break;
+//     case KEY_STAB:
+//         break;
+//     case 32:  // Space
+//         break;
+//     case 27:  // ESC
+//         break;
+//     default:
+//         break;
+// }
+
+// /**
+//  * proceed 4 key로 인한 움직임에 대한 충돌체크.
+//  */
+// bool is_move_command_possable = true;
+// std::array<YX, 16> forcast_block;
+// if (where_to_move != Move::kNothing) {
+//     if (where_to_move == Move::kUP)
+//         forcast_block = TetrisBlock::ForcastChangeDirection(block_->getRealBlockPosition(), block_->getBlocktype(), block_->getDirection());
+
+//     else
+//         forcast_block = TetrisBlock::ForcastMoving(block_->getRealBlockPosition(), where_to_move);
+
+//     //이동 가능 여부 확인
+//     for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
+//         //아래 boundary 초과 YX인지 확인
+//         if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y) {
+//             is_move_command_possable = false;
+//             break;
+//         }
+//         //양옆 boundary 초과 YX인지확인
+//         else if ((*block_board_).at(0).size() <= (*itr).x || 0 >= (*itr).x) {
+//             is_move_command_possable = false;
+//             break;
+//         }
+//         //기존 Block에 닿는지
+//         else if (block_board_->at((*itr).y).at((*itr).x) != static_cast<int>(BlockType::kNothing)) {
+//             is_move_command_possable = false;
+//             break;
+//         }
+//     }
+// }
+
+// /**
+//  * Progress 5 일정 시간 간격 check
+//  * 시간 마다 아래로 아래 방향으로 Fall, 이후 충돌체크 확인
+//  * 위에서 계산한 array를 바탕으로 마지막으로 값을 변경하고 저장하고 반영함.
+//  */
+// // Falling할 시각.
+// if (accessor_list_.at(0).IsAlive() && !accessor_list_.at(0).IsRunning()) {
+//     timer_.SetTimer(accessor_list_.at(1), 0, 800000000);
+
+//     /* --------------------------------------------------------------------------------- */
+//     /**
+//      * 한칸 Fall함에 앞서
+//      * 앞서 계산된 forcast_block과 아닌 경우를 구분함
+//      */
+//     std::array<YX, 16> fall_block;
+//     bool is_reach_end = false;
+//     //미리 계산된 forcast block이 존재할 경우
+//     if (is_move_command_possable) {
+//         fall_block = TetrisBlock::ForcastMoving(forcast_block, Move::kDown);
+
+//         //앞선 좌표와 충돌하는지 확인.
+//         for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
+//             if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y || (*block_board_)[(*itr).y][(*itr).x] != static_cast<int>(BlockType::kNothing)) {
+//                 is_reach_end = true;
+//                 break;
+//             }
+//     }
+//     //미리 계산된 것이 없는 경우.
+//     else {
+//         fall_block = TetrisBlock::ForcastMoving(block_->getRealBlockPosition(), Move::kDown);
+
+//         //앞선 좌표와 충돌하는지 확인.
+//         for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr)
+//             if ((*block_board_).size() <= (*itr).y || 0 >= (*itr).y || (*block_board_)[(*itr).y][(*itr).x] != static_cast<int>(BlockType::kNothing)) {
+//                 is_reach_end = true;
+//                 break;
+//             }
+//     }
+//     /* --------------------------------------------------------------------------------- */
+//     // block의 마지막에 도달함.
+//     if (is_reach_end) {
+//         // privious block data 제거
+//         for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
+//             (*block_board_)[(*itr).y][(*itr).x] = 0;
+//         }
+
+//         std::array<YX, 16> shape;
+//         if (is_move_command_possable)
+//             shape = forcast_block;
+//         else
+//             shape = block_->getRealBlockPosition();
+
+//         privious_block_shapes_ = shape;
+
+//         //실제 board에 기록
+//         for (auto itr = shape.begin(); itr != shape.end(); ++itr) {
+//             (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
+//         }
+
+//         // board line 확인
+
+//         // delete block ptr
+//         delete block_;
+
+//     }
+//     //마지막이 아닌 경우
+//     else {
+//         // privious block data 제거
+//         for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
+//             (*block_board_)[(*itr).y][(*itr).x] = 0;
+//         }
+
+//         privious_block_shapes_ = fall_block;
+
+//         //실제 board에 기록
+//         for (auto itr = fall_block.begin(); itr != fall_block.end(); ++itr) {
+//             (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
+//         }
+//     }
+// }
+// //아직 Fall할 시간이 아님.
+// else {
+//     if (is_move_command_possable) {
+//         //앞서 Progrss 4 에서 수행했던 이동이 가능하다면 다음을 수행
+//         if (where_to_move == Move::kUP)
+//             block_->CommandChangeDirection();
+//         else
+//             block_->setRealBlockPosition(std::move(forcast_block));
+
+//         // privious block data 제거
+//         for (auto itr = privious_block_shapes_.begin(); itr != privious_block_shapes_.end(); ++itr) {
+//             (*block_board_)[(*itr).y][(*itr).x] = 0;
+//         }
+
+//         privious_block_shapes_ = forcast_block;
+
+//         //실제 board에 기록
+//         for (auto itr = forcast_block.begin(); itr != forcast_block.end(); ++itr) {
+//             (*block_board_)[(*itr).y][(*itr).x] = static_cast<int>(block_->getBlocktype());
+//         }
+//     }
+// }
