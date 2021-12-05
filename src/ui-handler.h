@@ -1,3 +1,14 @@
+/** Note
+ * ncurse handling class
+ * -- 설명 --
+ * GraphicObject class와 dependency
+ * ncurse 사용하기 전에 Setting, object를 사용하기 위한 사전 조건의 책임을 가짐
+ *
+ *
+ * -- 변경 이력 -- (21.12.05 이전 기록 없음)
+ * 21.12.05 thread에서 ncurse를 사용하면 화면 blink 문제가 발생. thread-manager를 상속하지 않도록 변경
+ */
+
 #ifndef CLI_TETRIS_UI_H_
 #define CLI_TETRIS_UI_H_
 
@@ -15,11 +26,6 @@ using MenuRequest = enum class MenuRequest {
     DOWN
 };
 
-/** UI 가 stand In,Output을 모두 관리합니다.
- *  ConsoleDevice를 반드시 정의를 유도 (ncurse initialize)
- *  Menu, 각 Part drawing등 다양한 drawing method 집합
- */
-// /* thread에서 ncurse 출력 문제로 threadManager 사용안하기로 결정 */
 class UiHandler {
    private:
     bool is_initialized_;
@@ -36,7 +42,6 @@ class UiHandler {
 
    public:
     object::YX getCurrentScreenSize();
-    // YX getGameScreenSize() const;
     void Draw(object::GraphicObject* object);
     void ClearScreen();
     int getInput();
@@ -62,7 +67,6 @@ inline void UiHandler::ControlMenuDriver(MENU* menu_ptr, MenuRequest request) {
             break;
     }
 }
-/* PointerQueue Class ===================================================================================== */
 
 }  // namespace cli_tetris
 
