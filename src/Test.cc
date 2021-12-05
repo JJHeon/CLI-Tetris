@@ -28,7 +28,7 @@ int main(void) {
      *  단 한개의 객체만 허용됨
      * */
     try {
-        Locator::provideUiHandler(new UiHandler(1));
+        Locator::provideUiHandler(new UiHandler());
         Locator::provideTimerHandler(new TimerHandler);
         Locator::provideRandomValueHandler(new RandomValueHandler(1, 7,
                                                                   1, 4));

@@ -1,9 +1,7 @@
 #ifndef CLI_TETRIS_UI_H_
 #define CLI_TETRIS_UI_H_
 
-#include "thread-manager.hpp"
 #include "object-defined.h"
-#include "utility.h"
 
 extern "C" {
 #include <ncurses.h>
@@ -22,15 +20,12 @@ using MenuRequest = enum class MenuRequest {
  *  Menu, 각 Part drawing등 다양한 drawing method 집합
  */
 // /* thread에서 ncurse 출력 문제로 threadManager 사용안하기로 결정 */
-class UiHandler : public CustomThreadManager<object::GraphicObject> {
+class UiHandler {
    private:
     bool is_initialized_;
 
    public:
-    /* thread에서 ncurse 출력 문제로 threadManager 사용안하기로 결정 */
-    UiHandler(int thread_workers = 2);
-    // UiHandler(const int limit_queue_num);
-    // UiHandler();
+    UiHandler();
     ~UiHandler();
 
    private:

@@ -4,7 +4,6 @@
 #include <cassert>
 
 #include "object-defined.h"
-#include "utility.h"
 
 extern "C" {
 #include <ncurses.h>
@@ -12,30 +11,7 @@ extern "C" {
 
 namespace cli_tetris {
 
-namespace user_thread_worker {
-
-static void UiWorker(std::mutex& mutex, std::condition_variable& cv, std::queue<object::GraphicObject*>& job, unsigned int& request_count) {
-    while (true) {
-        std::unique_lock<std::mutex> lock(mutex);
-
-        cv.wait(lock,
-                [&job] {
-                    return !job.empty();
-                });
-
-        auto painter = job.front();
-        job.pop();
-
-        lock.unlock();
-
-        // excute
-        painter->UpdateRendering();
-    }
-}
-};  // namespace user_thread_worker
-
-UiHandler::UiHandler(int thread_workers)
-    : CustomThreadManager<object::GraphicObject>(thread_workers, user_thread_worker::UiWorker), is_initialized_(false) {
+UiHandler::UiHandler() {
     assert(!is_initialized_);
     is_initialized_ = true;
 
