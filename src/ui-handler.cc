@@ -46,11 +46,13 @@ void UiHandler::End() {
 
 void UiHandler::SetColors() {
     start_color();  // Start color
-    init_pair(1, COLOR_CYAN, COLOR_BLACK);
-    init_pair(2, COLOR_BLACK, COLOR_WHITE);
-    init_pair(3, COLOR_BLACK, COLOR_WHITE);
-    init_pair(4, COLOR_RED, COLOR_BLACK);
-    init_pair(5, COLOR_MAGENTA, COLOR_GREEN);
+    init_pair(1, COLOR_BLACK, COLOR_GREEN);
+    init_pair(2, COLOR_BLACK, COLOR_GREEN);
+    init_pair(3, COLOR_BLACK, COLOR_GREEN);
+    init_pair(4, COLOR_BLACK, COLOR_GREEN);
+    init_pair(5, COLOR_BLACK, COLOR_GREEN);
+    init_pair(6, COLOR_BLACK, COLOR_GREEN);
+    init_pair(7, COLOR_BLACK, COLOR_GREEN);
 }
 
 bool UiHandler::IsInitialized() const {
