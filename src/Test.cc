@@ -8,6 +8,8 @@
  */
 
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include "game-module.h"
 #include "service-manager.h"
@@ -17,9 +19,15 @@
 extern "C" {
 #include <signal.h>
 #include <time.h>
+#include <ncurses.h>
 }
 
 void TimerTestcode();
+
+static void ShowErrorToNcurse(const char* context) {
+    mvprintw(0, 0, context);
+    refresh();
+}
 
 int main(void) {
     using cli_tetris::GameManager;
@@ -54,6 +62,8 @@ int main(void) {
         tetris.Initialize();
     } catch (std::runtime_error& e) {
         std::cout << e.what() << std::endl;
+        ShowErrorToNcurse(e.what());
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
 
     if (!tetris.CheckGameState()) return -1;
@@ -63,6 +73,9 @@ int main(void) {
         tetris.Run();
     } catch (std::runtime_error& e) {
         std::cout << e.what() << std::endl;
+        ShowErrorToNcurse(e.what());
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
     } catch (...) {
         std::cout << std::string("Default Error!") << std::endl;
     }
