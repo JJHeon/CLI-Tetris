@@ -52,7 +52,7 @@ TetrisEngine::TetrisEngine() {
 
 TetrisEngine::~TetrisEngine() {}
 using TetrisBlock = struct TetrisBlock;
-const std::array<std::array<int, 41>, 21>* TetrisEngine::getTetrisBoard() const {
+const decltype(TetrisEngine::board_)* TetrisEngine::getTetrisBoard() const {
     return &board_;
 }
 void TetrisEngine::SetBlockProperty(TetrisBlock* block, const int& random_number_of_4, const int& random_number_of_7) {
@@ -219,6 +219,8 @@ void TetrisEngine::MoveNextToCurrentBlock() {
         current_block_.swap(next_block_);
         next_block_.release();
     }
+
+    this->PunchToBoard();
 }
 
 const std::array<object::YX, 16> TetrisEngine::getNextBlockShape() const {
@@ -289,21 +291,12 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
     switch (where) {
         case Move::kDown:
             offset_y = 1;
-            for (int i = 0; i < 16; ++i) {
-                forcast_object[i].y = forcast_object[i].y + 1;
-            }
             break;
         case Move::kLeft:
             offset_x = -1;
-            for (int i = 0; i < 16; ++i) {
-                forcast_object[i].x = forcast_object[i].x - 1;
-            }
             break;
         case Move::kRight:
             offset_x = 1;
-            for (int i = 0; i < 16; ++i) {
-                forcast_object[i].x = forcast_object[i].x + 1;
-            }
             break;
         case Move::kUP:
             // Nothing
@@ -313,11 +306,27 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
     std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](object::YX& i) {
         i.y = offset_y;
         i.x = offset_x;
+        return i;
     });
 
-    std::find_if(preview.begin(), preview.end(), [this](const object::YX& i) -> bool {
-        if ()
-    });
+    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const object::YX& i) -> bool {
+            if (i.y >= this->board_.size() || i.y < 0 || i.x >= this->board_.at(0).size() || i.x < 0) return true;
+            if (this->board_[i.y][i.x] != 0) return true;
+            return false;
+        })) {
+        offset_y *= -1;
+        offset_x *= -1;
+        std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](object::YX& i) {
+            i.y = offset_y;
+            i.x = offset_x;
+            return i;
+        });
+
+        return false;
+    }
+
+    this->PunchToBoard();
+    return true;
 }
 
 bool TetrisEngine::IsNextBlockExist() const {
@@ -325,6 +334,33 @@ bool TetrisEngine::IsNextBlockExist() const {
         return false;
     else
         return true;
+}
+
+void TetrisEngine::FixedCurrentBlockToBoard() {
+    this->PunchToBoard();
+}
+void TetrisEngine::DeleteCompleteLines() {
+    auto& shape = current_block_->pos;
+
+    for (auto target = shape.cbegin(); target != shape.cend(); ++target) {
+        if (board_.at((*target).y).cend() != std::find_if(board_.at((*target).y).cbegin() + 1, board_.at((*target).y).cend(),
+                                                          [](const int& i) -> bool {
+                                                              if (i != 0)
+                                                                  return true;
+                                                              else
+                                                                  return false;
+                                                          })) {
+            continue;
+        } else {
+            this->ArrangeBoard((*target).y);
+        }
+    }
+}
+void TetrisEngine::ArrangeBoard(const int& line) {
+    for (int n = line; n != 0; n--) {
+        std::copy(board_.at(line - 1).cbegin(), board_.at(line - 1).cend(),
+                  board_.at(line).begin());
+    }
 }
 
 }  // namespace cli_tetris::engine

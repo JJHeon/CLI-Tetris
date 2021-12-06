@@ -69,6 +69,7 @@ class TetrisEngine {
     bool SetBlockPostion(TetrisBlock* block);
     void SetPositionToBoard(const TetrisBlock* const pos, int value);
     void PunchToBoard();
+    void ArrangeBoard(const int& line);
 
    public:
     TetrisEngine();
@@ -88,12 +89,14 @@ class TetrisEngine {
     void CreateNextBlock(const int& random_number_of_4, const int& random_number_of_7);
     void MoveNextToCurrentBlock();
 
-    const std::array<std::array<int, 41>, 21>* getTetrisBoard() const;
+    const decltype(board_)* getTetrisBoard() const;
     const std::array<object::YX, 16> getNextBlockShape() const;
     bool RotateCurrentBlock();
     bool FallCurrentBlock();
     bool MovingCurrentBlock(Move where);
     bool IsNextBlockExist() const;
+    void FixedCurrentBlockToBoard();
+    void DeleteCompleteLines();
 
     // LATER:
     // bool IsCurrentBlockExist() const;
