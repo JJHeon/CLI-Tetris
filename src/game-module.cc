@@ -5,6 +5,7 @@
 #include <thread>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include "ui-handler.h"
 #include "user-data.h"
@@ -274,6 +275,9 @@ void SoloPlayState::EnterProcess() {
     // Connect UI and Engine
     tetris_board_ptr_->ConnectBoard(user_tetris_engine_.getTetrisBoard());
 
+    // variable set
+    temperary_stop_flag = false;
+
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
@@ -286,8 +290,26 @@ ProcessResult SoloPlayState::UpdateProcess() {
     } else
         return ProcessResult::kNothing;
 
-    // Progress 2 - Next Block 유무 확인, 없으면 생성
-    if (!user_tetris_engine_.IsNextBlockExist()) user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+    if (TimerAccessor::WaitingTimer(accessor_list_.at(1))) {
+        timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
+
+        // after Fall, wait timer one more time and Move Block & Create Blocks
+        if (temperary_stop_flag) {
+            // Progress ? - Move Next Block to Current Block
+            user_tetris_engine_.MoveNextToCurrentBlock();
+            temperary_stop_flag = false;
+            // Progress 2 - Next Block 유무 확인, 없으면 생성
+            if (!user_tetris_engine_.IsNextBlockExist()) user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        }
+
+        // Progress 5 - Fall Block
+        if (!temperary_stop_flag && !user_tetris_engine_.FallCurrentBlock()) {
+            user_tetris_engine_.DeleteCompleteLines();
+            temperary_stop_flag = true;
+        }
+
+        tetris_board_ptr_->UpdateState();
+    }
 
     /**
      * Progress 3 입력
@@ -296,15 +318,16 @@ ProcessResult SoloPlayState::UpdateProcess() {
     int input = ui_handler_->getInput();
     switch (input) {
         case KEY_UP:
-            if (user_tetris_engine_.RotateCurrentBlock()) {
-                tetris_board_ptr_->UpdateState();
-            }
+            if (user_tetris_engine_.RotateCurrentBlock()) tetris_board_ptr_->UpdateState();
             break;
         case KEY_DOWN:
+            if (user_tetris_engine_.MovingCurrentBlock(engine::Move::kDown)) tetris_board_ptr_->UpdateState();
             break;
         case KEY_LEFT:
+            if (user_tetris_engine_.MovingCurrentBlock(engine::Move::kLeft)) tetris_board_ptr_->UpdateState();
             break;
         case KEY_RIGHT:
+            if (user_tetris_engine_.MovingCurrentBlock(engine::Move::kRight)) tetris_board_ptr_->UpdateState();
             break;
         case KEY_STAB:
             break;
@@ -334,7 +357,12 @@ void SoloPlayState::FinishProcess() {
     // 할당한 Object를 모두 해제합니다.
     ui_object_list_.erase(ui_object_list_.begin(), ui_object_list_.end());
 
-    board_object_ptr_ = nullptr;
+    // Timer Stop
+    std::for_each(accessor_list_.begin(), accessor_list_.end(), [this](auto& itr) {
+        this->timer_handler_->StopTimer(itr);
+    });
+
+    tetris_board_ptr_ = nullptr;
 }
 
 /* GameManager Class ===================================================================================== */
