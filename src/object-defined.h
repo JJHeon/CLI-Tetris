@@ -17,6 +17,7 @@
 
 #include <chrono>
 #include <array>
+#include <vector>
 
 extern "C" {
 #include <ncurses.h>
@@ -162,9 +163,12 @@ class FrameObject46X160 : public TerminalWindowFunction {
 /* TetrisBoard Class ===================================================================================== */
 class TetrisBoard : public TerminalWindowFunction {
    private:
-    const std::array<std::array<int, 41>, 21>* board_;
+    const std::vector<std::vector<int>>* board_;
 
    private:
+    // Custom
+    void RenderConnectedBoard();
+
    public:
     TetrisBoard(const YX& currnet_screen_size, const YX& start_pos);
     ~TetrisBoard();
@@ -174,7 +178,7 @@ class TetrisBoard : public TerminalWindowFunction {
     void UpdateRendering() override;
 
     // Custom
-    void ConnectBoard(const std::array<std::array<int, 41>, 21>* board);
+    void ConnectBoard(decltype(board_) board);
 };
 
 /* TopBoard Class ===================================================================================== */

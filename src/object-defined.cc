@@ -219,6 +219,7 @@ void FrameObject46X160::UpdateRendering() {
 /* TetrisBoardUI Class ===================================================================================== */
 TetrisBoard::TetrisBoard(const YX& currnet_screen_size, const YX& start_pos)
     : TerminalWindowFunction(currnet_screen_size, start_pos, YX(42, 44)) {
+    board_ = nullptr;
 }
 TetrisBoard::~TetrisBoard() {}
 
@@ -232,6 +233,7 @@ void TetrisBoard::UpdateRendering() {
     box(win_, 0, 0);
     wattroff(win_, A_BOLD);
 
+    this->RenderConnectedBoard();
     // Last excution
     wrefresh(win_);
 
@@ -239,8 +241,36 @@ void TetrisBoard::UpdateRendering() {
     this->setIsChanged(false);
 }
 
-void TetrisBoard::ConnectBoard(const std::array<std::array<int, 41>, 21>* board) {
+void TetrisBoard::ConnectBoard(decltype(TetrisBoard::board_) board) {
     this->board_ = board;
+}
+void TetrisBoard::RenderConnectedBoard() {
+    if (board_ == nullptr) std::runtime_error(std::string("E016 : TetrisBoard::Don't have Connected Board"));
+
+    int window_y = 1;
+    int window_x = 2;
+    auto line = 1;
+    auto column = 1;
+    while (line != (*board_).size() - 1) {
+        while (column != (*board_).at(0).size() - 2) {
+            mvwprintw(win_, window_y, window_x, "%d", static_cast<int>((*board_)[line][column]));
+            mvwprintw(win_, window_y, window_x + 1, "%d", static_cast<int>((*board_)[line][column]));
+
+            if ((*board_)[line][column] != 0) {
+                int color_number = static_cast<int>((*board_)[line][column]);
+                // wattron(win_, COLOR_PAIR(color_number));
+                // mvwaddch(win_, window_y, window_x, ' ');
+                // mvwaddch(win_, window_y, window_x + 1, ' ');
+                // wattroff(win_, COLOR_PAIR(color_number));
+            }
+            window_x += 2;
+            ++column;
+        }
+        ++window_y;
+        ++line;
+        column = 1;
+        window_x = 2;
+    }
 }
 
 /* TopBoard Class ===================================================================================== */

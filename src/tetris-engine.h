@@ -38,7 +38,7 @@ using BlockType = enum class BlockType {
 class TetrisEngine {
    private:
     using TetrisBlock = struct TetrisBlock {
-        std::array<object::YX, 16> pos;
+        std::array<object::YX, 4> pos;
         BlockType type;
         int direction;
         constexpr TetrisBlock(const object::YX& start_pos)
@@ -56,9 +56,9 @@ class TetrisEngine {
             return *this;
         }
     };
-    constexpr static object::YX kBlockStartPostion_ = object::YX(1, 20);
+    constexpr static object::YX kBlockStartPostion_ = object::YX(20, 5);
 
-    std::array<std::array<int, 41>, 21> board_;
+    std::vector<std::vector<int>> board_;
 
     TetrisBlock previous_block_;
     std::unique_ptr<TetrisBlock> current_block_;
@@ -68,8 +68,11 @@ class TetrisEngine {
     void SetBlockProperty(TetrisBlock* block, const int& random_number_of_4, const int& random_number_of_7);
     bool SetBlockPostion(TetrisBlock* block);
     void SetPositionToBoard(const TetrisBlock* const pos, int value);
+    void UpdateCuttenrBlockDirection(TetrisBlock* block);
     void PunchToBoard();
     void ArrangeBoard(const int& line);
+    bool IsPlacedBlock(const decltype(TetrisBlock::pos)& block_pos);
+    bool IsCanFallBlock(const decltype(TetrisBlock::pos)& block_pos);
 
    public:
     TetrisEngine();
@@ -90,7 +93,7 @@ class TetrisEngine {
     void MoveNextToCurrentBlock();
 
     const decltype(board_)* getTetrisBoard() const;
-    const std::array<object::YX, 16> getNextBlockShape() const;
+    const decltype(TetrisBlock::pos) getNextBlockShape() const;
     bool RotateCurrentBlock();
     bool FallCurrentBlock();
     bool MovingCurrentBlock(Move where);

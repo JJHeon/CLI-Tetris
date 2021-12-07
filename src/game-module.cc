@@ -254,7 +254,7 @@ void SoloPlayState::EnterProcess() {
     ui_handler_->ClearScreen();
 
     // 시작 대기 Timer 5초 설정.
-    timer_handler_->SetTimer(accessor_list_.at(0), 5, 0);
+    timer_handler_->SetTimer(accessor_list_.at(0), 1, 0);
 
     YX game_screen_size = GameManager::getNeededScreenSize();
     YX current_screen_size = ui_handler_->getCurrentScreenSize();
@@ -285,11 +285,14 @@ ProcessResult SoloPlayState::UpdateProcess() {
     // Process 0 - 5초 대기
     if (TimerAccessor::WaitingTimer(accessor_list_.at(0))) {
         timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
-        user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
-        user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        // user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        user_tetris_engine_.CreateCurrentBlock(1, 5);
+        // user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        tetris_board_ptr_->UpdateRendering();
     } else
         return ProcessResult::kNothing;
 
+    /*
     if (TimerAccessor::WaitingTimer(accessor_list_.at(1))) {
         timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
 
@@ -303,13 +306,14 @@ ProcessResult SoloPlayState::UpdateProcess() {
         }
 
         // Progress 5 - Fall Block
-        if (!temperary_stop_flag && !user_tetris_engine_.FallCurrentBlock()) {
             user_tetris_engine_.DeleteCompleteLines();
+        if (!temperary_stop_flag && !user_tetris_engine_.FallCurrentBlock()) {
             temperary_stop_flag = true;
         }
 
         tetris_board_ptr_->UpdateState();
     }
+    */
 
     /**
      * Progress 3 입력

@@ -1,52 +1,54 @@
 #include "tetris-engine.h"
 
 #include <algorithm>
+#include <set>
+#define _DEBUG
+
+#ifndef _DEBUG
+extern "C" {
+#include <ncurses.h>
+}
+#endif
 
 namespace cli_tetris::engine {
 
 static constexpr int block_shape_i[2][4][2] = {
     {{0, 0}, {0, -1}, {0, 1}, {0, 2}},  // laying I
-    {{0, 0}, {-1, 0}, {1, 0}, {2, 0}}};
+    {{0, 0}, {1, 0}, {-1, 0}, {-2, 0}}};
 
 static constexpr int block_shape_j[4][4][2] = {
-    {{0, 0}, {0, -1}, {0, 1}, {1, 1}},
-    {{0, 0}, {1, -1}, {1, 0}, {-1, 0}},
-    {{0, 0}, {-1, -1}, {0, -1}, {0, -1}},
-    {{0, 0}, {-1, 0}, {1, 0}, {-1, 1}}};
+    {{0, 0}, {0, -1}, {0, 1}, {-1, 1}},
+    {{0, 0}, {-1, -1}, {-1, 0}, {1, 0}},
+    {{0, 0}, {1, -1}, {0, -1}, {0, -1}},
+    {{0, 0}, {1, 0}, {-1, 0}, {1, 1}}};
 
 static constexpr int block_shape_l[4][4][2] = {
-    {{0, 0}, {0, -1}, {1, -1}, {0, 1}},
-    {{0, 0}, {-1, 0}, {-1, -1}, {1, 0}},
-    {{0, 0}, {0, 1}, {-1, 1}, {0, -1}},
-    {{0, 0}, {1, 0}, {1, 1}, {-1, 0}}};
+    {{0, 0}, {0, -1}, {-1, -1}, {0, 1}},
+    {{0, 0}, {1, 0}, {1, -1}, {-1, 0}},
+    {{0, 0}, {0, 1}, {1, 1}, {0, -1}},
+    {{0, 0}, {-1, 0}, {-1, 1}, {1, 0}}};
 
 static constexpr int block_shape_t[4][4][2] = {
-    {{0, 0}, {0, -1}, {0, 1}, {1, 0}},
-    {{0, 0}, {0, -1}, {-1, 0}, {1, 0}},
-    {{0, 0}, {0, -1}, {-1, 0}, {0, 1}},
-    {{0, 0}, {-1, 0}, {1, 0}, {0, 1}}};
+    {{0, 0}, {0, -1}, {0, 1}, {-1, 0}},
+    {{0, 0}, {0, -1}, {1, 0}, {-1, 0}},
+    {{0, 0}, {0, -1}, {1, 0}, {0, 1}},
+    {{0, 0}, {1, 0}, {-1, 0}, {0, 1}}};
 
 static constexpr int block_shape_o[1][4][2] = {
-    {{0, 0}, {0, 1}, {1, 0}, {1, 1}}};
+    {{0, 0}, {0, 1}, {-1, 0}, {-1, 1}}};
 
 static constexpr int block_shape_z[2][4][2] = {
-    {{0, 0}, {0, -1}, {1, 0}, {1, 1}},
-    {{0, 0}, {-1, 0}, {0, -1}, {1, -1}}};
+    {{0, 0}, {0, -1}, {-1, 0}, {-1, 1}},
+    {{0, 0}, {1, 0}, {0, -1}, {-1, -1}}};
 
 static constexpr int block_shape_s[2][4][2] = {
-    {{0, 0}, {1, -1}, {1, 0}, {0, 1}},
-    {{0, 0}, {-1, -1}, {0, -1}, {1, 0}}};
+    {{0, 0}, {-1, -1}, {-1, 0}, {0, 1}},
+    {{0, 0}, {1, -1}, {0, -1}, {-1, 0}}};
 
 constexpr object::YX TetrisEngine::kBlockStartPostion_;
 
-TetrisEngine::TetrisEngine() {
-    // Board Initialize
-    for (auto line = board_.begin(); line != board_.end(); ++line) {
-        for (auto column = (*line).begin(); column != (*line).end(); ++column) {
-            *column = 0;  // kNothing
-        }
-    }
-
+TetrisEngine::TetrisEngine()
+    : board_(22, std::vector<int>(11, 0)) {
     previous_block_.pos.fill(object::YX(0, 0));
 }
 
@@ -105,73 +107,60 @@ bool TetrisEngine::SetBlockPostion(TetrisBlock* block) {
     int start_x = block->pos.at(0).x;
     int direction = block->direction;
 
-    std::array<object::YX, 16> preview;
+    std::array<object::YX, 4> preview;
 
     switch (block->type) {
         case BlockType::I:
-            for (int i = 0; i <= 12; i += 4) {
-                preview[i].y = start_y + (block_shape_i[direction][i][0] * 2);
-                preview[i].x = start_x + (block_shape_i[direction][i][1] * 2);
+            for (int i = 0; i < 4; ++i) {
+                preview[i].y = start_y + block_shape_i[direction][i][0];
+                preview[i].x = start_x + block_shape_i[direction][i][1];
             }
             break;
         case BlockType::J:
-            for (int i = 0; i <= 12; i += 4) {
-                preview[i].y = start_y + (block_shape_j[direction][i][0] * 2);
-                preview[i].x = start_x + (block_shape_j[direction][i][1] * 2);
+            for (int i = 0; i < 4; ++i) {
+                preview[i].x = start_x + block_shape_j[direction][i][1];
+                preview[i].y = start_y + block_shape_j[direction][i][0];
             }
             break;
         case BlockType::L:
-            for (int i = 0; i <= 12; i += 4) {
-                preview[i].y = start_y + (block_shape_l[direction][i][0] * 2);
-                preview[i].x = start_x + (block_shape_l[direction][i][1] * 2);
+            for (int i = 0; i < 4; ++i) {
+                preview[i].y = start_y + block_shape_l[direction][i][0];
+                preview[i].x = start_x + block_shape_l[direction][i][1];
             }
             break;
         case BlockType::T:
-            for (int i = 0; i <= 12; i += 4) {
-                preview[i].y = start_y + (block_shape_t[direction][i][0] * 2);
-                preview[i].x = start_x + (block_shape_t[direction][i][1] * 2);
+            for (int i = 0; i < 4; ++i) {
+                preview[i].y = start_y + block_shape_t[direction][i][0];
+                preview[i].x = start_x + block_shape_t[direction][i][1];
             }
             break;
         case BlockType::O:
-            for (int i = 0; i <= 12; i += 4) {
-                preview[i].y = start_y + (block_shape_o[direction][i][0] * 2);
-                preview[i].x = start_x + (block_shape_o[direction][i][1] * 2);
+            for (int i = 0; i < 4; ++i) {
+                preview[i].y = start_y + block_shape_o[direction][i][0];
+                preview[i].x = start_x + block_shape_o[direction][i][1];
             }
             break;
         case BlockType::Z:
-            for (int i = 0; i <= 12; i += 4) {
-                preview[i].y = start_y + (block_shape_z[direction][i][0] * 2);
-                preview[i].x = start_x + (block_shape_z[direction][i][1] * 2);
+            for (int i = 0; i < 4; ++i) {
+                preview[i].y = start_y + block_shape_z[direction][i][0];
+                preview[i].x = start_x + block_shape_z[direction][i][1];
             }
             break;
         case BlockType::S:
-            for (int i = 0; i <= 12; i += 4) {
-                preview[i].y = start_y + (block_shape_s[direction][i][0] * 2);
-                preview[i].x = start_x + (block_shape_s[direction][i][1] * 2);
+            for (int i = 0; i < 4; ++i) {
+                preview[i].y = start_y + block_shape_s[direction][i][0];
+                preview[i].x = start_x + block_shape_s[direction][i][1];
             }
             break;
     }
     // 지정할 위치에 다른 Block 있는지 Check
-    if (board_[preview[0].y][preview[0].x] != 0 ||
-        board_[preview[4].y][preview[4].x] != 0 ||
-        board_[preview[8].y][preview[8].x] != 0 ||
-        board_[preview[12].y][preview[12].x] != 0) return false;
-
-    for (int i = 0; i <= 12; i += 4) {
-        preview[i + 1].y = preview[i].y;
-        preview[i + 1].x = preview[i].x + 1;
-        //지정할 위치에 다른 Block 있는지 Check
-        if (board_[preview[i + 1].y][preview[i + 1].x] != 0) return false;
-
-        preview[i + 2].y = preview[i].y + 1;
-        preview[i + 2].x = preview[i].x;
-        //지정할 위치에 다른 Block 있는지 Check
-        if (board_[preview[i + 2].y][preview[i + 2].x] != 0) return false;
-
-        preview[i + 3].y = preview[i].y + 1;
-        preview[i + 3].x = preview[i].x + 1;
-        //지정할 위치에 다른 Block 있는지 Check
-        if (board_[preview[i + 3].y][preview[i + 3].x] != 0) return false;
+    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const object::YX& target) -> bool {
+            if (this->board_[target.y][target.x] != 0)
+                return true;
+            else
+                return false;
+        })) {
+        return false;
     }
 
     block->pos = std::move(preview);
@@ -179,7 +168,7 @@ bool TetrisEngine::SetBlockPostion(TetrisBlock* block) {
 }
 
 void TetrisEngine::SetPositionToBoard(const TetrisBlock* const block, int value) {
-    const std::array<object::YX, 16>& preview_pos = block->pos;
+    const decltype(block->pos)& preview_pos = block->pos;
     for (auto itr = preview_pos.begin(); itr != preview_pos.end(); ++itr)
         board_[(*itr).y][(*itr).x] = value;
 }
@@ -201,6 +190,7 @@ void TetrisEngine::CreateCurrentBlock(const int& random_number_of_4, const int& 
 
     this->SetBlockProperty(current_block_.get(), random_number_of_4, random_number_of_7);
     this->SetBlockPostion(current_block_.get());
+    this->PunchToBoard();
 }
 
 void TetrisEngine::CreateNextBlock(const int& random_number_of_4, const int& random_number_of_7) {
@@ -223,8 +213,8 @@ void TetrisEngine::MoveNextToCurrentBlock() {
     this->PunchToBoard();
 }
 
-const std::array<object::YX, 16> TetrisEngine::getNextBlockShape() const {
-    std::array<object::YX, 16> next = next_block_->pos;
+const decltype(TetrisEngine::TetrisBlock::pos) TetrisEngine::getNextBlockShape() const {
+    decltype(TetrisEngine::TetrisBlock::pos) next = next_block_->pos;
 
     int basis_y = next[0].y;
     int basis_x = next[0].x;
@@ -235,57 +225,116 @@ const std::array<object::YX, 16> TetrisEngine::getNextBlockShape() const {
 
     return next;
 }
-bool TetrisEngine::RotateCurrentBlock() {
-    if (!(current_block_ == nullptr)) {
-        int original_direction = current_block_->direction;
-        int direction = original_direction;
+void TetrisEngine::UpdateCuttenrBlockDirection(TetrisBlock* block) {
+    int direction = block->direction;
 
-        switch (current_block_->type) {
-            case BlockType::I:
-            case BlockType::Z:
-            case BlockType::S:
+    switch (block->type) {
+        case BlockType::I:
+        case BlockType::Z:
+        case BlockType::S:
 
-                direction = (direction + 1) % 2;
+            direction = (direction + 1) % 2;
 
-                break;
-            case BlockType::J:
-            case BlockType::L:
-            case BlockType::T:
-                direction = (direction + 1) % 4;
-                break;
-            case BlockType::O:
-                direction = 0;
-                break;
-        }
+            break;
+        case BlockType::J:
+        case BlockType::L:
+        case BlockType::T:
+            direction = (direction + 1) % 4;
+            break;
+        case BlockType::O:
+            direction = 1;
+            break;
+    }
+    block->direction = direction;
+}
 
-        current_block_->direction = direction;
-
-        if (this->SetBlockPostion(current_block_.get()))
-            PunchToBoard();
-        else {
-            current_block_->direction = original_direction;
-            return false;
-        }
-
+bool TetrisEngine::IsPlacedBlock(const decltype(TetrisBlock::pos)& block_pos) {
+    if (block_pos.cend() != std::find_if(block_pos.cbegin(), block_pos.cend(), [this](const object::YX& target) -> bool {
+            if (target.y < 1 || this->board_.size() <= target.y)
+                return true;
+            else if (target.x < 1 || this->board_.at(0).size() <= target.x)
+                return true;
+            else if (this->board_[target.y][target.x] != 0)
+                return true;
+            else
+                return false;
+        })) {
+        return false;
+    } else
         return true;
+}
+
+bool TetrisEngine::RotateCurrentBlock() {
+    using object::YX;
+    if (!(current_block_ == nullptr)) {
+        auto preview = current_block_->pos;
+
+        /** Rotate degree 90
+         * [0 -1]
+         * [1  0]
+         */
+        std::transform(preview.begin(), preview.end(), preview.begin(), [](YX& target) -> YX {
+            YX temp;
+            temp.y = target.x;
+            temp.x = target.y * -1;
+
+            return temp;
+        });
+
+        // Adjust Start Position
+        YX offset(current_block_->pos[0].y - preview[0].y, current_block_->pos[0].x - preview[0].x);
+        std::transform(preview.begin(), preview.end(), preview.begin(), [&offset](YX& target) -> YX {
+            target.y += offset.y;
+            target.x += offset.x;
+
+            return target;
+        });
+
+        if (this->IsPlacedBlock(preview)) {
+            current_block_->pos = std::move(preview);
+            this->UpdateCuttenrBlockDirection(current_block_.get());
+            PunchToBoard();
+            return true;
+        } else
+            return false;
     }
 
     return false;
 }
-bool TetrisEngine::FallCurrentBlock() {
-    current_block_->pos.at(0).y++;
 
-    if (this->SetBlockPostion(current_block_.get()))
-        PunchToBoard();
-    else {
-        current_block_->pos.at(0).y--;
+bool TetrisEngine::IsCanFallBlock(const decltype(TetrisBlock::pos)& block_pos) {
+    if (block_pos.cend() != std::find_if(block_pos.cbegin(), block_pos.cend(), [this](const object::YX& target) -> bool {
+            if (target.y < 1 || this->board_.size() <= target.y)
+                return true;
+            else if (this->board_[target.y][target.x] != 0)
+                return true;
+            else
+                return false;
+        })) {
         return false;
-    }
+    } else
+        return true;
+}
+bool TetrisEngine::FallCurrentBlock() {
+    using object::YX;
 
-    return true;
+    auto preview = current_block_->pos;
+    std::transform(preview.begin(), preview.end(), preview.begin(), [](YX& target) -> YX {
+        target.y -= 1;
+
+        return target;
+    });
+
+    if (this->IsCanFallBlock(preview)) {
+        PunchToBoard();
+        return true;
+    } else
+        return false;
 }
 
 bool TetrisEngine::MovingCurrentBlock(Move where) {
+    using object::YX;
+
     int offset_y = 0;
     int offset_x = 0;
     switch (where) {
@@ -302,31 +351,23 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
             // Nothing
             break;
     }
-    std::array<object::YX, 16>& preview = current_block_->pos;
-    std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](object::YX& i) {
+    decltype(current_block_->pos) preview = current_block_->pos;
+    std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](YX& i) {
         i.y = offset_y;
         i.x = offset_x;
         return i;
     });
 
-    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const object::YX& i) -> bool {
-            if (i.y >= this->board_.size() || i.y < 0 || i.x >= this->board_.at(0).size() || i.x < 0) return true;
+    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const YX& i) -> bool {
+            if (i.y >= this->board_.size() || i.y < 1 || i.x >= this->board_.at(0).size() || i.x < 1) return true;
             if (this->board_[i.y][i.x] != 0) return true;
             return false;
         })) {
-        offset_y *= -1;
-        offset_x *= -1;
-        std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](object::YX& i) {
-            i.y = offset_y;
-            i.x = offset_x;
-            return i;
-        });
-
         return false;
+    } else {
+        this->PunchToBoard();
+        return true;
     }
-
-    this->PunchToBoard();
-    return true;
 }
 
 bool TetrisEngine::IsNextBlockExist() const {
@@ -340,26 +381,28 @@ void TetrisEngine::FixedCurrentBlockToBoard() {
     this->PunchToBoard();
 }
 void TetrisEngine::DeleteCompleteLines() {
-    auto& shape = current_block_->pos;
+    std::set<int> record_clear_line;
 
+    auto& shape = current_block_->pos;
     for (auto target = shape.cbegin(); target != shape.cend(); ++target) {
         if (board_.at((*target).y).cend() != std::find_if(board_.at((*target).y).cbegin() + 1, board_.at((*target).y).cend(),
                                                           [](const int& i) -> bool {
-                                                              if (i != 0)
+                                                              if (i == 0)
                                                                   return true;
                                                               else
                                                                   return false;
                                                           })) {
             continue;
         } else {
-            this->ArrangeBoard((*target).y);
+            record_clear_line.insert((*target).y);
         }
     }
-}
-void TetrisEngine::ArrangeBoard(const int& line) {
-    for (int n = line; n != 0; n--) {
-        std::copy(board_.at(line - 1).cbegin(), board_.at(line - 1).cend(),
-                  board_.at(line).begin());
+
+    int offset = 0;
+    for (auto itr = record_clear_line.begin(); itr != record_clear_line.end(); ++itr) {
+        board_.erase(board_.begin() + *itr - offset);
+        board_.push_back(std::vector<int>(11, 0));
+        offset++;
     }
 }
 
