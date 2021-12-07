@@ -266,9 +266,10 @@ bool TetrisEngine::IsPlacedBlock(const decltype(TetrisBlock::pos)& block_pos) {
 
 bool TetrisEngine::RotateCurrentBlock() {
     using object::YX;
-    if (!(current_block_ == nullptr)) {
+    if (current_block_ != nullptr) {
         auto preview = current_block_->pos;
-
+        mvprintw(1, 0, "R1");
+        refresh();
         /** Rotate degree 90
          * [0 -1]
          * [1  0]
@@ -280,6 +281,8 @@ bool TetrisEngine::RotateCurrentBlock() {
 
             return temp;
         });
+        mvprintw(2, 0, "R2");
+        refresh();
 
         // Adjust Start Position
         YX offset(current_block_->pos[0].y - preview[0].y, current_block_->pos[0].x - preview[0].x);
@@ -294,9 +297,14 @@ bool TetrisEngine::RotateCurrentBlock() {
             current_block_->pos = std::move(preview);
             this->UpdateCuttenrBlockDirection(current_block_.get());
             PunchToBoard();
+            mvprintw(3, 0, "R3");
+            refresh();
             return true;
-        } else
+        } else {
+            mvprintw(4, 0, "R4");
+            refresh();
             return false;
+        }
     }
 
     return false;
@@ -351,20 +359,27 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
             // Nothing
             break;
     }
+    mvprintw(1, 4, "M1");
+    refresh();
     decltype(current_block_->pos) preview = current_block_->pos;
     std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](YX& i) {
         i.y = offset_y;
         i.x = offset_x;
         return i;
     });
-
+    mvprintw(2, 4, "M2");
+    refresh();
     if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const YX& i) -> bool {
             if (i.y >= this->board_.size() || i.y < 1 || i.x >= this->board_.at(0).size() || i.x < 1) return true;
             if (this->board_[i.y][i.x] != 0) return true;
             return false;
         })) {
+        mvprintw(3, 4, "M3");
+        refresh();
         return false;
     } else {
+        mvprintw(4, 4, "M4");
+        refresh();
         this->PunchToBoard();
         return true;
     }
