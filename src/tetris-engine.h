@@ -32,7 +32,15 @@ using BlockType = enum class BlockType {
     T = 4,
     O = 5,
     Z = 6,
-    S = 7
+    S = 7,
+    kCurrentBase = 10,
+    kCurrentI = 11,
+    kCurrentJ = 12,
+    kCurrentL = 13,
+    kCurrentT = 14,
+    kCurrentO = 15,
+    kCurrentZ = 16,
+    kCurrentS = 17
 };
 
 class TetrisEngine {
@@ -69,10 +77,11 @@ class TetrisEngine {
     bool SetBlockPostion(TetrisBlock* block);
     void SetPositionToBoard(const TetrisBlock* const pos, int value);
     void UpdateCuttenrBlockDirection(TetrisBlock* block);
-    void PunchToBoard();
+    void PunchToBoard(BlockType what_value);
     void ArrangeBoard(const int& line);
     bool IsPlacedBlock(const decltype(TetrisBlock::pos)& block_pos);
     bool IsCanFallBlock(const decltype(TetrisBlock::pos)& block_pos);
+    BlockType ConvertCurrentBlockType(const BlockType& type);
 
    public:
     TetrisEngine();

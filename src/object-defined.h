@@ -168,6 +168,7 @@ class TetrisBoard : public TerminalWindowFunction {
    private:
     // Custom
     void RenderConnectedBoard();
+    void ScaleUpToFitWindow();
 
    public:
     TetrisBoard(const YX& currnet_screen_size, const YX& start_pos);

@@ -247,30 +247,83 @@ void TetrisBoard::ConnectBoard(decltype(TetrisBoard::board_) board) {
 void TetrisBoard::RenderConnectedBoard() {
     if (board_ == nullptr) std::runtime_error(std::string("E016 : TetrisBoard::Don't have Connected Board"));
 
-    int window_y = 1;
-    int window_x = 2;
-    auto line = 1;
-    auto column = 1;
-    while (line != (*board_).size() - 1) {
-        while (column != (*board_).at(0).size() - 2) {
-            mvwprintw(win_, window_y, window_x, "%d", static_cast<int>((*board_)[line][column]));
-            mvwprintw(win_, window_y, window_x + 1, "%d", static_cast<int>((*board_)[line][column]));
+    int offset_y = 41;
+    for (auto line = (*board_).cbegin() + 1; line != (*board_).cend() - 1; ++line) {
+        for (auto value = (*line).cbegin() + 1; value != (*line).cend(); ++value) {
+            if (1 <= *value && *value <= 17) {
+                int i = line - (*board_).cbegin();
+                int j = value - (*line).cbegin();
 
-            if ((*board_)[line][column] != 0) {
-                int color_number = static_cast<int>((*board_)[line][column]);
-                // wattron(win_, COLOR_PAIR(color_number));
-                // mvwaddch(win_, window_y, window_x, ' ');
-                // mvwaddch(win_, window_y, window_x + 1, ' ');
-                // wattroff(win_, COLOR_PAIR(color_number));
+                /* offset to window start point */
+                i *= 2;
+                j *= 4;
+                i = offset_y - i;
+                j -= 2;
+
+                char n = ' ';
+                int color_number = static_cast<int>(*value);
+
+                // case current blocks have integer over the 10
+                if (color_number >= 10) color_number -= 10;
+
+                wattron(win_, COLOR_PAIR(color_number));
+                mvwaddch(win_, i, j, n);
+                mvwaddch(win_, i, j + 1, n);
+                mvwaddch(win_, i, j + 2, n);
+                mvwaddch(win_, i, j + 3, n);
+                mvwaddch(win_, i + 1, j, n);
+                mvwaddch(win_, i + 1, j + 1, n);
+                mvwaddch(win_, i + 1, j + 2, n);
+                mvwaddch(win_, i + 1, j + 3, n);
+                wattroff(win_, COLOR_PAIR(color_number));
+            } else {
+                int i = line - (*board_).cbegin();
+                int j = value - (*line).cbegin();
+
+                /* offset to window start point */
+                i *= 2;
+                j *= 4;
+                i = offset_y - i;
+                j -= 2;
+
+                char n = ' ';
+                // COLOR_PAIR(15) is meaning black on background
+                wattron(win_, COLOR_PAIR(15));
+                mvwaddch(win_, i, j, n);
+                mvwaddch(win_, i, j + 1, n);
+                mvwaddch(win_, i, j + 2, n);
+                mvwaddch(win_, i, j + 3, n);
+                mvwaddch(win_, i + 1, j, n);
+                mvwaddch(win_, i + 1, j + 1, n);
+                mvwaddch(win_, i + 1, j + 2, n);
+                mvwaddch(win_, i + 1, j + 3, n);
+                wattroff(win_, COLOR_PAIR(15));
             }
-            window_x += 2;
-            ++column;
         }
-        ++window_y;
-        ++line;
-        column = 1;
-        window_x = 2;
     }
+
+    // while (line != (*board_).size() - 1) {
+    //     while (column != (*board_).at(0).size()) {
+    //         if ()
+
+    //             mvwprintw(win_, window_y, window_x, "%d", static_cast<int>((*board_)[line][column]));
+    //         mvwprintw(win_, window_y, window_x + 1, "%d", static_cast<int>((*board_)[line][column]));
+
+    //         if ((*board_)[line][column] != 0) {
+    //             int color_number = static_cast<int>((*board_)[line][column]);
+    //             // wattron(win_, COLOR_PAIR(color_number));
+    //             // mvwaddch(win_, window_y, window_x, ' ');
+    //             // mvwaddch(win_, window_y, window_x + 1, ' ');
+    //             // wattroff(win_, COLOR_PAIR(color_number));
+    //         }
+    //         window_x += 2;
+    //         ++column;
+    //     }
+    //     ++window_y;
+    //     ++line;
+    //     column = 1;
+    //     window_x = 2;
+    // }
 }
 
 /* TopBoard Class ===================================================================================== */

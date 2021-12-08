@@ -173,12 +173,13 @@ void TetrisEngine::SetPositionToBoard(const TetrisBlock* const block, int value)
         board_[(*itr).y][(*itr).x] = value;
 }
 
-void TetrisEngine::PunchToBoard() {
+void TetrisEngine::PunchToBoard(BlockType what_value) {
     this->SetPositionToBoard(&previous_block_, 0);
 
     previous_block_ = (*current_block_);
-
-    this->SetPositionToBoard(current_block_.get(), static_cast<int>(current_block_->type));
+    mvprintw(30, 0, "ttX:%d", static_cast<int>(what_value));
+    refresh();
+    this->SetPositionToBoard(current_block_.get(), static_cast<int>(what_value));
 }
 
 void TetrisEngine::CreateCurrentBlock(const int& random_number_of_4, const int& random_number_of_7) {
@@ -190,7 +191,7 @@ void TetrisEngine::CreateCurrentBlock(const int& random_number_of_4, const int& 
 
     this->SetBlockProperty(current_block_.get(), random_number_of_4, random_number_of_7);
     this->SetBlockPostion(current_block_.get());
-    this->PunchToBoard();
+    this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
 }
 
 void TetrisEngine::CreateNextBlock(const int& random_number_of_4, const int& random_number_of_7) {
@@ -210,7 +211,7 @@ void TetrisEngine::MoveNextToCurrentBlock() {
         next_block_.release();
     }
 
-    this->PunchToBoard();
+    this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
 }
 
 const decltype(TetrisEngine::TetrisBlock::pos) TetrisEngine::getNextBlockShape() const {
@@ -254,7 +255,7 @@ bool TetrisEngine::IsPlacedBlock(const decltype(TetrisBlock::pos)& block_pos) {
                 return true;
             else if (target.x < 1 || this->board_.at(0).size() <= target.x)
                 return true;
-            else if (this->board_[target.y][target.x] != 0)
+            else if (1 <= this->board_[target.y][target.x] && this->board_[target.y][target.x] <= 7)
                 return true;
             else
                 return false;
@@ -283,25 +284,34 @@ bool TetrisEngine::RotateCurrentBlock() {
         });
         mvprintw(2, 0, "R2");
         refresh();
-
+        int k = 0;
         // Adjust Start Position
         YX offset(current_block_->pos[0].y - preview[0].y, current_block_->pos[0].x - preview[0].x);
-        std::transform(preview.begin(), preview.end(), preview.begin(), [&offset](YX& target) -> YX {
+        std::transform(preview.begin(), preview.end(), preview.begin(), [&offset, &k](YX& target) -> YX {
+            mvprintw(6 + k, 0, "%d", target.y);
+            mvprintw(6 + k, 4, "%d", target.x);
             target.y += offset.y;
             target.x += offset.x;
+            mvprintw(20 + k, 0, "%d", target.y);
+            mvprintw(20 + k, 4, "%d", target.x);
+            refresh();
+            ++k;
 
             return target;
         });
 
+        mvprintw(3, 0, "R3");
+        refresh();
+
         if (this->IsPlacedBlock(preview)) {
             current_block_->pos = std::move(preview);
             this->UpdateCuttenrBlockDirection(current_block_.get());
-            PunchToBoard();
-            mvprintw(3, 0, "R3");
+            PunchToBoard(ConvertCurrentBlockType(current_block_->type));
+            mvprintw(4, 0, "R4");
             refresh();
             return true;
         } else {
-            mvprintw(4, 0, "R4");
+            mvprintw(5, 0, "R5");
             refresh();
             return false;
         }
@@ -314,7 +324,7 @@ bool TetrisEngine::IsCanFallBlock(const decltype(TetrisBlock::pos)& block_pos) {
     if (block_pos.cend() != std::find_if(block_pos.cbegin(), block_pos.cend(), [this](const object::YX& target) -> bool {
             if (target.y < 1 || this->board_.size() <= target.y)
                 return true;
-            else if (this->board_[target.y][target.x] != 0)
+            else if (1 <= this->board_[target.y][target.x] && this->board_[target.y][target.x] <= 7)
                 return true;
             else
                 return false;
@@ -334,7 +344,7 @@ bool TetrisEngine::FallCurrentBlock() {
     });
 
     if (this->IsCanFallBlock(preview)) {
-        PunchToBoard();
+        PunchToBoard(ConvertCurrentBlockType(current_block_->type));
         return true;
     } else
         return false;
@@ -347,7 +357,7 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
     int offset_x = 0;
     switch (where) {
         case Move::kDown:
-            offset_y = 1;
+            offset_y = -1;
             break;
         case Move::kLeft:
             offset_x = -1;
@@ -362,16 +372,38 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
     mvprintw(1, 4, "M1");
     refresh();
     decltype(current_block_->pos) preview = current_block_->pos;
-    std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](YX& i) {
-        i.y = offset_y;
-        i.x = offset_x;
+    int k = 0;
+    std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x, &k](YX& i) {
+        mvprintw(12 + k, 0, "%d", i.y);
+        mvprintw(12 + k, 4, "%d", i.x);
+        i.y += offset_y;
+        i.x += offset_x;
+        mvprintw(12 + k, 8, "%d", i.y);
+        mvprintw(12 + k, 12, "%d", i.x);
+        ++k;
+        refresh();
         return i;
     });
     mvprintw(2, 4, "M2");
     refresh();
-    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const YX& i) -> bool {
-            if (i.y >= this->board_.size() || i.y < 1 || i.x >= this->board_.at(0).size() || i.x < 1) return true;
-            if (this->board_[i.y][i.x] != 0) return true;
+    k = 0;
+    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this, &k](const YX& i) -> bool {
+            if (i.y >= this->board_.size() || i.y < 1 || i.x >= this->board_.at(0).size() || i.x < 1) {
+                mvprintw(20 + k, 0, "a%d", i.y);
+                mvprintw(20 + k, 4, "a%d", i.x);
+                k++;
+                refresh();
+                return true;
+            }
+            if (1 <= this->board_[i.y][i.x] && this->board_[i.y][i.x] <= 7) {
+                mvprintw(26 + k, 0, "b%d", i.y);
+                mvprintw(26 + k, 4, "b%d", i.x);
+                mvprintw(26 + k, 8, "br%d", this->board_[i.y][i.x]);
+
+                k++;
+                refresh();
+                return true;
+            }
             return false;
         })) {
         mvprintw(3, 4, "M3");
@@ -379,8 +411,19 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
         return false;
     } else {
         mvprintw(4, 4, "M4");
+        current_block_->pos = std::move(preview);
+        this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
+        int ky = 12;
+        int kx = 110;
+        for (auto line = board_.begin(); line != board_.end(); ++line) {
+            for (auto column = (*line).begin(); column != (*line).end(); ++column) {
+                mvprintw(ky, kx, "%d ", *column);
+                kx += 4;
+            }
+            ky++;
+            kx = 110;
+        }
         refresh();
-        this->PunchToBoard();
         return true;
     }
 }
@@ -393,7 +436,7 @@ bool TetrisEngine::IsNextBlockExist() const {
 }
 
 void TetrisEngine::FixedCurrentBlockToBoard() {
-    this->PunchToBoard();
+    this->PunchToBoard(current_block_->type);
 }
 void TetrisEngine::DeleteCompleteLines() {
     std::set<int> record_clear_line;
@@ -418,6 +461,34 @@ void TetrisEngine::DeleteCompleteLines() {
         board_.erase(board_.begin() + *itr - offset);
         board_.push_back(std::vector<int>(11, 0));
         offset++;
+    }
+}
+BlockType TetrisEngine::ConvertCurrentBlockType(const BlockType& type) {
+    switch (type) {
+        case BlockType::I:
+            return BlockType::kCurrentI;
+            break;
+        case BlockType::J:
+            return BlockType::kCurrentJ;
+            break;
+        case BlockType::L:
+            return BlockType::kCurrentL;
+            break;
+        case BlockType::T:
+            return BlockType::kCurrentT;
+            break;
+        case BlockType::O:
+            return BlockType::kCurrentO;
+            break;
+        case BlockType::Z:
+            return BlockType::kCurrentZ;
+            break;
+        case BlockType::S:
+            return BlockType::kCurrentS;
+            break;
+        default:
+            return BlockType::kNothing;  // ERROR
+            break;
     }
 }
 
