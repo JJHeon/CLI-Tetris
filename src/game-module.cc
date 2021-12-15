@@ -284,36 +284,44 @@ void SoloPlayState::EnterProcess() {
 ProcessResult SoloPlayState::UpdateProcess() {
     // Process 0 - 5초 대기
     if (TimerAccessor::WaitingTimer(accessor_list_.at(0))) {
-        timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
-        // user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
-        user_tetris_engine_.CreateCurrentBlock(1, 5);
-        // user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        timer_handler_->SetTimer(accessor_list_.at(0), 5, 0);
+        timer_handler_->SetTimer(accessor_list_.at(1), 1, 0);  // 800ms
+        user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        // user_tetris_engine_.CreateCurrentBlock(1, 2);
+        user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
         tetris_board_ptr_->UpdateRendering();
+
+        mvprintw(35 + test, 0, "can?");
+        test++;
+        refresh();
     } else
         return ProcessResult::kNothing;
 
-    /*
     if (TimerAccessor::WaitingTimer(accessor_list_.at(1))) {
-        timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
+        timer_handler_->SetTimer(accessor_list_.at(1), 1, 0);  // 800ms
 
-        // after Fall, wait timer one more time and Move Block & Create Blocks
-        if (temperary_stop_flag) {
-            // Progress ? - Move Next Block to Current Block
-            user_tetris_engine_.MoveNextToCurrentBlock();
-            temperary_stop_flag = false;
-            // Progress 2 - Next Block 유무 확인, 없으면 생성
-            if (!user_tetris_engine_.IsNextBlockExist()) user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
-        }
+        mvprintw(36 + test, 0, "asdasdadasd");
+        refresh();
+        user_tetris_engine_.FallCurrentBlock();
 
-        // Progress 5 - Fall Block
-            user_tetris_engine_.DeleteCompleteLines();
-        if (!temperary_stop_flag && !user_tetris_engine_.FallCurrentBlock()) {
-            temperary_stop_flag = true;
-        }
+        test++;
+        // // after Fall, wait timer one more time and Move Block & Create Blocks
+        // if (temperary_stop_flag) {
+        //     // Progress ? - Move Next Block to Current Block
+        //     user_tetris_engine_.MoveNextToCurrentBlock();
+        //     temperary_stop_flag = false;
+        //     // Progress 2 - Next Block 유무 확인, 없으면 생성
+        //     if (!user_tetris_engine_.IsNextBlockExist()) user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        // }
+
+        // // Progress 5 - Fall Block
+        //     user_tetris_engine_.DeleteCompleteLines();
+        // if (!temperary_stop_flag && !user_tetris_engine_.FallCurrentBlock()) {
+        //     temperary_stop_flag = true;
+        // }
 
         tetris_board_ptr_->UpdateState();
     }
-    */
 
     /**
      * Progress 3 입력
@@ -323,15 +331,23 @@ ProcessResult SoloPlayState::UpdateProcess() {
     switch (input) {
         case KEY_UP:
             if (user_tetris_engine_.RotateCurrentBlock()) tetris_board_ptr_->UpdateState();
+            mvprintw(0, 0, "up");
+            refresh();
             break;
         case KEY_DOWN:
             if (user_tetris_engine_.MovingCurrentBlock(engine::Move::kDown)) tetris_board_ptr_->UpdateState();
+            mvprintw(0, 0, "down");
+            refresh();
             break;
         case KEY_LEFT:
             if (user_tetris_engine_.MovingCurrentBlock(engine::Move::kLeft)) tetris_board_ptr_->UpdateState();
+            mvprintw(0, 0, "left");
+            refresh();
             break;
         case KEY_RIGHT:
             if (user_tetris_engine_.MovingCurrentBlock(engine::Move::kRight)) tetris_board_ptr_->UpdateState();
+            mvprintw(0, 0, "right");
+            refresh();
             break;
         case KEY_STAB:
             break;

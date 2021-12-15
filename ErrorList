@@ -13,4 +13,5 @@ E012 : pointer under SoloPlay cannot have nullptr
 E013 : TetrisEngine::CreateCurrentBlock param is wrong
 E014 : TetrisBoardUI don't have current_block pointer
 E015 : TetrisEngine::CreateNextBlock param is wrong
+E016 : TetrisBoard::Don't have Connected Board
     

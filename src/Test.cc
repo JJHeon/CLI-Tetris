@@ -55,7 +55,8 @@ int main(void) {
     }
 
     /* Tetris Manager Create */
-    GameManager tetris(StateCode::kStart);
+    // GameManager tetris(StateCode::kStart);
+    GameManager tetris(StateCode::kSoloPlay);
 
     // Tetris Manager Initalize
     try {

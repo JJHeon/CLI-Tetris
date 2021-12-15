@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <time.h>
 extern "C" {
+#include <ncurses.h>
 }
 
 namespace cli_tetris::timer {
@@ -32,10 +33,15 @@ static bool timer_result_list[kTIMER_NUM] = {
 static bool timer_usage[kTIMER_NUM] = {
     false,
 };
-
+static int tmp = 0;
+static int tmp2 = 0;
 static void AlarmHandler(int signal_num, siginfo_t* signal_info, void* ucontext) {
     if (signal_num == SIGALRM) {
         int id = signal_info->_sifields._rt.si_sigval.sival_int;
+        mvprintw(0 + tmp, 140, "%d", id);
+        refresh();
+        tmp++;
+
         timer_result_list[id] = false;
     }
 }
@@ -61,14 +67,14 @@ static void InitializeTimerVariable() {
 }
 
 static bool IsFullTimerQueue() {
-    for (unsigned int i = 0; i <= kTIMER_NUM; ++i) {
+    for (unsigned int i = 0; i < kTIMER_NUM; ++i) {
         if (!timer_usage[i]) return false;
     }
     return true;
 }
 
 static int GetTimerID() {
-    for (unsigned int i = 0; i <= kTIMER_NUM; ++i) {
+    for (unsigned int i = 0; i < kTIMER_NUM; ++i) {
         if (!timer_usage[i]) {
             timer_usage[i] = true;
             return i;
@@ -87,6 +93,9 @@ static void DeleteTimerWithoutID(timer_t& timer) {
 }
 
 static void CreateTimer(const int& id, timer_t& timer) {
+    mvprintw(35 + tmp2, 120, "kkk%d", id);
+    refresh();
+    tmp2++;
     int ret = 0;
     struct sigevent evp;
     evp.sigev_value.sival_int = id;
@@ -145,8 +154,6 @@ bool TimerAccessor::IsAlive() const {
         return false;
 }
 
-
-
 /* class TimerData  ===================================================================================== */
 TimerHandler::TimerData::TimerData(std::shared_ptr<bool> accessor_allive) : accessor_allive_(std::move(accessor_allive)) {}
 TimerHandler::TimerData::TimerData(const TimerData& obj) : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
@@ -190,6 +197,9 @@ TimerAccessor TimerHandler::CreateTimer() {
     TimerAccessor key(id, &linux_call::timer_result_list[id]);
     TimerData data(std::make_shared<bool>(true));
     key.is_allive_ = data.accessor_allive_;
+
+    mvprintw(40 + linux_call::tmp2, 120, "vvvvz%d", id);
+    refresh();
 
     // Linux System call for timer_create
     linux_call::CreateTimer(id, data.timer_);

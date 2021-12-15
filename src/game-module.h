@@ -180,6 +180,8 @@ class SoloPlayState : public GameState {
 
     bool temperary_stop_flag; //timer one more time flag
 
+    int test = 0;
+
    private:
     void MoveStateHandler(StateCode where) override;
 
