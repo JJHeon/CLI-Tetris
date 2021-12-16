@@ -145,8 +145,6 @@ bool TimerAccessor::IsAlive() const {
         return false;
 }
 
-
-
 /* class TimerData  ===================================================================================== */
 TimerHandler::TimerData::TimerData(std::shared_ptr<bool> accessor_allive) : accessor_allive_(std::move(accessor_allive)) {}
 TimerHandler::TimerData::TimerData(const TimerData& obj) : accessor_allive_(obj.accessor_allive_), timer_(obj.timer_) {}
@@ -216,6 +214,7 @@ void TimerHandler::DeleteTimer(TimerAccessor& accessor) {
 
 void TimerHandler::SetTimer(TimerAccessor& accessor, const int& sec, const int& nanosec) {
     auto itr = timer_list_.find(accessor.id_);
+
     if (itr != timer_list_.end()) {
         linux_call::RunTimer(accessor.id_, itr->second.timer_, sec, nanosec);
 
@@ -235,6 +234,19 @@ void TimerHandler::StopTimer(TimerAccessor& accessor) {
 
     throw std::runtime_error(std::string("E008 : 멈추려는 Timer 없음"));
     return;
+}
+
+void TimerHandler::DisableTimer(TimerAccessor& accessor) {
+    auto itr = timer_list_.find(accessor.id_);
+    if (itr != timer_list_.end()) {
+        itr->second.accessor_allive_.reset();
+    }
+}
+void TimerHandler::EnableTimer(TimerAccessor& accessor) {
+    auto itr = timer_list_.find(accessor.id_);
+    if (itr != timer_list_.end()) {
+        itr->second.accessor_allive_.reset(new bool(true));
+    }
 }
 
 }  // namespace cli_tetris::timer
