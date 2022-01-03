@@ -277,7 +277,6 @@ void SoloPlayState::EnterProcess() {
 
     // variable set
     initial_stanby_flag = true;
-    temperary_stop_flag = false;
 
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
@@ -289,8 +288,8 @@ ProcessResult SoloPlayState::UpdateProcess() {
         timer_handler_->SetTimer(accessor_list_.at(1), 0, 500000000);  // 800ms
 
         user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
-        // user_tetris_engine_.CreateCurrentBlock(1, 5); //Test
         user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+
         tetris_board_ptr_->UpdateRendering();
 
         initial_stanby_flag = false;
@@ -301,19 +300,15 @@ ProcessResult SoloPlayState::UpdateProcess() {
     if (TimerAccessor::WaitingTimer(accessor_list_.at(1))) {
         timer_handler_->SetTimer(accessor_list_.at(1), 0, 500000000);  // 800ms
 
-        // after Fall, wait timer one more time and Move Block & Create Blocks
-        if (temperary_stop_flag) {
-            // Progress ? - Move Next Block to Current Block
-            user_tetris_engine_.MoveNextToCurrentBlock();
-            temperary_stop_flag = false;
-            // Progress 2 - Next Block 유무 확인, 없으면 생성
+        if (user_tetris_engine_.FallCurrentBlock()) {
+        } else {
+            user_tetris_engine_.DeleteCompleteLines();
+            if (!user_tetris_engine_.MoveNextToCurrentBlock()) {
+                // game end, can not move next block into first start position.
+                mvprintw(0, 0, "Test Finish");
+                refresh();
+            }
             if (!user_tetris_engine_.IsNextBlockExist()) user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
-        }
-
-        // Progress 5 - Fall Block
-        user_tetris_engine_.DeleteCompleteLines();
-        if (!temperary_stop_flag && !user_tetris_engine_.FallCurrentBlock()) {
-            temperary_stop_flag = true;
         }
 
         tetris_board_ptr_->UpdateState();

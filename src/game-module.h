@@ -179,7 +179,6 @@ class SoloPlayState : public GameState {
     object::TetrisBoard* tetris_board_ptr_;
 
     bool initial_stanby_flag;
-    bool temperary_stop_flag;  // timer one more time flag
 
    private:
     void MoveStateHandler(StateCode where) override;
