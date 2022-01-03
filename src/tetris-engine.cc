@@ -153,16 +153,6 @@ bool TetrisEngine::SetBlockPostion(TetrisBlock* block) {
             }
             break;
     }
-    // 지정할 위치에 다른 Block 있는지 Check
-    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const object::YX& target) -> bool {
-            if (this->board_[target.y][target.x] != 0)
-                return true;
-            else
-                return false;
-        })) {
-        return false;
-    }
-
     block->pos = std::move(preview);
     return true;
 }
@@ -204,13 +194,16 @@ void TetrisEngine::CreateNextBlock(const int& random_number_of_4, const int& ran
     this->SetBlockPostion(next_block_.get());
 }
 
-void TetrisEngine::MoveNextToCurrentBlock() {
+bool TetrisEngine::MoveNextToCurrentBlock() {
     if (current_block_ != nullptr && next_block_ != nullptr) {
+        if (!IsPlacedBlock(next_block_->pos)) return false;
+
         current_block_.swap(next_block_);
         next_block_.release();
     }
 
     this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
+    return true;
 }
 
 const decltype(TetrisEngine::TetrisBlock::pos) TetrisEngine::getNextBlockShape() const {

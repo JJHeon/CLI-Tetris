@@ -100,7 +100,7 @@ class TetrisEngine {
      * random_number_of_7 : Dicide blocktypes
      */
     void CreateNextBlock(const int& random_number_of_4, const int& random_number_of_7);
-    void MoveNextToCurrentBlock();
+    bool MoveNextToCurrentBlock();
 
     const decltype(board_)* getTetrisBoard() const;
     const decltype(TetrisBlock::pos) getNextBlockShape() const;
