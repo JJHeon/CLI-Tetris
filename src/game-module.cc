@@ -276,25 +276,30 @@ void SoloPlayState::EnterProcess() {
     tetris_board_ptr_->ConnectBoard(user_tetris_engine_.getTetrisBoard());
 
     // variable set
+    initial_stanby_flag = true;
     temperary_stop_flag = false;
 
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
 ProcessResult SoloPlayState::UpdateProcess() {
-    // Process 0 - 5초 대기
+    // Process 0 - 초기 5초 대기
     if (TimerAccessor::WaitingTimer(accessor_list_.at(0))) {
-        timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
-        // user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
-        user_tetris_engine_.CreateCurrentBlock(1, 5);
-        // user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
-        tetris_board_ptr_->UpdateRendering();
-    } else
-        return ProcessResult::kNothing;
+        timer_handler_->DisableTimer(accessor_list_.at(0));
+        timer_handler_->SetTimer(accessor_list_.at(1), 0, 500000000);  // 800ms
 
-    /*
+        user_tetris_engine_.CreateCurrentBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        // user_tetris_engine_.CreateCurrentBlock(1, 5); //Test
+        user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
+        tetris_board_ptr_->UpdateRendering();
+
+        initial_stanby_flag = false;
+    }
+
+    if (initial_stanby_flag) return ProcessResult::kNothing;
+
     if (TimerAccessor::WaitingTimer(accessor_list_.at(1))) {
-        timer_handler_->SetTimer(accessor_list_.at(1), 0, 800000000);  // 800ms
+        timer_handler_->SetTimer(accessor_list_.at(1), 0, 500000000);  // 800ms
 
         // after Fall, wait timer one more time and Move Block & Create Blocks
         if (temperary_stop_flag) {
@@ -306,14 +311,13 @@ ProcessResult SoloPlayState::UpdateProcess() {
         }
 
         // Progress 5 - Fall Block
-            user_tetris_engine_.DeleteCompleteLines();
+        user_tetris_engine_.DeleteCompleteLines();
         if (!temperary_stop_flag && !user_tetris_engine_.FallCurrentBlock()) {
             temperary_stop_flag = true;
         }
 
         tetris_board_ptr_->UpdateState();
     }
-    */
 
     /**
      * Progress 3 입력

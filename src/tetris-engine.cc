@@ -177,8 +177,7 @@ void TetrisEngine::PunchToBoard(BlockType what_value) {
     this->SetPositionToBoard(&previous_block_, 0);
 
     previous_block_ = (*current_block_);
-    mvprintw(30, 0, "ttX:%d", static_cast<int>(what_value));
-    refresh();
+
     this->SetPositionToBoard(current_block_.get(), static_cast<int>(what_value));
 }
 
@@ -202,11 +201,11 @@ void TetrisEngine::CreateNextBlock(const int& random_number_of_4, const int& ran
         next_block_ = std::make_unique<TetrisBlock>(TetrisEngine::kBlockStartPostion_);
 
     this->SetBlockProperty(next_block_.get(), random_number_of_4, random_number_of_7);
-    this->SetBlockPostion(current_block_.get());
+    this->SetBlockPostion(next_block_.get());
 }
 
 void TetrisEngine::MoveNextToCurrentBlock() {
-    if (!(current_block_ == nullptr) && !(next_block_ == nullptr)) {
+    if (current_block_ != nullptr && next_block_ != nullptr) {
         current_block_.swap(next_block_);
         next_block_.release();
     }
@@ -344,10 +343,13 @@ bool TetrisEngine::FallCurrentBlock() {
     });
 
     if (this->IsCanFallBlock(preview)) {
+        current_block_->pos = preview;
         PunchToBoard(ConvertCurrentBlockType(current_block_->type));
         return true;
-    } else
+    } else {
+        ClearPreviousBlock();
         return false;
+    }
 }
 
 bool TetrisEngine::MovingCurrentBlock(Move where) {
@@ -490,6 +492,9 @@ BlockType TetrisEngine::ConvertCurrentBlockType(const BlockType& type) {
             return BlockType::kNothing;  // ERROR
             break;
     }
+}
+void TetrisEngine::ClearPreviousBlock() {
+    previous_block_.pos.fill(object::YX(0, 0));
 }
 
 }  // namespace cli_tetris::engine

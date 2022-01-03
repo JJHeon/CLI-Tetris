@@ -82,6 +82,7 @@ class TetrisEngine {
     bool IsPlacedBlock(const decltype(TetrisBlock::pos)& block_pos);
     bool IsCanFallBlock(const decltype(TetrisBlock::pos)& block_pos);
     BlockType ConvertCurrentBlockType(const BlockType& type);
+    void ClearPreviousBlock();
 
    public:
     TetrisEngine();
@@ -109,7 +110,6 @@ class TetrisEngine {
     bool IsNextBlockExist() const;
     void FixedCurrentBlockToBoard();
     void DeleteCompleteLines();
-
     // LATER:
     // bool IsCurrentBlockExist() const;
     // getCurrentBlockType();
