@@ -340,6 +340,7 @@ bool TetrisEngine::FallCurrentBlock() {
         PunchToBoard(ConvertCurrentBlockType(current_block_->type));
         return true;
     } else {
+        SetPositionToBoard(&previous_block_, static_cast<int>(current_block_->type));
         ClearPreviousBlock();
         return false;
     }

@@ -300,8 +300,7 @@ ProcessResult SoloPlayState::UpdateProcess() {
     if (TimerAccessor::WaitingTimer(accessor_list_.at(1))) {
         timer_handler_->SetTimer(accessor_list_.at(1), 0, 500000000);  // 800ms
 
-        if (user_tetris_engine_.FallCurrentBlock()) {
-        } else {
+        if (!user_tetris_engine_.FallCurrentBlock()) {
             user_tetris_engine_.DeleteCompleteLines();
             if (!user_tetris_engine_.MoveNextToCurrentBlock()) {
                 // game end, can not move next block into first start position.
