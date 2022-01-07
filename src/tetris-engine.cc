@@ -118,8 +118,8 @@ bool TetrisEngine::SetBlockPostion(TetrisBlock* block) {
             break;
         case BlockType::J:
             for (int i = 0; i < 4; ++i) {
-                preview[i].x = start_x + block_shape_j[direction][i][1];
-                preview[i].y = start_y + block_shape_j[direction][i][0];
+                preview[i].x = start_x + block_shape_j[direction][i][0];
+                preview[i].y = start_y + block_shape_j[direction][i][1];
             }
             break;
         case BlockType::L:
