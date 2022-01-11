@@ -1,6 +1,6 @@
 /** Note
  * class for linux timer handling
- * -- 설명 --
+ * 
  * TimerAccessor class :
  * TimerAccessor class는 key로 사용되어집니다.
  * TimerHnadler의 CreateTimer Method 를 통해 생성됩니다.
@@ -14,8 +14,6 @@
  * TimerAccessor를 이용해 Timer를 관리합니다. map을 이용해 내부에서 TimerData class를 관리합니다.
  * Timer의 생성, 시작, 중지를 수행할 수 있습니다.
  *
- * -- 변경 이력 -- (21.12.05 이전 기록 없음)
- * 21.12.05 TimerData class 위치 TimerHandler class 내부로 변경
  */
 
 #ifndef CLI_TETRIS_TIMER_HANDLER_H_

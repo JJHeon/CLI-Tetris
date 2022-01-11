@@ -1,7 +1,6 @@
 /** Note
  * game-module
  *
- * -- 설명 --
  * GameState class는 state pattern 위한 abstract class입니다.
  * GameManager는 GameState를 관리하는 책임을 가집니다.
  * GameManager는 GameState를 GameState array에 보관합니다. 이를 사용해서 State를 변경하는 method를 State들에게 제공합니다.
@@ -15,7 +14,6 @@
  * FinishProcess
  * 를 가집니다.
  *
- * -- 변경 이력 -- (21.12.05 이전 기록 없음)
  */
 
 #ifndef CLI_TETRIS_GAME_MODULE_H_

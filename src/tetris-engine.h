@@ -1,11 +1,8 @@
 /** Note
  * tetris-engine
  *
- * -- 설명 --
  * tetris logic 객체
  *
- * -- 변경 이력 -- (21.12.05 이전 기록 없음)
- * 21.12.05 create
  */
 
 #ifndef CLI_TETRIS_TETRIS_ENGINE_H_

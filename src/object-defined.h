@@ -1,7 +1,6 @@
 /** Note
  * object-defined
  *
- * -- 설명 --
  * GraphicObject abstract class는 Drawing 여부 확인 method 제공
  * drived class인 TerminalWindowFunction는 ncurse window 생성 및 관련 변수 제공
  * drived class인 TerminalMenuFunction는 ncurse menu 생성 및 제어 method 제공
@@ -9,7 +8,6 @@
  * Page는 전체 그림을 의미합니다.
  * Object는 ncurse window 한개를 의미합니다.
  * Baord는 값을 갱신 받거나 전달해야하는 window입니다.
- * -- 변경 이력 -- (21.12.05 이전 기록 없음)
  */
 
 #ifndef CLI_TETRIS_OBJECT_DEFINED_H_

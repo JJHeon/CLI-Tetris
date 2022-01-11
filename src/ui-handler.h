@@ -1,12 +1,10 @@
 /** Note
  * ncurse handling class
- * -- 설명 --
+ *
  * GraphicObject class와 dependency
  * ncurse 사용하기 전에 Setting, object를 사용하기 위한 사전 조건의 책임을 가짐
  *
  *
- * -- 변경 이력 -- (21.12.05 이전 기록 없음)
- * 21.12.05 thread에서 ncurse를 사용하면 화면 blink 문제가 발생. thread-manager를 상속하지 않도록 변경
  */
 
 #ifndef CLI_TETRIS_UI_H_

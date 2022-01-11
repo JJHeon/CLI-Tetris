@@ -2,11 +2,9 @@
  * service-manager
  *
  * Service Mediator Class입니다.
- * -- 설명 --
  * UI, Sound, Log, Random 기능을 위한 Service Mediator Pattern
  * UI를 참조해야할 곳이 GameState 9개 정도 되는데, 추후에 각기 다른 UI를 등록할 수 있도록 합니다.
  *
- * -- 변경 이력 -- (21.12.05 이전 기록 없음)
  */
 
 #ifndef CLI_TETRIS_SERVICE_MANAGER_H_
