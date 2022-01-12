@@ -178,8 +178,7 @@ void TetrisEngine::CreateCurrentBlock(const int& random_number_of_4, const int& 
     if (current_block_ == nullptr)
         current_block_ = std::make_unique<TetrisBlock>(TetrisEngine::kBlockStartPostion_);
 
-    // this->SetBlockProperty(current_block_.get(), random_number_of_4, random_number_of_7);
-    this->SetBlockProperty(current_block_.get(), random_number_of_4, 2);
+    this->SetBlockProperty(current_block_.get(), random_number_of_4, random_number_of_7);
     this->SetBlockPostion(current_block_.get());
     this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
 }
@@ -191,8 +190,7 @@ void TetrisEngine::CreateNextBlock(const int& random_number_of_4, const int& ran
     if (next_block_ == nullptr)
         next_block_ = std::make_unique<TetrisBlock>(TetrisEngine::kBlockStartPostion_);
 
-    // this->SetBlockProperty(next_block_.get(), random_number_of_4, random_number_of_7);
-    this->SetBlockProperty(next_block_.get(), random_number_of_4, 2);
+    this->SetBlockProperty(next_block_.get(), random_number_of_4, random_number_of_7);
     this->SetBlockPostion(next_block_.get());
 }
 
@@ -227,9 +225,7 @@ void TetrisEngine::UpdateCuttenrBlockDirection(TetrisBlock* block) {
         case BlockType::I:
         case BlockType::Z:
         case BlockType::S:
-
             direction = (direction + 1) % 2;
-
             break;
         case BlockType::J:
         case BlockType::L:
@@ -263,8 +259,7 @@ bool TetrisEngine::RotateCurrentBlock() {
     using object::YX;
     if (current_block_ != nullptr) {
         auto preview = current_block_->pos;
-        mvprintw(1, 0, "R1");
-        refresh();
+
         /** Rotate degree 90
          * [0 -1]
          * [1  0]
@@ -276,37 +271,22 @@ bool TetrisEngine::RotateCurrentBlock() {
 
             return temp;
         });
-        mvprintw(2, 0, "R2");
-        refresh();
-        int k = 0;
+
         // Adjust Start Position
         YX offset(current_block_->pos[0].y - preview[0].y, current_block_->pos[0].x - preview[0].x);
-        std::transform(preview.begin(), preview.end(), preview.begin(), [&offset, &k](YX& target) -> YX {
-            mvprintw(6 + k, 0, "%d", target.y);
-            mvprintw(6 + k, 4, "%d", target.x);
+        std::transform(preview.begin(), preview.end(), preview.begin(), [&offset](YX& target) -> YX {
             target.y += offset.y;
             target.x += offset.x;
-            mvprintw(20 + k, 0, "%d", target.y);
-            mvprintw(20 + k, 4, "%d", target.x);
-            refresh();
-            ++k;
 
             return target;
         });
-
-        mvprintw(3, 0, "R3");
-        refresh();
 
         if (this->IsPlacedBlock(preview)) {
             current_block_->pos = std::move(preview);
             this->UpdateCuttenrBlockDirection(current_block_.get());
             PunchToBoard(ConvertCurrentBlockType(current_block_->type));
-            mvprintw(4, 0, "R4");
-            refresh();
             return true;
         } else {
-            mvprintw(5, 0, "R5");
-            refresh();
             return false;
         }
     }
@@ -367,61 +347,29 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
             // Nothing
             break;
     }
-    mvprintw(1, 4, "M1");
-    refresh();
+
     decltype(current_block_->pos) preview = current_block_->pos;
-    int k = 0;
-    std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x, &k](YX& i) {
-        mvprintw(12 + k, 0, "%d", i.y);
-        mvprintw(12 + k, 4, "%d", i.x);
+
+    std::transform(preview.begin(), preview.end(), preview.begin(), [&offset_y, &offset_x](YX& i) {
         i.y += offset_y;
         i.x += offset_x;
-        mvprintw(12 + k, 8, "%d", i.y);
-        mvprintw(12 + k, 12, "%d", i.x);
-        ++k;
-        refresh();
         return i;
     });
-    mvprintw(2, 4, "M2");
-    refresh();
-    k = 0;
-    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this, &k](const YX& i) -> bool {
+
+    if (preview.end() != std::find_if(preview.begin(), preview.end(), [this](const YX& i) -> bool {
             if (i.y >= this->board_.size() || i.y < 1 || i.x >= this->board_.at(0).size() || i.x < 1) {
-                mvprintw(20 + k, 0, "a%d", i.y);
-                mvprintw(20 + k, 4, "a%d", i.x);
-                k++;
-                refresh();
                 return true;
             }
             if (1 <= this->board_[i.y][i.x] && this->board_[i.y][i.x] <= 7) {
-                mvprintw(26 + k, 0, "b%d", i.y);
-                mvprintw(26 + k, 4, "b%d", i.x);
-                mvprintw(26 + k, 8, "br%d", this->board_[i.y][i.x]);
-
-                k++;
-                refresh();
                 return true;
             }
             return false;
         })) {
-        mvprintw(3, 4, "M3");
-        refresh();
         return false;
     } else {
-        mvprintw(4, 4, "M4");
         current_block_->pos = std::move(preview);
         this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
-        mvprintw(0, 0, "npw : %4d", static_cast<int>(current_block_->direction));
-        int ky = 12;
-        int kx = 110;
-        for (auto line = board_.begin(); line != board_.end(); ++line) {
-            for (auto column = (*line).begin(); column != (*line).end(); ++column) {
-                mvprintw(ky, kx, "%d ", *column);
-                kx += 4;
-            }
-            ky++;
-            kx = 110;
-        }
+
         refresh();
         return true;
     }
@@ -434,9 +382,7 @@ bool TetrisEngine::IsNextBlockExist() const {
         return true;
 }
 
-void TetrisEngine::FixedCurrentBlockToBoard() {
-    this->PunchToBoard(current_block_->type);
-}
+
 void TetrisEngine::DeleteCompleteLines() {
     std::set<int> record_clear_line;
 

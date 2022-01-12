@@ -105,7 +105,6 @@ class TetrisEngine {
     bool FallCurrentBlock();
     bool MovingCurrentBlock(Move where);
     bool IsNextBlockExist() const;
-    void FixedCurrentBlockToBoard();
     void DeleteCompleteLines();
     // LATER:
     // bool IsCurrentBlockExist() const;
