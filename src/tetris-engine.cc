@@ -94,7 +94,7 @@ void TetrisEngine::SetBlockProperty(TetrisBlock* block, const int& random_number
         case BlockType::J:
         case BlockType::L:
         case BlockType::T:
-            block->direction = random_number_of_4;
+            block->direction = random_number_of_4 - 1;
             break;
         case BlockType::O:
             block->direction = 0;
@@ -118,8 +118,8 @@ bool TetrisEngine::SetBlockPostion(TetrisBlock* block) {
             break;
         case BlockType::J:
             for (int i = 0; i < 4; ++i) {
-                preview[i].x = start_x + block_shape_j[direction][i][0];
-                preview[i].y = start_y + block_shape_j[direction][i][1];
+                preview[i].y = start_y + block_shape_j[direction][i][0];
+                preview[i].x = start_x + block_shape_j[direction][i][1];
             }
             break;
         case BlockType::L:
@@ -178,7 +178,8 @@ void TetrisEngine::CreateCurrentBlock(const int& random_number_of_4, const int& 
     if (current_block_ == nullptr)
         current_block_ = std::make_unique<TetrisBlock>(TetrisEngine::kBlockStartPostion_);
 
-    this->SetBlockProperty(current_block_.get(), random_number_of_4, random_number_of_7);
+    // this->SetBlockProperty(current_block_.get(), random_number_of_4, random_number_of_7);
+    this->SetBlockProperty(current_block_.get(), random_number_of_4, 2);
     this->SetBlockPostion(current_block_.get());
     this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
 }
@@ -190,7 +191,8 @@ void TetrisEngine::CreateNextBlock(const int& random_number_of_4, const int& ran
     if (next_block_ == nullptr)
         next_block_ = std::make_unique<TetrisBlock>(TetrisEngine::kBlockStartPostion_);
 
-    this->SetBlockProperty(next_block_.get(), random_number_of_4, random_number_of_7);
+    // this->SetBlockProperty(next_block_.get(), random_number_of_4, random_number_of_7);
+    this->SetBlockProperty(next_block_.get(), random_number_of_4, 2);
     this->SetBlockPostion(next_block_.get());
 }
 
@@ -409,6 +411,7 @@ bool TetrisEngine::MovingCurrentBlock(Move where) {
         mvprintw(4, 4, "M4");
         current_block_->pos = std::move(preview);
         this->PunchToBoard(ConvertCurrentBlockType(current_block_->type));
+        mvprintw(0, 0, "npw : %4d", static_cast<int>(current_block_->direction));
         int ky = 12;
         int kx = 110;
         for (auto line = board_.begin(); line != board_.end(); ++line) {
