@@ -176,10 +176,15 @@ class SoloPlayState : public GameState {
 
     object::TetrisBoard* tetris_board_ptr_;
 
-    bool initial_stanby_flag;
+    bool initial_stanby_flag_;
+    bool is_game_end_flag_;
 
    private:
     void MoveStateHandler(StateCode where) override;
+
+    void WaitForTemperaryAndStartTetris(bool& initial_stanby_flag);
+    void RunFallingAndDetectCompleteLines();
+    void InputTetrisActionKey();
 
    public:
     SoloPlayState(GameManager& supervisor, UserData& user_player);

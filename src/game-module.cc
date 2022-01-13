@@ -276,13 +276,24 @@ void SoloPlayState::EnterProcess() {
     tetris_board_ptr_->ConnectBoard(user_tetris_engine_.getTetrisBoard());
 
     // variable set
-    initial_stanby_flag = true;
+    initial_stanby_flag_ = true;
+    is_game_end_flag_ = false;
 
     //    최초에 한번 Draw 합니다.
     this->RenderProcess();
 }
 ProcessResult SoloPlayState::UpdateProcess() {
-    // Process 0 - 초기 5초 대기
+    WaitForTemperaryAndStartTetris(initial_stanby_flag_);
+    if (initial_stanby_flag_) return ProcessResult::kNothing;
+
+    if (is_game_end_flag_) return ProcessResult::kNothing;
+    InputTetrisActionKey();
+    RunFallingAndDetectCompleteLines();
+
+    return ProcessResult::kNothing;
+}
+
+void SoloPlayState::WaitForTemperaryAndStartTetris(bool& initial_stanby_flag) {
     if (TimerAccessor::WaitingTimer(accessor_list_.at(0))) {
         timer_handler_->DisableTimer(accessor_list_.at(0));
         timer_handler_->SetTimer(accessor_list_.at(1), 0, 500000000);  // 800ms
@@ -294,9 +305,9 @@ ProcessResult SoloPlayState::UpdateProcess() {
 
         initial_stanby_flag = false;
     }
+}
 
-    if (initial_stanby_flag) return ProcessResult::kNothing;
-
+void SoloPlayState::RunFallingAndDetectCompleteLines() {
     if (TimerAccessor::WaitingTimer(accessor_list_.at(1))) {
         timer_handler_->SetTimer(accessor_list_.at(1), 0, 500000000);  // 800ms
 
@@ -304,19 +315,19 @@ ProcessResult SoloPlayState::UpdateProcess() {
             user_tetris_engine_.DeleteCompleteLines();
             if (!user_tetris_engine_.MoveNextToCurrentBlock()) {
                 // game end, can not move next block into first start position.
+                is_game_end_flag_ = true;
                 mvprintw(0, 0, "Test Finish");
                 refresh();
+                return;
             }
             if (!user_tetris_engine_.IsNextBlockExist()) user_tetris_engine_.CreateNextBlock(random_generator_->getUniform2RandomNumber(), random_generator_->getUniform1RandomNumber());
         }
 
         tetris_board_ptr_->UpdateState();
     }
+}
 
-    /**
-     * Progress 3 입력
-     * ncurse Input
-     */
+void SoloPlayState::InputTetrisActionKey() {
     int input = ui_handler_->getInput();
     switch (input) {
         case KEY_UP:
@@ -340,13 +351,8 @@ ProcessResult SoloPlayState::UpdateProcess() {
         default:
             break;
     }
-
-    /**
-     * proceed 4 key로 인한 움직임에 대한 충돌체크.
-     */
-
-    return ProcessResult::kNothing;
 }
+
 void SoloPlayState::RenderProcess() {
     for (auto itr = ui_object_list_.begin(); itr != ui_object_list_.end(); ++itr) {
         if (!(*itr)->IsChanged()) continue;
